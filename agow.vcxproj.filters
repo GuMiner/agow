@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="agow.cpp" />
+    <ClCompile Include="Math\PhysicsOps.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\MatrixOps.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\ConfigManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Constants.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\FontManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\ImageManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\ModelManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Config\KeyBindingConfig.cpp">
+      <Filter>Config</Filter>
+    </ClCompile>
+    <ClCompile Include="Config\PhysicsConfig.cpp">
+      <Filter>Config</Filter>
+    </ClCompile>
+    <ClCompile Include="Config\GraphicsConfig.cpp">
+      <Filter>Config</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\VecOps.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Vertex.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\StringUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\SharedExclusiveLock.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Logger.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ConversionUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\MathOps.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\ShaderManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Scenery.cpp" />
+    <ClCompile Include="Viewer.cpp" />
+    <ClCompile Include="Statistics.cpp" />
+    <ClCompile Include="Math\Vec.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\stb_implementations.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="agow.h" />
+    <ClInclude Include="Math\PhysicsOps.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\MatrixOps.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\MathOps.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ConfigManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Constants.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\FontManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ImageManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ModelManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Config\KeyBindingConfig.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Config\PhysicsConfig.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Config\GraphicsConfig.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\VecOps.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Vertex.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\StringUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\SharedExclusiveLock.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Logger.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ConversionUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h" />
+    <ClInclude Include="Managers\ShaderManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenery.h" />
+    <ClInclude Include="Viewer.h" />
+    <ClInclude Include="Statistics.h" />
+    <ClInclude Include="Data\TextDataTypes.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vec.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Data\RenderableSentence.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Data\ImageTexture.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Data\Model.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{b6447a1e-2629-478f-aecb-140c021fff4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{cbf71823-f660-4218-9900-ffe8fbf5db9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{fc6e9ad3-a83f-4c84-be34-55f39d410ec9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{6187b384-ee52-45d6-8001-5bcb50976e24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{1600f07c-2e58-4290-940f-2a892e595dc5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

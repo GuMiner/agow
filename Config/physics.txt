@@ -1,0 +1,14 @@
+# General Settings
+ConfigVersion 1
+
+# Physics
+#  Delay in ms for physics thread updates. 30 Hz gives a reasonable speed and prevents excessive GPU updates,
+#   while also avoiding visible stuttering.
+PhysicsThreadDelay 33
+
+# Speed at which to move the viewer forwards and sideways
+ViewForwardsSpeed 0.3
+ViewSidewaysSpeed 0.3
+
+ViewRotateUpFactor 0.012
+ViewRotateAroundFactor 0.012
