@@ -111,6 +111,7 @@
     <ClInclude Include="Statistics.h" />
     <ClInclude Include="Utils\Constants.h" />
     <ClInclude Include="Utils\ConversionUtils.h" />
+    <ClInclude Include="Utils\ImageUtils.h" />
     <ClInclude Include="Utils\Logger.h" />
     <ClInclude Include="Utils\SharedExclusiveLock.h" />
     <ClInclude Include="Utils\StringUtils.h" />
@@ -137,6 +138,7 @@
     <ClCompile Include="Statistics.cpp" />
     <ClCompile Include="Utils\Constants.cpp" />
     <ClCompile Include="Utils\ConversionUtils.cpp" />
+    <ClCompile Include="Utils\ImageUtils.cpp" />
     <ClCompile Include="Utils\Logger.cpp" />
     <ClCompile Include="Utils\SharedExclusiveLock.cpp" />
     <ClCompile Include="Utils\stb_implementations.cpp" />

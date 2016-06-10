@@ -12,5 +12,14 @@ in VS_OUT
 void main(void)
 {
     // Simply apply the color taking it from the cube map.
-    color = texture(skyCubeMap, fs_in.uvwPos);
+    vec4 textureColor = texture(skyCubeMap, fs_in.uvwPos);
+    
+    if (textureColor.x > 0.20)
+    {
+        color = vec4(0.0, 1.0, 0.0, 1.0);
+    }
+    else
+    {
+        color = textureColor;
+    }
 }

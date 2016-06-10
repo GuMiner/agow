@@ -19,6 +19,9 @@ Statistics::Statistics()
     xPosition.color = vec::vec3(1.0f, 0.0f, 0.0f);
     yPosition.color = vec::vec3(0.0f, 1.0f, 0.0f);
     zPosition.color = vec::vec3(0.0f, 0.0f, 1.0f);
+
+    playerName.posRotMatrix = MatrixOps::Translate(-0.308f, -0.321f, -1.0f) * textScale * MatrixOps::Scale(2, 2, 2);
+    playerName.color = vec::vec3(0.0f, 1.0f, 1.0f);
 }
 
 bool Statistics::Initialize(FontManager* fontManager)
@@ -59,7 +62,7 @@ void Statistics::UpdatePlayerDetails(std::string& playerName)
     // TODO
 }
 
-void Statistics::UpdateViewPos(vec::vec3& position)
+void Statistics::UpdateViewPos(const vec::vec3& position, const vec::mat4& viewMatrix)
 {
     std::stringstream textStream;
     textStream.precision(2);
@@ -75,6 +78,14 @@ void Statistics::UpdateViewPos(vec::vec3& position)
     textStream.str("");
     textStream << "Z: " << position.z;
     fontManager->UpdateSentence(zPosition.sentenceId, textStream.str(), textPixelHeight, zPosition.color);
+
+    textStream.str("");
+    textStream << " " << viewMatrix[0][0] << "," << viewMatrix[0][1] << "," << viewMatrix[0][2]
+        << "|" << viewMatrix[1][0] << "," << viewMatrix[1][1] << "," << viewMatrix[1][2]
+        << "|" << viewMatrix[2][0] << "," << viewMatrix[2][1] << "," << viewMatrix[2][2];
+    fontManager->UpdateSentence(playerName.sentenceId, textStream.str(), textPixelHeight, playerName.color);
+
+    
 }
 
 void Statistics::RenderStats(vec::mat4& perspectiveMatrix)

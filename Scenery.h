@@ -15,11 +15,20 @@ class Scenery
 
         ~Scenery();
 
-    protected:
     private:
+
+        // Sky cube image segments.
+        unsigned char* xNegative;
+        unsigned char* yPositive;
+        unsigned char* xPositive;
+        unsigned char* yNegative;
+        unsigned char* zPositive;
+        unsigned char* zNegative;
+
         unsigned char* rawImage;
-        bool GetRawImage(const char* filename, unsigned char** data, int* width, int* height);
-        void FreeRawImage(unsigned char* imageData);
+        
+        void CreateImageSegments(int imageWidth);
+        void FreeImageSegments();
 
         // Ground plane
         vec::mat4 groundOrientation;

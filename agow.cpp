@@ -130,13 +130,21 @@ Constants::Status agow::LoadGraphics()
     // Let OpenGL shaders determine point sizes.
     glEnable(GL_PROGRAM_POINT_SIZE);
 
-    // Disable face culling so that see-through flat objects work.
+    // Disable face culling so that see-through flat objects and stuff at 1.0 (cube map, text) work.
     glDisable(GL_CULL_FACE);
     glFrontFace(GL_CW);
 
     // Cutout faces that are hidden by other faces.
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+
+    // Ensure cube maps (skybox) are seemless and clamp to the edges 
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     return LoadAssets();
 }
@@ -228,6 +236,7 @@ void agow::Update(float currentGameTime)
 
     // Update useful statistics that are fancier than the standard GUI
     statistics.UpdateRunTime(currentGameTime);
+    statistics.UpdateViewPos(viewer.GetViewPosition(), viewer.GetViewOrientation().asMatrix());
 }
 
 void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
@@ -284,11 +293,11 @@ Constants::Status agow::Run()
         if (!focusPaused && !escapePaused)
         {
             Render(window, viewMatrix);
-        }
 
-        // Display what we rendered.
-        UpdatePerspective(window.getSize().x, window.getSize().y);
-        window.display();
+            // Display what we rendered.
+            UpdatePerspective(window.getSize().x, window.getSize().y);
+            window.display();
+        }
 
         // Delay to run approximately at our maximum framerate.
         sf::Int64 sleepDelay = (1000000 / Constants::MAX_FRAMERATE) - clock.getElapsedTime().asMicroseconds() - clockStartTime.asMicroseconds();

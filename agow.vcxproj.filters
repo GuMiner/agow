@@ -65,6 +65,9 @@
     <ClCompile Include="Utils\stb_implementations.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\ImageUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -140,6 +143,9 @@
     </ClInclude>
     <ClInclude Include="Data\Model.h">
       <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ImageUtils.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

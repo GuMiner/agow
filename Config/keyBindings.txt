@@ -11,3 +11,5 @@ MoveLeft 71
 MoveRight 72
 MoveForwards 73
 MoveBackwards 74
+MoveUp 0
+MoveDown 25

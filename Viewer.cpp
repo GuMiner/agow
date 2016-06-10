@@ -42,14 +42,24 @@ void Viewer::InputUpdate()
 
     forwardsVector = vec::normalize(forwardsVector);
 
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveUp))
+    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveForward))
     {
         viewPosition += forwardsVector * PhysicsConfig::ViewForwardsSpeed;
     }
 
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveDown))
+    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveBackward))
     {
         viewPosition -= forwardsVector * PhysicsConfig::ViewForwardsSpeed;
+    }
+
+    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveUp))
+    {
+        viewPosition -= viewOrientation.upVector() * PhysicsConfig::ViewForwardsSpeed;
+    }
+
+    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveDown))
+    {
+        viewPosition += viewOrientation.upVector() * PhysicsConfig::ViewForwardsSpeed;
     }
 
     if (sf::Mouse::isButtonPressed(sf::Mouse::Right))

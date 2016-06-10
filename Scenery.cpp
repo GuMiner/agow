@@ -1,6 +1,6 @@
 #include <string>
 #include <sstream>
-#include <stb\stb_image.h>
+#include "Utils\ImageUtils.h"
 #include "Utils\Logger.h"
 #include "Scenery.h"
 
@@ -36,17 +36,20 @@ bool Scenery::Initialize(ShaderManager& shaderManager)
     // Sky Image
     int width;
     int height;
-    if (!GetRawImage("images/scenery/sky.png", &rawImage, &width, &height))
+    if (!ImageUtils::GetRawImage("images/scenery/sky.png", &rawImage, &width, &height))
     {
         return false;
     }
 
-    if (height != 6 * width)
+    if (height / 3 != width / 4)
     {
-        Logger::Log("There are not six square sky images in a vertical row in the skybox image!");
-        Logger::Log("[This means that height != 6 * width of the image].");
+        Logger::Log("This is not a 4x3 image forming a potential cubemap.!");
+        Logger::Log("Ensure your image width:height ratio is 4:3.");
         return false;
     }
+
+    int imageWidth = height / 3;
+    CreateImageSegments(imageWidth);
 
     // The sky image is stored as squares with height = 6 * width. Break and send each apart individually.
     glGenVertexArrays(1, &skyCubeVao);
@@ -56,12 +59,13 @@ bool Scenery::Initialize(ShaderManager& shaderManager)
     glGenTextures(1, &skyCubeTexture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyCubeTexture);
 
-    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_RGBA, width, width);
-    for (int i = 0; i < 6; i++)
-    {
-        glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, width, width, GL_RGBA, GL_UNSIGNED_BYTE,
-            rawImage + i * (width * width * 4));
-    }
+    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_RGBA, imageWidth, imageWidth);
+    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, xPositive);
+    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, xNegative);
+    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, yPositive);
+    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, yNegative);
+    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, zPositive);
+    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, zNegative);
 
     return true;
 }
@@ -83,27 +87,33 @@ void Scenery::Render(vec::mat4& viewMatrix, vec::mat4& projectionMatrix)
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-bool Scenery::GetRawImage(const char* filename, unsigned char** data, int* width, int* height)
+void Scenery::CreateImageSegments(int imageWidth)
 {
-    // Load in the image
-    int channels = 0;
-    *data = stbi_load(filename, width, height, &channels, STBI_rgb_alpha);
-    if (*data && width && height)
-    {
-        return true;
-    }
-    else
-    {
-        std::stringstream errStream;
-        errStream << "Failed to load image:" << stbi_failure_reason();
-        Logger::LogError(errStream.str().c_str());
-        return false;
-    }
+    xNegative = new unsigned char[imageWidth * imageWidth * 4];
+    yPositive = new unsigned char[imageWidth * imageWidth * 4];
+    xPositive = new unsigned char[imageWidth * imageWidth * 4];
+    yNegative = new unsigned char[imageWidth * imageWidth * 4];
+    zPositive = new unsigned char[imageWidth * imageWidth * 4];
+    zNegative = new unsigned char[imageWidth * imageWidth * 4];
+    
+    // Ideally no rotations should be needed ... but I'm using a RH coordinate system which doesn't work well with the shader.
+    ImageUtils::CopyImage(rawImage, xNegative, imageWidth * 4, 0, imageWidth, imageWidth, 1);
+    ImageUtils::CopyImage(rawImage, yPositive, imageWidth * 4, imageWidth, imageWidth, imageWidth, 0);
+    ImageUtils::CopyImage(rawImage, xPositive, imageWidth * 4, imageWidth * 2, imageWidth, imageWidth, 3);
+    ImageUtils::CopyImage(rawImage, yNegative, imageWidth * 4, imageWidth * 3, imageWidth, imageWidth, 2);
+
+    ImageUtils::CopyImage(rawImage, zNegative, imageWidth * 4, imageWidth, 0, imageWidth, 2);
+    ImageUtils::CopyImage(rawImage, zPositive, imageWidth * 4, imageWidth, imageWidth * 2, imageWidth, 0);
 }
 
-void Scenery::FreeRawImage(unsigned char* imageData)
+void Scenery::FreeImageSegments()
 {
-    stbi_image_free(imageData);
+    delete [] xNegative;
+    delete [] yPositive;
+    delete [] xPositive;
+    delete [] yNegative;
+    delete [] zPositive;
+    delete [] zNegative;
 }
 
 Scenery::~Scenery()
@@ -111,5 +121,6 @@ Scenery::~Scenery()
     glDeleteVertexArrays(1, &skyCubeVao);
     glDeleteTextures(1, &skyCubeTexture);
 
-    FreeRawImage(rawImage);
+    FreeImageSegments();
+    ImageUtils::FreeRawImage(rawImage);
 }

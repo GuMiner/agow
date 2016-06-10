@@ -11,6 +11,9 @@ class KeyBindingConfig : public ConfigManager
 
         static sf::Keyboard::Key MoveLeft;
         static sf::Keyboard::Key MoveRight;
+        static sf::Keyboard::Key MoveForward;
+        static sf::Keyboard::Key MoveBackward;
+
         static sf::Keyboard::Key MoveUp;
         static sf::Keyboard::Key MoveDown;
     protected:
