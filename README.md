@@ -3,7 +3,7 @@
 --------
 
 ![Status.png][status]
-[status]:./Status.png
+[status]:./Status.PNG
 
 An experiment in fragment shading, open world simulation, and style generation.
 
