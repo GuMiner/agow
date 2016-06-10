@@ -37,7 +37,7 @@ GLuint ImageManager::AddImage(const char* filename)
     return 0;
 }
 
-GLuint ImageManager::LoadEmpty(int width, int height)
+GLuint ImageManager::CreateEmptyTexture(int width, int height)
 {
     unsigned char* data = new unsigned char[width * height * 4];
     for (unsigned int i = 0; i < (unsigned int)(width * height); i++)

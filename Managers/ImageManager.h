@@ -20,7 +20,7 @@ public:
     const ImageTexture& GetImage(GLuint textureId);
 
     // Loads an empty image (RGB-pattern). NOTE: Requires a call to ResendToOpenGL to be visible after data changes!
-    GLuint LoadEmpty(int width, int height);
+    GLuint CreateEmptyTexture(int width, int height);
 
     // Copies the source image into the destination image, writing it at the given x and y positions.
     //  WARNING: Has no out-of-bounds prevention, only supports source moves that fully fit in the destination. (TODO fix this, return false).

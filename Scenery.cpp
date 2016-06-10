@@ -4,9 +4,10 @@
 #include "Utils\Logger.h"
 #include "Scenery.h"
 
-Scenery::Scenery(ModelManager* modelManager)
+Scenery::Scenery(ModelManager* modelManager, ImageManager* imageManager)
 {
     this->modelManager = modelManager;
+    this->imageManager = imageManager;
 
     groundOrientation = vec::mat4::identity();
 }
@@ -32,6 +33,8 @@ bool Scenery::Initialize(ShaderManager& shaderManager)
 
     viewMatrixLocation = glGetUniformLocation(skyCubeProgram, "viewMatrix");
     skyCubeMapLocation = glGetUniformLocation(skyCubeProgram, "skyCubeMap");
+    colorTransformImageLocation = glGetUniformLocation(skyCubeProgram, "colorTransformImage");
+    colorTransformOffsetLocation = glGetUniformLocation(skyCubeProgram, "colorTransformOffset");
 
     // Sky Image
     int width;
@@ -67,6 +70,10 @@ bool Scenery::Initialize(ShaderManager& shaderManager)
     glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, zPositive);
     glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, zNegative);
 
+    glActiveTexture(GL_TEXTURE1);
+    colorTransformImageId = imageManager->CreateEmptyTexture(256, 256);
+    imageManager->ResendToOpenGl(colorTransformImageId);
+
     return true;
 }
 
@@ -79,8 +86,15 @@ void Scenery::Render(vec::mat4& viewMatrix, vec::mat4& projectionMatrix)
     glUseProgram(skyCubeProgram);
     glBindVertexArray(skyCubeVao);
 
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyCubeTexture);
     glUniform1i(skyCubeMapLocation, 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, imageManager->GetImage(colorTransformImageId).textureId);
+    glUniform1i(colorTransformImageLocation, 1);
+
+    glUniform2f(colorTransformOffsetLocation, 0.0f, 0.0f); // TODO animation is possible if this is moved.
 
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, viewMatrix);
 

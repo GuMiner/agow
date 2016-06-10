@@ -35,7 +35,7 @@ PhysicsOps agow::PhysicsOp;
 agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       imageManager(), modelManager(&imageManager), 
-      scenery(&modelManager),
+      scenery(&modelManager, &imageManager),
       viewer()
 {
 }

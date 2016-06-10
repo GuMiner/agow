@@ -8,7 +8,7 @@
 class Scenery
 {
     public:
-        Scenery(ModelManager* modelManager);
+        Scenery(ModelManager* modelManager, ImageManager* imageManager);
 
         bool Initialize(ShaderManager& shaderManager);
         void Render(vec::mat4& viewMatrix, vec::mat4& projectionMatrix);
@@ -38,10 +38,14 @@ class Scenery
         GLuint skyCubeProgram;
         GLuint viewMatrixLocation;
         GLuint skyCubeMapLocation;
+        GLuint colorTransformImageLocation;
+        GLuint colorTransformOffsetLocation;
 
         GLuint skyCubeVao;
         GLuint skyCubeTexture;
+        GLuint colorTransformImageId;
 
         ModelManager* modelManager;
+        ImageManager* imageManager;
 };
 

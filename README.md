@@ -2,6 +2,9 @@
 ## About
 --------
 
+![Status.png][status]
+[status]:./Status.png
+
 An experiment in fragment shading, open world simulation, and style generation.
 
 ## Dependencies
