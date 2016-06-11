@@ -1,6 +1,17 @@
 #include <cmath>
 #include "VecOps.h"
 
+vec::quaternion VecOps::Convert(const btQuaternion& quaternion)
+{
+    // We need to negate this because we are in a left-hand system.
+    return vec::quaternion(quaternion.getX(), quaternion.getY(), quaternion.getZ(), -quaternion.getW());
+}
+
+vec::vec3 VecOps::Convert(const btVector3& vector)
+{
+    return vec::vec3(vector.getX(), vector.getY(), vector.getZ());
+}
+
 vec::vec3 VecOps::Cross(const vec::vec3& first, const vec::vec3& second)
 {
     return vec::vec3(

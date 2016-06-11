@@ -715,7 +715,7 @@ namespace vec
         return (*this = *this * other);
     }
 
-    mat4 mat4::transpose(void) const
+    mat4 mat4::transpose() const
     {
         mat4 result;
         for (int y = 0; y < 4; y++)
@@ -727,6 +727,13 @@ namespace vec
         }
 
         return result;
+    }
+
+    void mat4::SwitchHands()
+    {
+        vec::vec4 temp = data[1];
+        data[1] = data[2];
+        data[2] = temp;
     }
 
     mat4 mat4::identity()

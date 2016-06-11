@@ -38,20 +38,20 @@ bool ConversionUtils::LoadKey(const std::string& line, sf::Keyboard::Key& key)
 // Loads in a 3-valued floating point vector.
 bool ConversionUtils::LoadVector(const std::string& line, vec::vec3& vector)
 {
-	std::vector<std::string> stringParts;
-	StringUtils::Split(line, StringUtils::Space, true, stringParts);
+    std::vector<std::string> stringParts;
+    StringUtils::Split(line, StringUtils::Space, true, stringParts);
 
-	if (stringParts.size() != 4)
-	{
-		return false;
-	}
+    if (stringParts.size() != 4)
+    {
+        return false;
+    }
 
-	if (!StringUtils::ParseFloatFromString(stringParts[1], vector.x) ||
-		!StringUtils::ParseFloatFromString(stringParts[2], vector.y) ||
-		!StringUtils::ParseFloatFromString(stringParts[3], vector.z))
-	{
-		return false;
-	}
+    if (!StringUtils::ParseFloatFromString(stringParts[1], vector.x) ||
+        !StringUtils::ParseFloatFromString(stringParts[2], vector.y) ||
+        !StringUtils::ParseFloatFromString(stringParts[3], vector.z))
+    {
+        return false;
+    }
 
-	return true;
+    return true;
 }

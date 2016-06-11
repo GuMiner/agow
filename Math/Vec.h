@@ -271,7 +271,10 @@ namespace vec
         inline operator const float*() const { return &data[0][0]; }
 
         // Returns the transpose of this matrix.
-        mat4 transpose(void) const;
+        mat4 transpose() const;
+
+        // Switches this matrix to a left hand matrix (or back again).
+        void SwitchHands();
 
         // Returns the identity matrix.
         static mat4 identity();

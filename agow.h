@@ -43,6 +43,11 @@ class agow
     btConstraintSolver *constraintSolver;
     btDiscreteDynamicsWorld *dynamicsWorld;
     
+    btAlignedObjectArray<btCollisionShape*> collisionShapes;
+    
+    unsigned int testCubeModel;
+    btAlignedObjectArray<btRigidBody*> movingTestBodies;
+    
     // Physics setup.
     Constants::Status LoadPhysics();
     void UnloadPhysics();

@@ -6,6 +6,7 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
 #include "Math\MatrixOps.h"
+#include "Math\VecOps.h"
 #include "Utils\Logger.h"
 #include "agow.h"
 #include "version.h"
@@ -19,12 +20,18 @@
     #pragma comment(lib, "lib/sfml-system")
     #pragma comment(lib, "lib/sfml-window")
     #pragma comment(lib, "lib/sfml-graphics")
+    #pragma comment(lib, "lib/BulletCollision")
+    #pragma comment(lib, "lib/BulletDynamics")
+    #pragma comment(lib, "lib/LinearMath")
 #else
     #pragma comment(lib, "lib/glew32d.lib")
     #pragma comment(lib, "lib/sfml-audio-d")
     #pragma comment(lib, "lib/sfml-system-d")
     #pragma comment(lib, "lib/sfml-window-d")
     #pragma comment(lib, "lib/sfml-graphics-d")
+    #pragma comment(lib, "lib/BulletCollision_Debug")
+    #pragma comment(lib, "lib/BulletDynamics_Debug")
+    #pragma comment(lib, "lib/LinearMath_Debug")
 #endif
 
 // Static definitions.
@@ -51,11 +58,56 @@ Constants::Status agow::LoadPhysics()
 
     dynamicsWorld->setGravity(btVector3(0, 0, -9.80f));
 
+
+    // TODO ideally this is a dictionary somewhere.
+    // TODO all of the new objects should be deleted, which they are not.
+    // In the long term, most of the collision will be player / terrain / box items.
+    collisionShapes.push_back(new btBoxShape(btVector3(1000.0f, 1000.0f, 10.0f)));
+    collisionShapes.push_back(new btBoxShape(btVector3(50.0f, 50.0f, 50.0f)));
+
+    // Add a static ground shape
+    
+    // inertia is zero as this is immobile.
+    btTransform pos;
+    pos.setIdentity();
+    pos.setOrigin(btVector3(0, 0, -9.80f));
+
+    btDefaultMotionState *motionState = new btDefaultMotionState(pos);
+    btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, collisionShapes[0]);
+    dynamicsWorld->addRigidBody(new btRigidBody(ground));
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 40; j++)
+        {
+            btTransform pos;
+            pos.setIdentity();
+            pos.setOrigin(btVector3(111 * i, 20 + j * 15, 5 + 111 * j));
+
+            btVector3 localInertia;
+            collisionShapes[1]->calculateLocalInertia(20.0f, localInertia);
+            btDefaultMotionState *motionState = new btDefaultMotionState(pos);
+            btRigidBody::btRigidBodyConstructionInfo object(20.0f, motionState, collisionShapes[1], localInertia);
+            
+            btRigidBody* body = new btRigidBody(object);
+            movingTestBodies.push_back(body);
+
+            dynamicsWorld->addRigidBody(body);
+        }
+    }
+
     return Constants::Status::OK;
 }
 
 void agow::UnloadPhysics()
 {
+    // Delete collision shapes
+    for (int i = 0; i < collisionShapes.size(); i++)
+    {
+        delete collisionShapes[i];
+    }
+
+    // Delete basic setup of physics
     delete dynamicsWorld;
     delete constraintSolver;
     delete broadphaseCollisionDetector;
@@ -210,6 +262,9 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_STATS;
     }
 
+    // Load a cube for testing.
+    testCubeModel = modelManager.LoadModel("models/cube");
+
     // Now that *all* the models have loaded, prepare for rendering models by initializing OpenGL and sending the model data to OpenGL
     Logger::Log("Sending model VAO to OpenGL...");
     if (!modelManager.InitializeOpenGlResources(shaderManager))
@@ -285,6 +340,29 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     // Render the scenery
     scenery.Render(viewMatrix, projectionMatrix);
 
+    // Render all the moving objects
+    for (int i = 0; i < movingTestBodies.size(); i++)
+    {
+        btRigidBody* body = movingTestBodies[i];
+        btTransform worldTransform;
+        body->getMotionState()->getWorldTransform(worldTransform);
+
+        vec::quaternion rotation = VecOps::Convert(worldTransform.getRotation());
+        vec::mat4 mvMatrix = MatrixOps::Translate(VecOps::Convert(worldTransform.getOrigin())) * rotation.asMatrix();
+        
+        if (worldTransform.getOrigin().getZ() < 5.0f)
+        {
+            worldTransform.setIdentity();
+            worldTransform.setOrigin(btVector3(MathOps::Rand() * 800.0f, MathOps::Rand() * 800.0f, 1000.0f));
+            body->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+            body->activate(true); // Only if it stops moving. It technically doesn't here.
+            body->setWorldTransform(worldTransform);
+            body->getMotionState()->setWorldTransform(worldTransform);
+        }
+
+        modelManager.RenderModel(projectionMatrix, testCubeModel, mvMatrix, false);
+    }
+
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);
 }
@@ -321,6 +399,7 @@ Constants::Status agow::Run()
 
         HandleEvents(window, alive, focusPaused, escapePaused);
         Update(clock.getElapsedTime().asSeconds());
+        dynamicsWorld->stepSimulation(1.0f / 60.0f, 10);
 
         // Render, only if non-paused.
         if (!focusPaused && !escapePaused)
