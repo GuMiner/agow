@@ -40,6 +40,29 @@ agow::agow()
 {
 }
 
+Constants::Status agow::LoadPhysics()
+{
+    collisionConfiguration = new btDefaultCollisionConfiguration();
+    collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
+    broadphaseCollisionDetector = new btDbvtBroadphase();
+    constraintSolver = new btSequentialImpulseConstraintSolver();
+    dynamicsWorld = new btDiscreteDynamicsWorld(collisionDispatcher, broadphaseCollisionDetector,
+        constraintSolver, collisionConfiguration);
+
+    dynamicsWorld->setGravity(btVector3(0, 0, -9.80f));
+
+    return Constants::Status::OK;
+}
+
+void agow::UnloadPhysics()
+{
+    delete dynamicsWorld;
+    delete constraintSolver;
+    delete broadphaseCollisionDetector;
+    delete collisionDispatcher;
+    delete collisionConfiguration;
+}
+
 void agow::LogGraphicsSettings()
 {
     Logger::Log("OpenGL vendor: ", glGetString(GL_VENDOR), ", version ", glGetString(GL_VERSION), ", renderer ", glGetString(GL_RENDERER));
@@ -100,6 +123,16 @@ Constants::Status agow::Initialize()
     }
 
     Logger::Log("Configuration loaded!");
+
+    Logger::Log("Loading physics...");
+    Constants::Status status = LoadPhysics();
+    if (status != Constants::Status::OK)
+    {
+        Logger::Log("Bad physics loading!");
+        return status;
+    }
+    Logger::Log("Physics loaded!");
+
     return Constants::Status::OK;
 }
 
@@ -309,7 +342,7 @@ Constants::Status agow::Run()
 
 void agow::Deinitialize()
 {
-    // TODO add deinit stuff here as needed.
+    UnloadPhysics();
 }
 
 // Runs the main application.

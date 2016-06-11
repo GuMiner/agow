@@ -1,4 +1,5 @@
 #pragma once
+#include <Bullet\btBulletDynamicsCommon.h>
 #include <SFML\System.hpp>
 #include <vector>
 #include "Config\GraphicsConfig.h"
@@ -34,6 +35,17 @@ class agow
     Statistics statistics;
     Viewer viewer;
     Scenery scenery;
+
+    // Bullet Physics
+    btCollisionConfiguration *collisionConfiguration;
+    btCollisionDispatcher *collisionDispatcher;
+    btBroadphaseInterface *broadphaseCollisionDetector;
+    btConstraintSolver *constraintSolver;
+    btDiscreteDynamicsWorld *dynamicsWorld;
+    
+    // Physics setup.
+    Constants::Status LoadPhysics();
+    void UnloadPhysics();
 
     // Logs graphical settings so we have an idea of the OpenGL capabilities of the running machine.
     void LogGraphicsSettings();

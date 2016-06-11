@@ -11,6 +11,7 @@
 *.userprefs
 
 # Folders the user should provide
+lib
 include
 
 # Build results
