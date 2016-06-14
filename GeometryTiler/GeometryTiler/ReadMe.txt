@@ -1,0 +1,2 @@
+As Esri's File Geodatabase API does not support VS 2015 yet, this project is in VS 2012.
+This project reads the King County 5 m contours and outputs a rasterized series of height data for use as heightmaps.
