@@ -27,6 +27,7 @@ void LogError(std::wstring errorMessage, fgdbError errorCode)
 }
 
 // Processes an individual row.
+long totalPoints = 0;
 void ProcessRow(FileGDBAPI::Row& row)
 {
     // TODO this is a good point to move into a class. 
@@ -37,6 +38,30 @@ void ProcessRow(FileGDBAPI::Row& row)
         LogError(L"Error loading the shape buffer!", result);
         return;
     }
+
+    double elevation; // Can be negative!
+    if ((result = row.GetDouble(L"ELEVATION", elevation)) != S_OK)
+    {
+        LogError(L"Error loading the shape buffer!", result);
+        return;
+    }
+
+
+    // At this point we know (from our saved table.xml file) that this is a polyline, and (from the above), we know the elevation.
+    long type = shapeBuffer.shapeBuffer[0];
+    
+    // See the extended_shape_buffer_format.PDF file detailing the polyline shape
+    long numParts = shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double)];
+    long numPoints = shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double) + sizeof(long)];
+    
+    // std::cout << type << " " << numParts << " " << numPoints << std::endl;
+    /*if ((result = shapeBuffer.GetNumPoints(numPoints)) != S_OK)
+    {
+        LogError(L"Error loading the number of points in the shape!", result);
+        return;
+    }*/
+    
+    totalPoints += numPoints;
 }
 
 // Processes the provided Table.
@@ -128,6 +153,8 @@ void ProcessTable(FileGDBAPI::Table& table)
         std::cout << "Warning: Didn't read all the data from the database!" << std::endl;
         return;
     }
+
+    std::cout << "Total of " << totalPoints << " total geometry points." << std::endl;
 }
 
 // Processes the provided Geodatabase.
