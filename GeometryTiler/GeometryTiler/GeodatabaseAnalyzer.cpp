@@ -321,16 +321,16 @@ void GeodatabaseAnalyzer::ProcessAllRows()
     allRows.Close();
 }
 
-void GeodatabaseAnalyzer::SaveSanitizedData(double maxX, double maxY, double maxZ)
+void GeodatabaseAnalyzer::SaveSanitizedData(double newMaxX, double newMaxY, double newMaxZ)
 {
     std::cout << "Sanitizing the data..." << std::endl;
     for (int i = 0; i < lineStrips.size(); i++)
     {
-        lineStrips[i].elevation = ((lineStrips[i].elevation - minElevation) / (maxElevation - minElevation)) * maxZ;
+        lineStrips[i].elevation = ((lineStrips[i].elevation - minElevation) / (maxElevation - minElevation)) * newMaxZ;
         for (int j = 0; j < lineStrips[i].points.size(); j++)
         {
-            lineStrips[i].points[j].x = ((lineStrips[i].points[j].x - minX) / (maxX - minX)) * maxX;
-            lineStrips[i].points[j].y = ((lineStrips[i].points[j].y - minY) / (maxY - minY)) * maxY;
+            lineStrips[i].points[j].x = ((lineStrips[i].points[j].x - minX) / (maxX - minX)) * newMaxX;
+            lineStrips[i].points[j].y = ((lineStrips[i].points[j].y - minY) / (maxY - minY)) * newMaxY;
         }
 
         if (i % 1000 == 0)

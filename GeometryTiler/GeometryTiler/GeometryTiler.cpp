@@ -19,9 +19,9 @@ int main(int argc, const char* argv[])
 {
     // Honestly ese should be command-line arguments but this is just a basic converter tool.
     std::wstring databasePath =
-        L"<INSERT HERE>";
+        L"C:\\Users\\Gustave\\Desktop\\KingCounty_GDB_topo_contour005_complete - Copy\\KingCounty_GDB_topo_contour005_complete.gdb";
     std::wstring primaryDataset =
-        L"<insert here>";
+        L"<\\CONTOUR005_LINE";
     
     // Min x, y, elevation = 0.
     // This is roughly an equivalent downscaling using the boundaries of king county + highest mountain + most negative elevation.
