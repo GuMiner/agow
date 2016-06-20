@@ -1,22 +1,40 @@
 #pragma once
-
 #include <SFML\System.hpp>
 #include <SFML\Graphics.hpp>
 #include <vector>
 #include <string>
+#include "ColorMapper.h"
 #include "Definitions.h"
+#include "Rasterizer.h"
 
 // Handles startup and the base graphics rendering loop.
 class ContourTiler
 {
-    sf::Texture overallTexture;
-    sf::Sprite overallSprite;
-
     // All the contours
+    int xMax;
+    int yMax;
+    int zMax;
     std::vector<LineStrip> lineStrips;
 
-    void SimulateRasterization(int width, int height);
+    int width;
+    int height;
 
+    bool rerender;
+    sf::Vector2i mouseStart;
+    sf::Vector2i mousePos;
+    sf::RectangleShape zoomShape;
+    sf::Rect<double> boundingBox;
+
+    Rasterizer rasterizer;
+
+    bool colorize, rescale;
+    ColorMapper colorMapper;
+
+    sf::Texture overallTexture;
+    sf::Sprite overallSprite;
+    void CreateOverallTexture();
+    void FillOverallTexture();
+    
     // Handles GUI-based events, such as closing the application, resizing the window, etc.
     void HandleEvents(sf::RenderWindow& window, bool& alive);
 
@@ -24,8 +42,9 @@ class ContourTiler
     void Render(sf::RenderWindow& window);
 
 public:
-    // Initializes agow and any construction-time setup (such as threads).
+    // Initializes the ContourTiler
     ContourTiler();
+    virtual ~ContourTiler();
 
     // Runs the game loop.
     void Run();

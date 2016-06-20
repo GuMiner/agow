@@ -10,6 +10,8 @@ An experiment in fragment shading, open world simulation, and style generation.
 ![Status2.png][status2]
 [status2]:./Status2.PNG
 
+![Status3.png][status3]
+[status3]:./Status3.PNG
 
 ## Dependencies
 ---------------

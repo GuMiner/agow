@@ -2,7 +2,7 @@
 #include <fstream>
 #include "LineStripLoader.h"
 
-bool LineStripLoader::LoadLineStrips(std::string fileName, std::vector<LineStrip>& lineStrips)
+bool LineStripLoader::LoadLineStrips(std::string fileName, std::vector<LineStrip>* lineStrips)
 {
     std::ifstream contourReader(fileName, std::ios::in | std::ios::binary);
     if (!contourReader)
@@ -31,12 +31,13 @@ bool LineStripLoader::LoadLineStrips(std::string fileName, std::vector<LineStrip
             lineStrip.points.push_back(point);
         }
 
-        lineStrips.push_back(lineStrip);
-
+        lineStrips->push_back(lineStrip);
+        
         if (i % 10000 == 0)
         {
             std::cout << "  Read line strip " << i << " of " << lineStripCount << std::endl;
         }
     }
+
     return true;
 }

@@ -2,11 +2,15 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="ContourTiler.cpp" />
+    <ClCompile Include="Rasterizer.cpp" />
+    <ClCompile Include="ColorMapper.cpp" />
     <ClCompile Include="LineStripLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ContourTiler.h" />
     <ClInclude Include="Definitions.h" />
+    <ClInclude Include="Rasterizer.h" />
+    <ClInclude Include="ColorMapper.h" />
     <ClInclude Include="LineStripLoader.h" />
   </ItemGroup>
 </Project>

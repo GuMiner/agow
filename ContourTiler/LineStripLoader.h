@@ -5,6 +5,7 @@
 class LineStripLoader
 {
 public:
-    static bool LoadLineStrips(std::string fileName, std::vector<LineStrip>& lineStrips);
+    // Given a filename, fills in the vector with all the line strips. Returns true on success, false otherwise.
+    static bool LoadLineStrips(std::string fileName, std::vector<LineStrip>* lineStrips);
 };
 
