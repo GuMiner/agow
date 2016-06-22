@@ -31,7 +31,10 @@ bool LineStripLoader::LoadLineStrips(std::string fileName, std::vector<LineStrip
             lineStrip.points.push_back(point);
         }
 
-        lineStrips->push_back(lineStrip);
+        if (lineStrip.points.size() != 0)
+        {
+            lineStrips->push_back(lineStrip);
+        }
         
         if (i % 10000 == 0)
         {

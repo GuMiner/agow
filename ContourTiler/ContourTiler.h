@@ -25,15 +25,19 @@ class ContourTiler
     sf::RectangleShape zoomShape;
     sf::Rect<double> boundingBox;
 
+    double minElevation, maxElevation;
+    double* rasterizationBuffer;
     Rasterizer rasterizer;
 
     bool colorize, rescale;
     ColorMapper colorMapper;
 
+
     sf::Texture overallTexture;
     sf::Sprite overallSprite;
     void CreateOverallTexture();
     void FillOverallTexture();
+    void UpdateTextureFromBuffer();
     
     // Handles GUI-based events, such as closing the application, resizing the window, etc.
     void HandleEvents(sf::RenderWindow& window, bool& alive);

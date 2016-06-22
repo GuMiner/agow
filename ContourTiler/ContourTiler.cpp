@@ -23,14 +23,16 @@
 #endif
 
 ContourTiler::ContourTiler()
-    : xMax(100000), yMax(100000), zMax(3000), rasterizer(xMax, yMax, 800),
-      width(900), height(675), boundingBox(sf::Rect<double>(0.00584145, 0.0146719, 0.635762, 0.635762)),
+    : xMax(100000), yMax(100000), zMax(3000), rasterizer(xMax, yMax, 1100),
+      width(900), height(675), minElevation(0), maxElevation(1), rasterizationBuffer(new double[width * height]),
+      boundingBox(sf::Rect<double>(0.00584145, 0.0146719, 0.635762, 0.635762)),
       rerender(false), mouseStart(-1, -1), mousePos(-1, -1), colorize(false), rescale(false)
 {
 }
 
 ContourTiler::~ContourTiler()
 {
+    delete[] rasterizationBuffer;
 }
 
 void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
@@ -62,15 +64,13 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 // Colorize (true/false)
                 colorize = !colorize;
                 std::cout << "Toggled colorize: " << rescale << std::endl;
-                sf::sleep(sf::milliseconds(500));
-                rerender = true;
+                UpdateTextureFromBuffer();
             }
             else if (event.key.code == sf::Keyboard::S)
             {
                 rescale = !rescale;
                 std::cout << "Toggled rescale: " << rescale << std::endl;
-                sf::sleep(sf::milliseconds(500));
-                rerender = true;
+                UpdateTextureFromBuffer();
             }
         }
         else if (event.type == sf::Event::MouseButtonPressed)
@@ -128,7 +128,7 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                     double scalingFactor = ((double)(xNew - mouseStart.x) / (double)width);
 
                     boundingBox.left = boundingBox.left + ((double)mouseStart.x / (double)width) * boundingBox.width;
-                    boundingBox.top = boundingBox.top + (1.0 - ((double)yNew / (double)height)) * boundingBox.height;
+                    boundingBox.top = boundingBox.top + ((double)mouseStart.y / (double)height) * boundingBox.height;
                     boundingBox.width = scalingFactor * boundingBox.width;
                     boundingBox.height = scalingFactor * boundingBox.height;
                     std::cout << "Using a new bounding box of [" << boundingBox.left << ", " << boundingBox.top << ", " << boundingBox.width << ", " << boundingBox.height << std::endl;
@@ -159,10 +159,12 @@ void ContourTiler::CreateOverallTexture()
 void ContourTiler::FillOverallTexture()
 {
     // Rasterize
-    double minElevation, maxElevation;
-    double* points = new double[width * height];
-    rasterizer.Rasterize(boundingBox, width, height, &points, minElevation, maxElevation);
+    rasterizer.Rasterize(lineStrips, boundingBox, width, height, &rasterizationBuffer, minElevation, maxElevation);
+    UpdateTextureFromBuffer();
+}
 
+void ContourTiler::UpdateTextureFromBuffer()
+{
     // Copy over to the image with an appropriate color mapping.
     sf::Uint8* pixels = new sf::Uint8[width * height * 4]; // * 4 because pixels have 4 components (RGBA)
     for (int i = 0; i < width; i++)
@@ -170,8 +172,8 @@ void ContourTiler::FillOverallTexture()
         for (int j = 0; j < height; j++)
         {
             double elevationPercent = rescale ?
-                ((points[i + j * width] - minElevation) / (maxElevation - minElevation)) :
-                (points[i + j * width] / zMax);
+                ((rasterizationBuffer[i + j * width] - minElevation) / (maxElevation - minElevation)) :
+                (rasterizationBuffer[i + j * width] / zMax);
 
             int pixelIdx = (i + j * width) * 4;
             if (colorize)
@@ -231,7 +233,7 @@ void ContourTiler::Run()
         return;
     }
 
-    rasterizer.Setup(&lineStrips);
+    rasterizer.Setup(lineStrips);
 
     CreateOverallTexture();
     rerender = true;
