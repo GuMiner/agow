@@ -11,9 +11,6 @@
 class ContourTiler
 {
     // All the contours
-    int xMax;
-    int yMax;
-    int zMax;
     std::vector<LineStrip> lineStrips;
 
     int width;
@@ -29,10 +26,9 @@ class ContourTiler
     double* rasterizationBuffer;
     Rasterizer rasterizer;
 
-    bool colorize, rescale;
+    bool colorize, rescale, lines;
     ColorMapper colorMapper;
-
-
+    
     sf::Texture overallTexture;
     sf::Sprite overallSprite;
     void CreateOverallTexture();

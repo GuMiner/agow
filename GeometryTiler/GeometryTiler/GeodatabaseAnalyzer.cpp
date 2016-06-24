@@ -219,7 +219,7 @@ void GeodatabaseAnalyzer::CheckLimits(Point point)
     }
 }
 
-long GeodatabaseAnalyzer::ProcessRow(FileGDBAPI::Row& row)
+long GeodatabaseAnalyzer::ProcessRow(FileGDBAPI::Row& row, std::vector<LineStrip>& lineStrips)
 {
     fgdbError result;
     FileGDBAPI::ShapeBuffer shapeBuffer;
@@ -240,16 +240,26 @@ long GeodatabaseAnalyzer::ProcessRow(FileGDBAPI::Row& row)
     long type = shapeBuffer.shapeBuffer[0];
     
     // See the extended_shape_buffer_format.PDF file detailing the polyline shape
-    long numParts = shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double)];
-    long numPoints = shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double) + sizeof(long)];
+    long numParts = *reinterpret_cast<long*>(&shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double)]);
+    long numPoints = *reinterpret_cast<long*>(&shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double) + sizeof(long)]);
 
     // There then follows an array 'numParts' long with 'long' indices for parts.
     // Each part represents the index of the *next* part. For example, if there are two parts with 
     // data '0' and '2', there is a line from points 0-1 and then a line from 2-onwards.
     // We don't need that confusion so when we save the data we split parts into their own line segment grouping.
-    byte *partsArray = &shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double) + sizeof(long) + sizeof(long)];
+    byte* partsArray = &shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double) + sizeof(long) + sizeof(long)];
     byte* pointsArray = partsArray + sizeof(long)*numParts;
 
+    // std::cout << type << " " << numParts << " " << numPoints << " ";
+    for (int i = 0; i < numParts; i++)
+    {
+       //  std::cout << (long)(*(partsArray + sizeof(long)*i)) << " ";
+    }
+    // std::cout << std::endl;
+    if (numPoints == 0)
+    {
+        std::cout << "hit!" << std::endl;
+    }
 
     LineStrip strip;
     strip.elevation = elevation;
@@ -268,7 +278,7 @@ long GeodatabaseAnalyzer::ProcessRow(FileGDBAPI::Row& row)
         Point* point = reinterpret_cast<Point*>(pointsArray + sizeof(Point)*i);
 
         // If we aren't on the last part and our current index is a new part...
-        if (currentPartIndex != numParts && *(partsArray + sizeof(long)*currentPartIndex) == i)
+        if (currentPartIndex != numParts && *reinterpret_cast<long*>((partsArray + sizeof(long)*currentPartIndex)) == i)
         {
             // ...save the current strip and start a new one.
             lineStrips.push_back(strip);
@@ -288,13 +298,30 @@ void GeodatabaseAnalyzer::ProcessAllRows()
 {
     std::cout << "Processing returned rows..." << std::endl;
     
-    lineStrips.clear();
     minX = std::numeric_limits<double>::max();
-    minY = std::numeric_limits<double>::max();
     maxX = std::numeric_limits<double>::min();
+    minY = std::numeric_limits<double>::max();
     maxY = std::numeric_limits<double>::min();
     minElevation = std::numeric_limits<double>::max();
     maxElevation = std::numeric_limits<double>::min();
+
+    std::vector<LineStrip> lineStrips;
+    std::ofstream dataFile("data.bin", std::ios::out | std::ios::binary);
+    if (!dataFile)
+    {
+        std::cout << "Could not open the file to write the data to!" << std::endl;
+        return;
+    }
+
+    // We seek and overwrite this data after performing all the processing.
+    int lineStripCount = 0;
+    dataFile.write((char*)&lineStripCount, sizeof(int));
+    dataFile.write((char*)&minX, sizeof(double));
+    dataFile.write((char*)&maxX, sizeof(double));
+    dataFile.write((char*)&minY, sizeof(double));
+    dataFile.write((char*)&maxY, sizeof(double));
+    dataFile.write((char*)&minElevation, sizeof(double));
+    dataFile.write((char*)&maxElevation, sizeof(double));
 
     int points = 0;
     FileGDBAPI::Row row;
@@ -302,13 +329,37 @@ void GeodatabaseAnalyzer::ProcessAllRows()
     while (allRows.Next(row) == S_OK)
     {
         ++returnedRows;
-        if (returnedRows % 1000 == 0)
+        if (returnedRows % 500 == 0)
         {
             std::cout << "  " << returnedRows << std::endl;
         }
 
-        points = ProcessRow(row);
+        points = ProcessRow(row, lineStrips);
+
+        for (int i = 0; i < lineStrips.size(); i++)
+        {
+            dataFile.write((char*)&(lineStrips[i].elevation), sizeof(double));
+            int pointCount = (int)lineStrips[i].points.size();
+
+            dataFile.write((char*)&pointCount, sizeof(int));
+            dataFile.write((char*)&(lineStrips[i].points[0]), sizeof(Point)*pointCount);
+
+            ++lineStripCount;
+        }
+
+        lineStrips.clear();
     }
+
+    // Overwrite the number of line strips.
+    dataFile.seekp(0, std::ios::beg);
+    dataFile.write((char*)&lineStripCount, sizeof(int));
+    dataFile.write((char*)&minX, sizeof(double));
+    dataFile.write((char*)&maxX, sizeof(double));
+    dataFile.write((char*)&minY, sizeof(double));
+    dataFile.write((char*)&maxY, sizeof(double));
+    dataFile.write((char*)&minElevation, sizeof(double));
+    dataFile.write((char*)&maxElevation, sizeof(double));
+    dataFile.close();
 
     std::cout << "Counted " << returnedRows << " returned rows (versus " << rowCount << " total rows)" << std::endl;
     if (returnedRows != rowCount)
@@ -318,56 +369,8 @@ void GeodatabaseAnalyzer::ProcessAllRows()
     }
 
     std::cout << "Total of " << points << " total geometry points." << std::endl;
+    std::cout << "Limits computed to be [" << minX << ", " << maxX << "; " << minY << ", " << maxY << "; " << minElevation << ", " << maxElevation << "]." << std::endl;
     allRows.Close();
-}
-
-void GeodatabaseAnalyzer::SaveSanitizedData(double newMaxX, double newMaxY, double newMaxZ)
-{
-    std::cout << "Sanitizing the data..." << std::endl;
-    for (int i = 0; i < lineStrips.size(); i++)
-    {
-        lineStrips[i].elevation = ((lineStrips[i].elevation - minElevation) / (maxElevation - minElevation)) * newMaxZ;
-        for (int j = 0; j < lineStrips[i].points.size(); j++)
-        {
-            lineStrips[i].points[j].x = ((lineStrips[i].points[j].x - minX) / (maxX - minX)) * newMaxX;
-            lineStrips[i].points[j].y = ((lineStrips[i].points[j].y - minY) / (maxY - minY)) * newMaxY;
-        }
-
-        if (i % 1000 == 0)
-        {
-            std::cout << "Sanitized " << i << " of " << lineStrips.size() << std::endl;
-        }
-    }
-
-    std::wcout << "Data sanitized!" << std::endl;
-    std::wcout << "Saving data..." << std::endl;
-
-    // Someone probably has a better C++ way to read / write binary data, but this is adequate.
-    std::ofstream dataFile("data.bin", std::ios::out | std::ios::binary);
-    if (!dataFile)
-    {
-        std::cout << "Could not open the file to write the data to!" << std::endl;
-        return;
-    }
-
-    int lineStripCount = (int)lineStrips.size();
-    dataFile.write((char*)&lineStripCount, sizeof(int));
-    for (int i = 0; i < lineStrips.size(); i++)
-    {
-        dataFile.write((char*)&(lineStrips[i].elevation), sizeof(double));
-        int pointCount = (int)lineStrips[i].points.size();
-
-        dataFile.write((char*)&pointCount, sizeof(int));
-        dataFile.write((char*)&(lineStrips[i].points[0]), sizeof(Point)*pointCount);
-        
-        if (i % 1000 == 0)
-        {
-            std::cout << "Wrote strip " << i << " of " << lineStrips.size() << std::endl;
-        }
-    }
-
-    dataFile.close();
-    std::cout << "Data saved!" << std::endl;
 }
 
 void GeodatabaseAnalyzer::UnloadTable()

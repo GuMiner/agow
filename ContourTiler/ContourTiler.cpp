@@ -23,10 +23,10 @@
 #endif
 
 ContourTiler::ContourTiler()
-    : xMax(100000), yMax(100000), zMax(3000), rasterizer(xMax, yMax, 1100),
-      width(900), height(675), minElevation(0), maxElevation(1), rasterizationBuffer(new double[width * height]),
+    : rasterizer(1100),
+      width(900), height(900), minElevation(0), maxElevation(1), rasterizationBuffer(new double[width * height]),
       boundingBox(sf::Rect<double>(0.00584145, 0.0146719, 0.635762, 0.635762)),
-      rerender(false), mouseStart(-1, -1), mousePos(-1, -1), colorize(false), rescale(false)
+      rerender(false), mouseStart(-1, -1), mousePos(-1, -1), colorize(false), rescale(false), lines(false)
 {
 }
 
@@ -56,6 +56,14 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 // Reset.
                 boundingBox = sf::Rect<double>(0, 0, 1, 1);
                 std::cout << "Reset! " << std::endl;
+                sf::sleep(sf::milliseconds(500));
+                rerender = true;
+            }
+            else if (event.key.code == sf::Keyboard::L)
+            {
+                // Draw lines
+                lines = !lines;
+                std::cout << "Lines: " << lines << std::endl;
                 sf::sleep(sf::milliseconds(500));
                 rerender = true;
             }
@@ -160,6 +168,12 @@ void ContourTiler::FillOverallTexture()
 {
     // Rasterize
     rasterizer.Rasterize(lineStrips, boundingBox, width, height, &rasterizationBuffer, minElevation, maxElevation);
+
+    if (lines)
+    {
+        rasterizer.LineRaster(lineStrips, boundingBox, width, height, &rasterizationBuffer);
+    }
+
     UpdateTextureFromBuffer();
 }
 
@@ -171,25 +185,33 @@ void ContourTiler::UpdateTextureFromBuffer()
     {
         for (int j = 0; j < height; j++)
         {
-            double elevationPercent = rescale ?
-                ((rasterizationBuffer[i + j * width] - minElevation) / (maxElevation - minElevation)) :
-                (rasterizationBuffer[i + j * width] / zMax);
+            double elevationPercent = rescale ? ((rasterizationBuffer[i + j * width] - minElevation) / (maxElevation - minElevation)) : (rasterizationBuffer[i + j * width]);
 
             int pixelIdx = (i + j * width) * 4;
-            if (colorize)
+
+            if (elevationPercent > 1.0)
             {
-                colorMapper.MapColor(elevationPercent, &pixels[pixelIdx], &pixels[pixelIdx + 1], &pixels[pixelIdx + 2]);
+                pixels[pixelIdx] = 255;
+                pixels[pixelIdx + 1] = 255;
+                pixels[pixelIdx + 2] = 255;
             }
             else
             {
-                int z = (int)(elevationPercent * 255);
+                if (colorize)
+                {
+                    colorMapper.MapColor(elevationPercent, &pixels[pixelIdx], &pixels[pixelIdx + 1], &pixels[pixelIdx + 2]);
+                }
+                else
+                {
+                    int z = (int)(elevationPercent * 255);
 
-                pixels[pixelIdx] = z;
-                pixels[pixelIdx + 1] = z;
-                pixels[pixelIdx + 2] = z;
+                    pixels[pixelIdx] = z;
+                    pixels[pixelIdx + 1] = z;
+                    pixels[pixelIdx + 2] = z;
+                }
+
+                pixels[pixelIdx + 3] = 255;
             }
-
-            pixels[pixelIdx + 3] = 255;
         }
     }
 

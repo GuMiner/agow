@@ -25,10 +25,9 @@ class GeodatabaseAnalyzer
     int rowCount, returnedRows;
 
     double minX, minY, maxX, maxY, minElevation, maxElevation;
-    std::vector<LineStrip> lineStrips;
 
     void CheckLimits(Point point);
-    long ProcessRow(FileGDBAPI::Row& row);
+    long ProcessRow(FileGDBAPI::Row& row, std::vector<LineStrip>& lineStrips);
 
 public:
     GeodatabaseAnalyzer(std::wstring databasePath, std::wstring primaryDataset);
@@ -39,7 +38,6 @@ public:
 
     void LoadAllRows();
     void ProcessAllRows();
-    void SaveSanitizedData(double maxX, double maxY, double maxZ);
 
     void UnloadTable();
     ~GeodatabaseAnalyzer(void);

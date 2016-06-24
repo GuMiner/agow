@@ -3,16 +3,68 @@
 #include <limits>
 #include "Rasterizer.h"
 
-Rasterizer::Rasterizer(double xMax, double yMax, int divisionFactor)
-    : xMax(xMax), yMax(yMax), divisionFactor(divisionFactor)
+Rasterizer::Rasterizer(int divisionFactor)
+    : divisionFactor(divisionFactor)
 {
 }
 
-// True if the line intersects th given quad, false otherwise.
+// True if the line intersects the given quad, false otherwise.
 bool Rasterizer::DoesLineIntersect(sf::Vector2<double> start, sf::Vector2<double> end, sf::Rect<double> quadArea)
 {
-    // TODO optimize this substantially.
+    // x = start_x + (end_x - start_x)*t
+
+    // Check the left and right.
+    double leftX = (quadArea.left - start.x) / (end.x - start.x);
+    if (leftX > 0 && leftX < 1)
+    {
+        // Is the y-coordinate within bounds then? Return true.
+        double yPos = leftX * (end.y - start.y) + start.y;
+        if (yPos > quadArea.top && yPos < (quadArea.top + quadArea.width))
+        {
+            return true;
+        }
+    }
+
+    double rightX = ((quadArea.left + quadArea.width) - start.x) / (end.x - start.x);
+    if (rightX > 0 && rightX < 1)
+    {
+        // Is the y-coordinate within bounds then? Return true.
+        double yPos = rightX * (end.y - start.y) + start.y;
+        if (yPos > quadArea.top && yPos < (quadArea.top + quadArea.width))
+        {
+            return true;
+        }
+    }
+
+    // Same business with the upper and lower portions.
+    double lowerY = (quadArea.top - start.y) / (end.y - start.y);
+    if (lowerY > 0 && lowerY < 1)
+    {
+        double xPos = lowerY * (end.x - start.x) + start.x;
+        if (xPos > quadArea.left && xPos < (quadArea.left + quadArea.width))
+        {
+            return true;
+        }
+    }
+
+    double upperY = ((quadArea.top + quadArea.height) - start.y) / (end.y - start.y);
+    if (upperY < 0 || upperY > 1)
+    {
+        double xPos = upperY * (end.x - start.x) + start.x;
+        if (xPos > quadArea.left && xPos < (quadArea.left + quadArea.width))
+        {
+            return true;
+        }
+    }
+
     return true;
+}
+
+sf::Vector2i Rasterizer::GetQuadtreeSquare(sf::Vector2<double> givenPoint)
+{
+    return sf::Vector2i(
+        std::min((int)(givenPoint.x * divisionFactor), divisionFactor - 1),
+        std::min((int)(givenPoint.y * divisionFactor), divisionFactor - 1));
 }
 
 void Rasterizer::Setup(std::vector<LineStrip>& lineStrips)
@@ -30,26 +82,28 @@ void Rasterizer::Setup(std::vector<LineStrip>& lineStrips)
     {
         for (unsigned int j = 0; j < lineStrips[i].points.size() - 1; j++)
         {
-            sf::Vector2<double> start((lineStrips[i].points[j].x / xMax), (lineStrips[i].points[j].y / yMax));
-            sf::Vector2<double> end((lineStrips[i].points[j + 1].x / xMax), (lineStrips[i].points[j + 1].y / yMax));
+            Point startP = lineStrips[i].points[j];
+            Point endP = lineStrips[i].points[j + 1];
+            sf::Vector2<double> start((double)startP.x / (double)std::numeric_limits<unsigned short>::max(), (double)startP.y / (double)std::numeric_limits<unsigned short>::max());
+            sf::Vector2<double> end((double)endP.x / (double)std::numeric_limits<unsigned short>::max(), (double)endP.y / (double)std::numeric_limits<unsigned short>::max());
 
-            // Starting quadtree
-            int xPS = std::min((int)(start.x * divisionFactor), divisionFactor - 1);
-            int yPS = std::min((int)(start.y * divisionFactor), divisionFactor - 1);
-            
-            int xPE = std::min((int)(end.x * divisionFactor), divisionFactor - 1);
-            int yPE = std::min((int)(end.y * divisionFactor), divisionFactor - 1);
-            
+            sf::Vector2i lineStart = GetQuadtreeSquare(start);
+            sf::Vector2i lineEnd = GetQuadtreeSquare(end);
+
             // v1. Iterate through the square of squares containing the start and end to determine if the line is within those quadtrees.
-            int xMin = std::min(xPS, xPE);
-            int yMin = std::min(yPS, yPE);
-            int xMax = std::max(xPS, xPE);
-            int yMax = std::max(yPS, yPE);
-            for (int m = xMin; m <= xMax; m++)
+            sf::Vector2i minArea = sf::Vector2i(
+                std::min(lineStart.x, lineEnd.x),
+                std::min(lineStart.y, lineEnd.y));
+
+            sf::Vector2i maxArea = sf::Vector2i(
+                std::max(lineStart.x, lineEnd.x),
+                std::max(lineStart.y, lineEnd.y));
+
+            for (int m = minArea.x; m <= maxArea.x; m++)
             {
-                for (int n = yMin; n <= yMax; n++)
+                for (int n = minArea.y; n <= maxArea.y; n++)
                 {
-                    if (DoesLineIntersect(start, end, sf::Rect<double>((double)m / divisionFactor, (double)n / divisionFactor, 1.0 / (double)divisionFactor, 1.0 / (double)divisionFactor)))
+                    if (DoesLineIntersect(start, end, sf::Rect<double>((double)m / (double)divisionFactor, (double)n / (double)divisionFactor, 1.0 / (double)divisionFactor, 1.0 / (double)divisionFactor)))
                     {
                         Index index;
 
@@ -61,34 +115,39 @@ void Rasterizer::Setup(std::vector<LineStrip>& lineStrips)
             }
         }
 
-        if (i % 10000 == 0)
+        if (i % 100 == 0)
         {
             std::cout << "Added strip " << i << " of " << lineStrips.size() << " to the quadtree." << std::endl;
         }
     }
 }
 
-double Rasterizer::GetDistance(std::vector<LineStrip>& lineStrips, Index idx, double x, double y)
-{
-    return pow(lineStrips[idx.stripIdx].points[idx.pointIdx].x - x, 2) + pow(lineStrips[idx.stripIdx].points[idx.pointIdx].y - y, 2);
-}
-
 // Same as the above but treats the index as a line.
-double Rasterizer::GetLineDistance(std::vector<LineStrip>& lineStrips, Index idx, double x, double y)
+double Rasterizer::GetLineDistance(std::vector<LineStrip>& lineStrips, Index idx, sf::Vector2<double> point)
 {
-    sf::Vector2<double> point(x, y);
-    sf::Vector2<double> start(lineStrips[idx.stripIdx].points[idx.pointIdx].x, lineStrips[idx.stripIdx].points[idx.pointIdx].y);
-    sf::Vector2<double> end(lineStrips[idx.stripIdx].points[idx.pointIdx + 1].x, lineStrips[idx.stripIdx].points[idx.pointIdx + 1].y);
-    sf::Vector2<double> n = end - start;
-    sf::Vector2<double> startMinusPoint = start - point;
+    sf::Vector2<double> start((double)lineStrips[idx.stripIdx].points[idx.pointIdx].x / (double)std::numeric_limits<unsigned short>::max(), (double)lineStrips[idx.stripIdx].points[idx.pointIdx].y / (double)std::numeric_limits<unsigned short>::max());
+    sf::Vector2<double> end((double)lineStrips[idx.stripIdx].points[idx.pointIdx + 1].x / (double)std::numeric_limits<unsigned short>::max(), (double)lineStrips[idx.stripIdx].points[idx.pointIdx + 1].y / (double)std::numeric_limits<unsigned short>::max());
+    sf::Vector2<double> length = end - start;
+    // ax + by + c = 0 form
+    double a = length.x;
+    double b = -length.y;
+    double c = (start.y * length.y - start.x * length.x);
+    
+    double distanceSqd = abs(a * start.x + b * start.y + c) / sqrt(a * a + b * b);
 
-    sf::Vector2<double> lengthVector = startMinusPoint - (startMinusPoint.x * n.x + startMinusPoint.y * n.y) * n;
-    return lengthVector.x*lengthVector.x + lengthVector.y * lengthVector.y;
-}
+    sf::Vector2<double> intersectionPoint(
+        (b * (b * start.x - a * start.y) - (a * c)) / (a * a + b * b),
+        (a * (a * start.y - b * start.x) - (b * c)) / (a * a + b * b));
+    if (intersectionPoint.x < std::min(start.x, end.x) || intersectionPoint.x > std::max(start.x, end.x) ||
+        intersectionPoint.y < std::min(start.y, end.y) || intersectionPoint.y > std::max(start.y, end.y))
+    {
+        // Find the minimum distance from the start and end and return that instead.
+        return std::min(
+            sqrt(pow(start.x - point.x, 2) + pow(start.y - point.y, 2)),
+            sqrt(pow(end.x - point.x, 2) + pow(end.y - point.y, 2)));
+    }
 
-Point Rasterizer::GetPoint(std::vector<LineStrip>& lineStrips, std::vector<Index>::iterator iter)
-{
-    return lineStrips[iter->stripIdx].points[iter->pointIdx];
+    return distanceSqd;
 }
 
 void Rasterizer::AddIfValid(int xP, int yP, std::vector<sf::Vector2i>& searchQuads)
@@ -99,34 +158,33 @@ void Rasterizer::AddIfValid(int xP, int yP, std::vector<sf::Vector2i>& searchQua
     }
 }
 
-void Rasterizer::AddAreasToSearch(int distance, int xP, int yP, std::vector<sf::Vector2i>& searchQuads)
+void Rasterizer::AddAreasToSearch(int distance, sf::Vector2i startQuad, std::vector<sf::Vector2i>& searchQuads)
 {
     if (distance == 0)
     {
-        searchQuads.push_back(sf::Vector2i(xP, yP));
+        searchQuads.push_back(startQuad);
     }
     else
     {
         // Add the horizontal bars.
-        for (int i = xP - distance; i <= xP + distance; i++)
+        for (int i = startQuad.x - distance; i <= startQuad.x + distance; i++)
         {
-            AddIfValid(i, yP + distance, searchQuads);
-            AddIfValid(i, yP - distance, searchQuads);
+            AddIfValid(i, startQuad.y + distance, searchQuads);
+            AddIfValid(i, startQuad.y - distance, searchQuads);
         }
 
         // Add the vertical bars, skipping the corners that otherwise would be duplicated.
-        for (int j = yP - (distance - 1); j <= yP + (distance - 1); j++)
+        for (int j = startQuad.y - (distance - 1); j <= startQuad.y + (distance - 1); j++)
         {
-            AddIfValid(xP + distance, j, searchQuads);
-            AddIfValid(xP - distance, j, searchQuads);
+            AddIfValid(startQuad.x + distance, j, searchQuads);
+            AddIfValid(startQuad.x - distance, j, searchQuads);
         }
     }
 }
 
-double Rasterizer::FindClosestPoint(std::vector<LineStrip>& lineStrips, double x, double y)
+double Rasterizer::FindClosestPoint(std::vector<LineStrip>& lineStrips, sf::Vector2<double> point)
 {
-    int xP = std::min((int)((x / xMax) * divisionFactor), divisionFactor - 1);
-    int yP = std::min((int)((y / yMax) * divisionFactor), divisionFactor - 1);
+    sf::Vector2i quadSquare = GetQuadtreeSquare(point);
     
     // Loop forever as we are guaranteed to eventually find a point.
     int gridDistance = 0;
@@ -134,7 +192,7 @@ double Rasterizer::FindClosestPoint(std::vector<LineStrip>& lineStrips, double x
     while (true)
     {
         searchQuads.clear();
-        AddAreasToSearch(gridDistance, xP, yP, searchQuads);
+        AddAreasToSearch(gridDistance, quadSquare, searchQuads);
 
         double distance = std::numeric_limits<double>::max();
         bool foundAPoint = false;
@@ -144,8 +202,7 @@ double Rasterizer::FindClosestPoint(std::vector<LineStrip>& lineStrips, double x
             int quadIdx = searchQuads[k].x + searchQuads[k].y * divisionFactor;
             for (int i = 0; i < quadtree[quadIdx].size(); i++)
             {
-                // double pointDist = GetDistance(quadtree[quadIdx][i], x, y);
-                double lineDist = GetLineDistance(lineStrips, quadtree[quadIdx][i], x, y);
+                double lineDist = GetLineDistance(lineStrips, quadtree[quadIdx][i], point);
                 if (lineDist < distance)
                 {
                     distance = lineDist;
@@ -158,7 +215,7 @@ double Rasterizer::FindClosestPoint(std::vector<LineStrip>& lineStrips, double x
 
         if (foundAPoint)
         {
-            return lineStrips[selectedIndex.stripIdx].elevation;
+            return (double)lineStrips[selectedIndex.stripIdx].elevation / (double)std::numeric_limits<unsigned short>::max();;
         }
 
         ++gridDistance;
@@ -175,10 +232,12 @@ void Rasterizer::Rasterize(std::vector<LineStrip>& lineStrips, sf::Rect<double> 
     {
         for (int j = 0; j < height; j++)
         {
-            double x = (boundingBox.left + ((double)i / (double)width) * boundingBox.width) * xMax;
-            double y = yMax - (boundingBox.top + ((double)j / (double)height) * boundingBox.height) * yMax;
+            double x = (boundingBox.left + ((double)i / (double)width) * boundingBox.width);
+            double y = (boundingBox.top + ((double)j / (double)height) * boundingBox.height);
 
-            double elevation = FindClosestPoint(lineStrips, x, y);
+            sf::Vector2<double> point(x, y);
+
+            double elevation = FindClosestPoint(lineStrips, point);
             (*rasterStore)[i + j * width] = elevation;
 
             if (elevation < minElevation)
@@ -192,9 +251,44 @@ void Rasterizer::Rasterize(std::vector<LineStrip>& lineStrips, sf::Rect<double> 
             }
         }
 
-        if (i % 10 == 0)
+        if (i % 20 == 0)
         {
             std::cout << "Rasterized line " << i << " of " << width << std::endl;
+        }
+    }
+
+    std::cout << "Rasterization complete." << std::endl;
+}
+
+void Rasterizer::LineRaster(std::vector<LineStrip>& lineStrips, sf::Rect<double> boundingBox, int width, int height, double** rasterStore)
+{
+    std::cout << "Line Rasterizing..." << std::endl;
+    for (int i = 0; i < width; i++)
+    {
+        for (int j = 0; j < height; j++)
+        {
+            sf::Vector2<double> point;
+            point.x = (boundingBox.left + ((double)i / (double)width) * boundingBox.width);
+            point.y = (boundingBox.top + ((double)j / (double)height) * boundingBox.height);
+            double wiggleDist = ((double)1 / (double)width) * boundingBox.width;
+
+            sf::Vector2i quadSquare = GetQuadtreeSquare(point);
+            int quadIdx = quadSquare.x + quadSquare.y * divisionFactor;
+            for (int k = 0; k < quadtree[quadIdx].size(); k++)
+            {
+                double lineDist = GetLineDistance(lineStrips, quadtree[quadIdx][k], point);
+                if (lineDist < wiggleDist)
+                {
+                    (*rasterStore)[i + j * width] = 2e8; // Bigger than anything we'll hit.
+                    break;
+                }
+            }
+
+        }
+
+        if (i % 20 == 0)
+        {
+            std::cout << "Line rasterized line " << i << " of " << width << std::endl;
         }
     }
 

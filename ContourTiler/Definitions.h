@@ -3,17 +3,17 @@
 
 namespace Constant
 {
-    const std::string ContourFile = "contours.bin";
+    const std::string ContourFile = "smalldata.bin";
 }
 
 // Data format we read in (~1 wk running on 1 thread to compute).
 struct Point
 {
-    double x, y;
+    unsigned short x, y;
 };
 
 struct LineStrip
 {
-    double elevation;
+    unsigned short elevation;
     std::vector<Point> points;
 };

@@ -40,8 +40,6 @@ int main(int argc, const char* argv[])
             analyzer->AnalyzeTable();
             analyzer->LoadAllRows();
             analyzer->ProcessAllRows();
-            analyzer->SaveSanitizedData(maxX, maxY, maxElevation);
-
             analyzer->UnloadTable();
         }
     }
