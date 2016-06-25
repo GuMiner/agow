@@ -5,16 +5,13 @@
 #include <string>
 #include "ColorMapper.h"
 #include "Definitions.h"
+#include "LineStripLoader.h"
 #include "Rasterizer.h"
 
 // Handles startup and the base graphics rendering loop.
 class ContourTiler
 {
-    // All the contours
-    std::vector<LineStrip> lineStrips;
-
-    int width;
-    int height;
+    int size;
 
     bool rerender;
     sf::Vector2i mouseStart;
@@ -25,6 +22,7 @@ class ContourTiler
     double minElevation, maxElevation;
     double* rasterizationBuffer;
     Rasterizer rasterizer;
+    LineStripLoader lineStripLoader;
 
     bool colorize, rescale, lines;
     ColorMapper colorMapper;

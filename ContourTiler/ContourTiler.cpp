@@ -10,7 +10,6 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
 #include "ContourTiler.h"
-#include "LineStripLoader.h"
 
 #ifndef _DEBUG
     #pragma comment(lib, "lib/sfml-system")
@@ -23,8 +22,7 @@
 #endif
 
 ContourTiler::ContourTiler()
-    : rasterizer(1100),
-      width(900), height(900), minElevation(0), maxElevation(1), rasterizationBuffer(new double[width * height]),
+    : lineStripLoader(), rasterizer(&lineStripLoader, 1100), size(800), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]),
       boundingBox(sf::Rect<double>(0.00584145, 0.0146719, 0.635762, 0.635762)),
       rerender(false), mouseStart(-1, -1), mousePos(-1, -1), colorize(false), rescale(false), lines(false)
 {
@@ -133,10 +131,10 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 if (xNew > mouseStart.x && yNew > mouseStart.y)
                 {
                     // We have a valid zoom-in. Determine the new bounding box. However, we want a proper scaling factor.
-                    double scalingFactor = ((double)(xNew - mouseStart.x) / (double)width);
+                    double scalingFactor = ((double)(xNew - mouseStart.x) / (double)size);
 
-                    boundingBox.left = boundingBox.left + ((double)mouseStart.x / (double)width) * boundingBox.width;
-                    boundingBox.top = boundingBox.top + ((double)mouseStart.y / (double)height) * boundingBox.height;
+                    boundingBox.left = boundingBox.left + ((double)mouseStart.x / (double)size) * boundingBox.width;
+                    boundingBox.top = boundingBox.top + ((double)mouseStart.y / (double)size) * boundingBox.height;
                     boundingBox.width = scalingFactor * boundingBox.width;
                     boundingBox.height = scalingFactor * boundingBox.height;
                     std::cout << "Using a new bounding box of [" << boundingBox.left << ", " << boundingBox.top << ", " << boundingBox.width << ", " << boundingBox.height << std::endl;
@@ -152,7 +150,7 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
 
 void ContourTiler::CreateOverallTexture()
 {
-    overallTexture.create(width, height);
+    overallTexture.create(size, size);
     overallTexture.setRepeated(false);
     overallTexture.setSmooth(false);
 
@@ -167,11 +165,11 @@ void ContourTiler::CreateOverallTexture()
 void ContourTiler::FillOverallTexture()
 {
     // Rasterize
-    rasterizer.Rasterize(lineStrips, boundingBox, width, height, &rasterizationBuffer, minElevation, maxElevation);
+    rasterizer.Rasterize(boundingBox, &rasterizationBuffer, minElevation, maxElevation);
 
     if (lines)
     {
-        rasterizer.LineRaster(lineStrips, boundingBox, width, height, &rasterizationBuffer);
+        rasterizer.LineRaster(boundingBox, &rasterizationBuffer);
     }
 
     UpdateTextureFromBuffer();
@@ -180,14 +178,14 @@ void ContourTiler::FillOverallTexture()
 void ContourTiler::UpdateTextureFromBuffer()
 {
     // Copy over to the image with an appropriate color mapping.
-    sf::Uint8* pixels = new sf::Uint8[width * height * 4]; // * 4 because pixels have 4 components (RGBA)
-    for (int i = 0; i < width; i++)
+    sf::Uint8* pixels = new sf::Uint8[size * size * 4]; // * 4 because pixels have 4 components (RGBA)
+    for (int i = 0; i < size; i++)
     {
-        for (int j = 0; j < height; j++)
+        for (int j = 0; j < size; j++)
         {
-            double elevationPercent = rescale ? ((rasterizationBuffer[i + j * width] - minElevation) / (maxElevation - minElevation)) : (rasterizationBuffer[i + j * width]);
+            double elevationPercent = rescale ? ((rasterizationBuffer[i + j * size] - minElevation) / (maxElevation - minElevation)) : (rasterizationBuffer[i + j * size]);
 
-            int pixelIdx = (i + j * width) * 4;
+            int pixelIdx = (i + j * size) * 4;
 
             if (elevationPercent > 1.0)
             {
@@ -245,17 +243,17 @@ void ContourTiler::Run()
     sf::ContextSettings contextSettings = sf::ContextSettings(24, 8, 8, 4, 0);
 
     sf::Uint32 style =  sf::Style::Titlebar | sf::Style::Close;
-    sf::RenderWindow window(sf::VideoMode(width, height), "Contour Tiler", style, contextSettings);
+    sf::RenderWindow window(sf::VideoMode(size, size), "Contour Tiler", style, contextSettings);
     window.setFramerateLimit(60);
 
     // Load our data file.
-    if (!LineStripLoader::LoadLineStrips(Constant::ContourFile, &lineStrips))
+    if (!lineStripLoader.InitializeFiles(Constant::ContourFile, Constant::ContourIndexFile, Constant::ElevationIndexFile))
     {
         std::cout << "Could not read the line strips file!" << std::endl;
         return;
     }
 
-    rasterizer.Setup(lineStrips);
+    rasterizer.Setup();
 
     CreateOverallTexture();
     rerender = true;

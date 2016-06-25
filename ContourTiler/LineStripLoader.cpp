@@ -5,105 +5,193 @@
 #include <thread>
 #include "LineStripLoader.h"
 
-bool LineStripLoader::LoadLineStrips(std::string fileName, std::vector<LineStrip>* lineStrips)
+LineStripLoader::LineStripLoader() : lineStripFile(nullptr)
 {
-        /*std::ofstream dataFile("smallData.bin", std::ios::out | std::ios::binary);
-        if (!dataFile)
-        {
-            std::cout << "Could not open the file to write the data to!" << std::endl;
-            return false;
-        }*/
 
-    std::ifstream contourReader(fileName, std::ios::in | std::ios::binary);
-    if (!contourReader)
+}
+
+bool LineStripLoader::LoadIndices(std::string indexFilename, int lineStripCount)
+{
+    // Read in all the indices of all line strips
+    std::ifstream indexFile(indexFilename, std::ios::in | std::ios::binary);
+    if (!lineStripFile)
+    {
+        std::cout << "Could not open the file to read contour indices from!" << std::endl;
+        return false;
+    }
+
+    int readLineStripCount = 0;
+    indexFile.read((char*)&readLineStripCount, sizeof(int));
+    std::cout << "Index reported line strips: " << lineStripCount << std::endl;
+
+    if (lineStripCount != readLineStripCount)
+    {
+        std::cout << "Mismatching index file! The line strip count was " << readLineStripCount << " and not " << lineStripCount << std::endl;
+        indexFile.close();
+        return false;
+    }
+
+    indexPositions.reserve(lineStripCount);
+    for (int i = 0; i < lineStripCount; i++)
+    {
+        std::streampos position;
+        indexFile.read((char*)&position, sizeof(std::streampos));
+        indexPositions.push_back(position);
+
+        if (i % 25000 == 0)
+        {
+            std::cout << "  Read index " << i << " of " << lineStripCount << std::endl;
+        }
+    }
+
+    indexFile.close();
+    return true;
+}
+
+bool LineStripLoader::LoadElevations(std::string elevationFilename)
+{
+    // Read in all the indices of all line strips
+    std::ifstream elevationFile(elevationFilename, std::ios::in | std::ios::binary);
+    if (!lineStripFile)
+    {
+        std::cout << "Could not open the file to read elevations from!" << std::endl;
+        return false;
+    }
+
+    double minElevation = std::numeric_limits<double>::max();
+    double maxElevation = std::numeric_limits<double>::min();
+    indexElevations.reserve(indexPositions.size());
+    for (int i = 0; i < indexPositions.size(); i++)
+    {
+        lineStripFile->seekg(indexPositions[i], std::ios::beg);
+        
+        double elevation;
+        lineStripFile->read((char*)&elevation, sizeof(double));
+        indexElevations.push_back(elevation);
+
+        if (elevation > maxElevation)
+        {
+            maxElevation = elevation;
+        }
+        
+        if (elevation < minElevation)
+        {
+            minElevation = elevation;
+        }
+
+        if (i % 25000 == 0)
+        {
+            std::cout << "  Read elevation " << i << " of " << indexPositions.size() << std::endl;
+        }
+    }
+
+    std::cout << "Elevation range from " << minElevation << " to " << maxElevation << " read." << std::endl;
+    elevationFile.close();
+    return true;
+}
+
+bool LineStripLoader::InitializeFiles(std::string lineStripFilename, std::string indexFilename, std::string elevationFilename)
+{
+    lineStripFile = new std::ifstream(lineStripFilename, std::ios::in | std::ios::binary);
+    if (!lineStripFile)
     {
         std::cout << "Could not open the file to read contours from!" << std::endl;
         return false;
     }
 
     int lineStripCount;
-    contourReader.read((char*)&lineStripCount, sizeof(int));
-        //dataFile.write((char*)&lineStripCount, sizeof(int));
+    lineStripFile->read((char*)&lineStripCount, sizeof(int));
     std::cout << "Line strips: " << lineStripCount << std::endl;
 
     // Reported settings.
-    /*double xMinRep, xMaxRep, yMinRep, yMaxRep, minERep, maxERep;
-    contourReader.read((char*)&xMinRep, sizeof(double));
-    contourReader.read((char*)&xMaxRep, sizeof(double));
-    contourReader.read((char*)&yMinRep, sizeof(double));
-    contourReader.read((char*)&yMaxRep, sizeof(double));
-    contourReader.read((char*)&minERep, sizeof(double));
-    contourReader.read((char*)&maxERep, sizeof(double));
+    double xMinRep, xMaxRep, yMinRep, yMaxRep, minERep, maxERep;
+    lineStripFile->read((char*)&xMinRep, sizeof(double));
+    lineStripFile->read((char*)&xMaxRep, sizeof(double));
+    lineStripFile->read((char*)&yMinRep, sizeof(double));
+    lineStripFile->read((char*)&yMaxRep, sizeof(double));
+    lineStripFile->read((char*)&minERep, sizeof(double));
+    lineStripFile->read((char*)&maxERep, sizeof(double));
 
     std::cout << "Limits reported to be [" << xMinRep << ", " << xMaxRep << "; " << yMinRep << ", " << yMaxRep << "; " << minERep << ", " << maxERep << "]." << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    double xMin = 1214976.7500000000;
-    double xMax = 1583489.0000000000;
-
-    double yMin = 22489.217250004411;
-    double yMax = 360015.64550000429;
-    double minElevation = -900.00000000000000;
-    double maxElevation = 7960.0000000000000;
-    */
-    long totalPointCount = 0;
-
-    lineStrips->reserve(lineStripCount);
-    for (int i = 0; i < lineStripCount; i++)
+    // Line strips now follow sequentially with the following format:
+    //   double elevation;
+    //   int pointCount;
+    //   Point points[pointCount];
+    
+    if (!LoadIndices(indexFilename, lineStripCount))
     {
-        LineStrip lineStrip;
-
-        contourReader.read((char*)&lineStrip.elevation, sizeof(unsigned short));
-        /*double elevation;
-        contourReader.read((char*)&elevation, sizeof(double));
-        lineStrip.elevation = (unsigned short)((elevation - minElevation / (maxElevation - minElevation)) * (double)std::numeric_limits<unsigned short>::max());
-            dataFile.write((char*)&lineStrip.elevation, sizeof(unsigned short));*/
-     //   unsigned short unusedForAlignment;
-     //   contourReader.read((char*)&unusedForAlignment, sizeof(unsigned short));
-
-        int pointCount;
-        contourReader.read((char*)&pointCount, sizeof(int));
-            //dataFile.write((char*)&pointCount, sizeof(int));
-
-        lineStrip.points.reserve(pointCount);
-        for (int j = 0; j < pointCount; j++)
-        {
-            Point point;
-            contourReader.read((char*)&point, sizeof(Point));
-            lineStrip.points.push_back(point);
-            /*
-            double xy[2];
-            contourReader.read((char*)&xy, sizeof(double) * 2);
-
-            // Rescale x and y
-            Point point;
-            point.x = (unsigned short)((xy[0] - xMin / (xMax - xMin)) * (double)std::numeric_limits<unsigned short>::max());
-            point.y = (unsigned short)((xy[1] - yMin / (yMax - yMin)) * (double)std::numeric_limits<unsigned short>::max());
-            lineStrip.points.push_back(point);
-                dataFile.write((char*)&point.x, sizeof(unsigned short));
-                dataFile.write((char*)&point.y, sizeof(unsigned short));*/
-        }
-
-        if (lineStrip.points.size() != 0)
-        {
-            lineStrips->push_back(lineStrip);
-        }
-        else
-        {
-            std::cout << "Zero points found at index " << i << "." << std::endl;
-        }
-        
-        if (i % 1000 == 0)
-        {
-            std::cout << "  Read line strip " << i << " of " << lineStripCount << std::endl;
-        }
-
-        totalPointCount += pointCount;
+        return false;
     }
 
-    //dataFile.close();
+    if (!LoadElevations(elevationFilename))
+    {
+        return false;
+    }
 
-    std::wcout << "Total point count: " << totalPointCount << std::endl;
-    //std::cout << "Limits reported to be [" << xMinRep << ", " << xMaxRep << "; " << yMinRep << ", " << yMaxRep << "; " << minERep << ", " << maxERep << "]." << std::endl;
     return true;
 }
+
+int LineStripLoader::GetStripCount() const
+{
+    return (int)indexPositions.size();
+}
+
+double LineStripLoader::GetStripElevation(const int stripIdx) const
+{
+    return (indexElevations[stripIdx] - Constant::ZMin) / (Constant::ZMax - Constant::ZMin);
+}
+
+int LineStripLoader::GetPointCount(const int stripIdx)
+{
+    int pointCount;
+    lineStripFile->seekg((unsigned long long)indexPositions[stripIdx] + sizeof(double), std::ios::beg);
+    lineStripFile->read((char*)&pointCount, sizeof(int));
+    return pointCount;
+}
+
+Point LineStripLoader::ReadPoint(const Index index)
+{
+    Point point;
+    lineStripFile->seekg((unsigned long long)indexPositions[index.stripIdx] + sizeof(double) + sizeof(int) + sizeof(double)*index.pointIdx, std::ios::beg);
+    lineStripFile->read((char*)&point, sizeof(Point));
+
+    point.x = (point.x - Constant::XMin) / (Constant::XMax - Constant::XMin);
+    point.y = (point.y - Constant::YMin) / (Constant::YMax - Constant::YMin);
+    return point;
+}
+
+void LineStripLoader::ReadAllPoints(const int stripIdx, std::vector<Point>& points)
+{
+    int pointCount = GetPointCount(stripIdx);
+
+    // We are now right at the start of the points array, so read them all in.
+    points.reserve(pointCount);
+    for (int i = 0; i < pointCount; i++)
+    {
+        Point point;
+        lineStripFile->read((char*)&point, sizeof(Point));
+
+        point.x = (point.x - Constant::XMin) / (Constant::XMax - Constant::XMin);
+        point.y = (point.y - Constant::YMin) / (Constant::YMax - Constant::YMin);
+        points.push_back(point);
+    }
+}
+
+LineStripLoader::~LineStripLoader()
+{
+    if (lineStripFile != nullptr)
+    {
+        lineStripFile->close();
+        delete lineStripFile;
+    }
+}
+
+/*
+std::ofstream dataFile("indices.bin", std::ios::out | std::ios::binary);
+if (!dataFile)
+{
+std::cout << "Could not open the file to write the data to!" << std::endl;
+return false;
+}*/
