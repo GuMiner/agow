@@ -21,12 +21,11 @@
     #pragma comment(lib, "lib/sfml-graphics-d")
 #endif
 
-ContourTiler::ContourTiler()
-    : lineStripLoader(), rasterizer(&lineStripLoader, 1100), size(800), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]),
-      boundingBox(sf::Rect<double>(0.00584145, 0.0146719, 0.635762, 0.635762)),
-      rerender(false), mouseStart(-1, -1), mousePos(-1, -1), colorize(false), rescale(false), lines(false)
-{
-}
+ContourTiler::ContourTiler() // Size must be divisible by 7.
+    : lineStripLoader(), size(1050), rasterizer(&lineStripLoader, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]),
+    leftOffset(0.0703289), topOffset(0.27929), effectiveSize(0.0188231f), mouseStart(-1, -1), mousePos(-1, -1),
+    rerender(false), colorize(false), rescale(false), lines(true)
+{ }
 
 ContourTiler::~ContourTiler()
 {
@@ -52,7 +51,9 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
             else if (event.key.code == sf::Keyboard::R)
             {
                 // Reset.
-                boundingBox = sf::Rect<double>(0, 0, 1, 1);
+                topOffset = 0.0f;
+                leftOffset = 0.0f;
+                effectiveSize = 1.0f;
                 std::cout << "Reset! " << std::endl;
                 sf::sleep(sf::milliseconds(500));
                 rerender = true;
@@ -90,30 +91,29 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
             else if (event.mouseButton.button == sf::Mouse::Right)
             {
                 // Zoom-out.
-                boundingBox.left = boundingBox.left / 2;
-                boundingBox.top = boundingBox.top / 2;
-                boundingBox.width = boundingBox.width * 2;
-                boundingBox.height = boundingBox.height * 2;
+                topOffset -= effectiveSize * 0.50f;
+                leftOffset -= effectiveSize * 0.50f;
+                effectiveSize *= 3.0f;
 
                 // Clamp.
-                if (boundingBox.left < 0)
+                if (topOffset < 0)
                 {
-                    boundingBox.left = 0;
+                    topOffset = 0;
                 }
-                if (boundingBox.top < 0)
+                if (leftOffset < 0)
                 {
-                    boundingBox.top = 0;
+                    topOffset = 0;
                 }
-                if (boundingBox.width + boundingBox.left > 1)
+                if (topOffset + effectiveSize > 1)
                 {
-                    boundingBox.width = 1 - boundingBox.left;
+                    effectiveSize = 1 - topOffset;
                 }
-                if (boundingBox.height + boundingBox.top > 1)
+                if (leftOffset + effectiveSize > 1)
                 {
-                    boundingBox.height = 1 - boundingBox.top;
+                    effectiveSize = 1 - leftOffset;
                 }
 
-                std::cout << "Using a new bounding box of [" << boundingBox.left << ", " << boundingBox.top << ", " << boundingBox.width << ", " << boundingBox.height << std::endl;
+                std::cout << "Using a new bounding box of [" << leftOffset << ", " << topOffset << ", " << effectiveSize << ", " << effectiveSize << "]" << std::endl;
                 sf::sleep(sf::milliseconds(500));
                 rerender = true;
             }
@@ -131,13 +131,12 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 if (xNew > mouseStart.x && yNew > mouseStart.y)
                 {
                     // We have a valid zoom-in. Determine the new bounding box. However, we want a proper scaling factor.
-                    double scalingFactor = ((double)(xNew - mouseStart.x) / (double)size);
+                    double scalingFactor = std::min(((double)(xNew - mouseStart.x) / (double)size), ((double)(yNew - mouseStart.y / (double)size)));
 
-                    boundingBox.left = boundingBox.left + ((double)mouseStart.x / (double)size) * boundingBox.width;
-                    boundingBox.top = boundingBox.top + ((double)mouseStart.y / (double)size) * boundingBox.height;
-                    boundingBox.width = scalingFactor * boundingBox.width;
-                    boundingBox.height = scalingFactor * boundingBox.height;
-                    std::cout << "Using a new bounding box of [" << boundingBox.left << ", " << boundingBox.top << ", " << boundingBox.width << ", " << boundingBox.height << std::endl;
+                    leftOffset += ((double)mouseStart.x / (double)size) * effectiveSize;
+                    topOffset += ((double)mouseStart.y / (double)size) * effectiveSize;
+                    effectiveSize = scalingFactor * effectiveSize;
+                    std::cout << "Using a new bounding box of [" << leftOffset << ", " << topOffset << ", " << effectiveSize << ", " << effectiveSize << std::endl;
                     sf::sleep(sf::milliseconds(500));
                     rerender = true;
                 }
@@ -165,11 +164,11 @@ void ContourTiler::CreateOverallTexture()
 void ContourTiler::FillOverallTexture()
 {
     // Rasterize
-    rasterizer.Rasterize(boundingBox, &rasterizationBuffer, minElevation, maxElevation);
+    rasterizer.Rasterize(leftOffset, topOffset, effectiveSize, &rasterizationBuffer, minElevation, maxElevation);
 
     if (lines)
     {
-        rasterizer.LineRaster(boundingBox, &rasterizationBuffer);
+        rasterizer.LineRaster(leftOffset, topOffset, effectiveSize, &rasterizationBuffer);
     }
 
     UpdateTextureFromBuffer();
@@ -183,18 +182,17 @@ void ContourTiler::UpdateTextureFromBuffer()
     {
         for (int j = 0; j < size; j++)
         {
-            double elevationPercent = rescale ? ((rasterizationBuffer[i + j * size] - minElevation) / (maxElevation - minElevation)) : (rasterizationBuffer[i + j * size]);
-
             int pixelIdx = (i + j * size) * 4;
-
-            if (elevationPercent > 1.0)
+            double elevation = rasterizationBuffer[i + j * size];
+            if (elevation < minElevation || elevation > maxElevation)
             {
                 pixels[pixelIdx] = 255;
                 pixels[pixelIdx + 1] = 255;
-                pixels[pixelIdx + 2] = 255;
+                pixels[pixelIdx + 2] = 0;
             }
             else
             {
+                double elevationPercent = rescale ? (elevation - minElevation) / (maxElevation - minElevation) : elevation;
                 if (colorize)
                 {
                     colorMapper.MapColor(elevationPercent, &pixels[pixelIdx], &pixels[pixelIdx + 1], &pixels[pixelIdx + 2]);
@@ -207,9 +205,9 @@ void ContourTiler::UpdateTextureFromBuffer()
                     pixels[pixelIdx + 1] = z;
                     pixels[pixelIdx + 2] = z;
                 }
-
-                pixels[pixelIdx + 3] = 255;
             }
+
+            pixels[pixelIdx + 3] = 255;
         }
     }
 
@@ -232,7 +230,8 @@ void ContourTiler::Render(sf::RenderWindow& window)
     if (mouseStart.x != -1)
     {
         zoomShape.setPosition(sf::Vector2f((float)mouseStart.x, (float)mouseStart.y));
-        zoomShape.setSize(sf::Vector2f((float)(mousePos.x - mouseStart.x), (float)(mousePos.y - mouseStart.y)));
+        float minDiff = std::min((float)(mousePos.x - mouseStart.x), (float)(mousePos.y - mouseStart.y));
+        zoomShape.setSize(sf::Vector2f(minDiff, minDiff));
         window.draw(zoomShape);
     }
 }

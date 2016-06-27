@@ -5,6 +5,7 @@
     <ClCompile Include="Rasterizer.cpp" />
     <ClCompile Include="ColorMapper.cpp" />
     <ClCompile Include="LineStripLoader.cpp" />
+    <ClCompile Include="Quadtree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ContourTiler.h" />
@@ -12,5 +13,6 @@
     <ClInclude Include="Rasterizer.h" />
     <ClInclude Include="ColorMapper.h" />
     <ClInclude Include="LineStripLoader.h" />
+    <ClInclude Include="Quadtree.h" />
   </ItemGroup>
 </Project>

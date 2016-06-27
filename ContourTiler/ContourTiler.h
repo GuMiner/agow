@@ -17,7 +17,10 @@ class ContourTiler
     sf::Vector2i mouseStart;
     sf::Vector2i mousePos;
     sf::RectangleShape zoomShape;
-    sf::Rect<double> boundingBox;
+
+    decimal leftOffset;
+    decimal topOffset;
+    decimal effectiveSize;
 
     double minElevation, maxElevation;
     double* rasterizationBuffer;

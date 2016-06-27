@@ -6,6 +6,7 @@ namespace Constant
     const std::string ContourFile = "data.bin";
     const std::string ContourIndexFile = "indices.bin";
     const std::string ElevationIndexFile = "elevations.bin";
+    const std::string QuadtreeFolder = "quadtree";
     
     const double XMin = 1214976.7500000000;
     const double XMax = 1583489.0000000000;
@@ -21,23 +22,30 @@ struct Index
 {
     int stripIdx;
     int pointIdx;
+
+    Index()
+    { }
+
+    Index(int si, int pi) : stripIdx(si), pointIdx(pi)
+    { }
 };
+
+#define decimal float 
 
 // Point data format.
 struct Point
 {
-    double x, y;
+    decimal x, y;
 
     Point()
     { }
 
-    Point(double xx, double yy) : x(xx), y(yy)
+    Point(decimal xx, decimal yy) : x(xx), y(yy)
     { }
 };
 
 // Line data format.
 struct LineStrip
 {
-    double elevation;
     std::vector<Point> points;
 };

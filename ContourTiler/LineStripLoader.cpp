@@ -27,8 +27,8 @@ bool LineStripLoader::LoadIndices(std::string indexFilename, int lineStripCount)
     if (lineStripCount != readLineStripCount)
     {
         std::cout << "Mismatching index file! The line strip count was " << readLineStripCount << " and not " << lineStripCount << std::endl;
-        indexFile.close();
-        return false;
+        // indexFile.close();
+        // return false;
     }
 
     indexPositions.reserve(lineStripCount);
@@ -63,10 +63,8 @@ bool LineStripLoader::LoadElevations(std::string elevationFilename)
     indexElevations.reserve(indexPositions.size());
     for (int i = 0; i < indexPositions.size(); i++)
     {
-        lineStripFile->seekg(indexPositions[i], std::ios::beg);
-        
         double elevation;
-        lineStripFile->read((char*)&elevation, sizeof(double));
+        elevationFile.read((char*)&elevation, sizeof(double));
         indexElevations.push_back(elevation);
 
         if (elevation > maxElevation)
@@ -103,6 +101,8 @@ bool LineStripLoader::InitializeFiles(std::string lineStripFilename, std::string
     lineStripFile->read((char*)&lineStripCount, sizeof(int));
     std::cout << "Line strips: " << lineStripCount << std::endl;
 
+    lineStripCount = 300000; // Override to limit load time for rasterization changes.
+
     // Reported settings.
     double xMinRep, xMaxRep, yMinRep, yMaxRep, minERep, maxERep;
     lineStripFile->read((char*)&xMinRep, sizeof(double));
@@ -119,6 +119,41 @@ bool LineStripLoader::InitializeFiles(std::string lineStripFilename, std::string
     //   double elevation;
     //   int pointCount;
     //   Point points[pointCount];
+    lineStrips.clear();
+    lineStrips.reserve(lineStripCount);
+    long points = 0;
+    for (int i = 0; i < lineStripCount; i++)
+    {
+        lineStrips.push_back(LineStrip());
+        double unusedElevation;
+        lineStripFile->read((char*)&unusedElevation, sizeof(double));
+
+        int pointCount;
+        lineStripFile->read((char*)&pointCount, sizeof(int));
+
+        lineStrips[i].points.reserve(pointCount);
+        for (int j = 0; j < pointCount; j++)
+        {
+            double xy[2];
+            lineStripFile->read((char*)&xy, sizeof(double) * 2);
+
+            Point point;
+            point.x = (decimal)((xy[0] - Constant::XMin) / (Constant::XMax - Constant::XMin));
+            point.y = (decimal)((xy[1] - Constant::YMin) / (Constant::YMax - Constant::YMin));
+            lineStrips[i].points.push_back(point);
+
+            ++points;
+            if (points % 1000000 == 0)
+            {
+                std::cout << "Read in point " << points << ". ("  << (float)points / 1.5e7f << "%)" << std::endl;
+            }
+        }
+
+        if (i % 10000 == 0)
+        {
+            std::cout << "Read in line strip " << i << std::endl;
+        }
+    }
     
     if (!LoadIndices(indexFilename, lineStripCount))
     {
@@ -187,11 +222,3 @@ LineStripLoader::~LineStripLoader()
         delete lineStripFile;
     }
 }
-
-/*
-std::ofstream dataFile("indices.bin", std::ios::out | std::ios::binary);
-if (!dataFile)
-{
-std::cout << "Could not open the file to write the data to!" << std::endl;
-return false;
-}*/

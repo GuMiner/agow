@@ -4,22 +4,23 @@
 #include <vector>
 #include "Definitions.h"
 #include "LineStripLoader.h"
+#include "Quadtree.h"
 
 class Rasterizer
 {
     LineStripLoader* lineStrips;
+    Quadtree quadtree;
 
     // The number of quadtree xy grid spaces.
     int size;
-    std::vector<std::vector<Index>> quadtree;
-    
+
     sf::Vector2i GetQuadtreeSquare(Point givenPoint);
 
-    // True if the line intersects th given quad, false otherwise.
-    bool DoesLineIntersect(sf::Vector2<double> start, sf::Vector2<double> end, sf::Rect<double> quadArea);
+    void AddLinePortionsToQuadtree(sf::Vector2i quadStart, Index index, Point startPoint, Point endPoint);
 
     // Same as the above but treats the index as a line.
-    double GetLineDistance(Index idx, Point point);
+    decimal GetPointToPointAngle(Point start, Point end);
+    decimal GetLineDistanceWithAngle(Index idx, Point point, decimal* angle);
 
     // Adds an area if it is valid.
     void AddIfValid(int xP, int yP, std::vector<sf::Vector2i>& searchQuads);
@@ -28,7 +29,10 @@ class Rasterizer
     void AddAreasToSearch(int distance, sf::Vector2i startQuad, std::vector<sf::Vector2i>& searchQuads);
 
     // Returns the height of the closest point to the specified coordinates.
-    double FindClosestPoint(Point point);
+    decimal FindClosestPoint(Point point);
+
+    // Rasterizes a range of columns to improve perf.
+    void RasterizeColumnRange(decimal leftOffset, decimal topOffset, decimal effectiveSize, int startColumn, int columnCount, double** rasterStore, double* minElevation, double* maxElevation);
 
 public:
     Rasterizer(LineStripLoader* lineStripLoader, int size);
@@ -37,10 +41,10 @@ public:
     void Setup();
 
     // Rasterizes the area, filling in the raster store.
-    void Rasterize(sf::Rect<double> boundingBox, double** rasterStore, double& minElevation, double& maxElevation);
+    void Rasterize(decimal leftOffset, decimal topOffset, decimal effectiveSize, double** rasterStore, double& minElevation, double& maxElevation);
 
     // Rasterizes in lines with full whiteness.
-    void LineRaster(sf::Rect<double> boundingBox, double** rasterStore);
+    void LineRaster(decimal leftOffset, decimal topOffset, decimal effectiveSize, double** rasterStore);
 
     virtual ~Rasterizer();
 };

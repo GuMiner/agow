@@ -5,6 +5,7 @@
 class LineStripLoader
 {
     std::ifstream* lineStripFile;
+    
 
     std::vector<std::streampos> indexPositions;
     std::vector<double> indexElevations;
@@ -14,6 +15,7 @@ class LineStripLoader
 public:
     LineStripLoader();
 
+    std::vector<LineStrip> lineStrips;
     bool InitializeFiles(std::string lineStripFilename, std::string indexFilename, std::string elevationFilename);
     
     // Get basic details about the strips
