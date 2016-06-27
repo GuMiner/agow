@@ -27,6 +27,7 @@ struct Index
     { }
 };
 
+// If you have a machine with a lot of memory > 32 Gb, toggle this to double for accurate data precision.
 #define decimal float 
 
 // Point data format.

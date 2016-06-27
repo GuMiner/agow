@@ -25,7 +25,7 @@ bool LineStripLoader::Initialize(std::string lineStripFilename)
     lineStripFile.read((char*)&lineStripCount, sizeof(int));
     std::cout << "Line strips: " << lineStripCount << std::endl;
 
-    lineStripCount = 300000; // Override to limit load time for rasterization changes.
+    // lineStripCount = 300000; // Override to limit load time for rasterization changes.
 
     // Reported settings.
     double xMinRep, xMaxRep, yMinRep, yMaxRep, minERep, maxERep;
@@ -56,7 +56,7 @@ bool LineStripLoader::Initialize(std::string lineStripFilename)
         lineStripFile.read((char*)&elevation, sizeof(double));
         if (elevationMap.find((int)elevation) == elevationMap.end())
         {
-            int size = elevationMap.size();
+            int size = (int)elevationMap.size();
             lineStrips[i].elevationId = size;
             elevationMap[(int)elevation] = size;
         }

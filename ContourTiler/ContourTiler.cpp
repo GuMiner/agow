@@ -23,8 +23,8 @@
 
 ContourTiler::ContourTiler() // Size must be divisible by 7.
     : lineStripLoader(), size(1050), rasterizer(&lineStripLoader, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]),
-    leftOffset(0.0703289), topOffset(0.27929), effectiveSize(0.0188231f), mouseStart(-1, -1), mousePos(-1, -1),
-    rerender(false), colorize(false), rescale(false), lines(true)
+    leftOffset((decimal)0.0703289), topOffset((decimal)0.27929), effectiveSize((decimal)0.0188231), mouseStart(-1, -1), mousePos(-1, -1),
+    rerender(false), colorize(false), rescale(false), lines(false)
 { }
 
 ContourTiler::~ContourTiler()
@@ -131,10 +131,10 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 if (xNew > mouseStart.x && yNew > mouseStart.y)
                 {
                     // We have a valid zoom-in. Determine the new bounding box. However, we want a proper scaling factor.
-                    double scalingFactor = std::min(((double)(xNew - mouseStart.x) / (double)size), ((double)(yNew - mouseStart.y / (double)size)));
+                    decimal scalingFactor = std::min(((decimal)(xNew - mouseStart.x) / (decimal)size), ((decimal)(yNew - mouseStart.y / (decimal)size)));
 
-                    leftOffset += ((double)mouseStart.x / (double)size) * effectiveSize;
-                    topOffset += ((double)mouseStart.y / (double)size) * effectiveSize;
+                    leftOffset += ((decimal)mouseStart.x / (decimal)size) * effectiveSize;
+                    topOffset += ((decimal)mouseStart.y / (decimal)size) * effectiveSize;
                     effectiveSize = scalingFactor * effectiveSize;
                     std::cout << "Using a new bounding box of [" << leftOffset << ", " << topOffset << ", " << effectiveSize << ", " << effectiveSize << std::endl;
                     sf::sleep(sf::milliseconds(500));

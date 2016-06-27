@@ -129,15 +129,15 @@ decimal Rasterizer::FindClosestPoint(Point point)
 
         for (int k = 0; k < searchQuads.size(); k++)
         {
-            int indexCount = quadtree.QuadSize(searchQuads[k]);
+            int indexCount = (int)quadtree.QuadSize(searchQuads[k]);
             for (size_t i = 0; i < indexCount; i++)
             {
-                Index index = quadtree.GetIndexFromQuad(searchQuads[k], i);
+                Index index = quadtree.GetIndexFromQuad(searchQuads[k], (int)i);
                 
                 decimal lineDist = GetLineDistance(index, point);
                 if (lineDist < 1e-12)
                 {
-                    return lineStrips->lineStrips[index.stripIdx].elevation;
+                    return (decimal)lineStrips->lineStrips[index.stripIdx].elevation;
                 }
 
                 // int quadrant = GetQuadrant(angle);
@@ -153,7 +153,7 @@ decimal Rasterizer::FindClosestPoint(Point point)
                 }
                 else
                 {
-                    closestElevations[elevationId] = lineStrips->lineStrips[index.stripIdx].elevation;
+                    closestElevations[elevationId] = (decimal)lineStrips->lineStrips[index.stripIdx].elevation;
                     closestDistances[elevationId] = lineDist;
                 }
 
@@ -170,7 +170,7 @@ decimal Rasterizer::FindClosestPoint(Point point)
             {
                 int elevationId = iter->first;
                 elevation += iter->second / closestDistances[elevationId];
-                inverseWeights += 1.0 / closestDistances[elevationId];
+                inverseWeights += (decimal)1.0 / closestDistances[elevationId];
             }
 
             return elevation / inverseWeights;
@@ -265,6 +265,7 @@ void Rasterizer::Rasterize(decimal leftOffset, decimal topOffset, decimal effect
 
 void Rasterizer::LineRaster(decimal leftOffset, decimal topOffset, decimal effectiveSize, double** rasterStore)
 {
+    // This could also be parallelized.
     std::cout << "Line Rasterizing..." << std::endl;
     int m = 0;
     for (int i = 0; i < size; i++)
@@ -281,19 +282,8 @@ void Rasterizer::LineRaster(decimal leftOffset, decimal topOffset, decimal effec
            
             for (size_t k = 0; k < quadtree.QuadSize(quadSquare); k++)
             {
-                Index index = quadtree.GetIndexFromQuad(quadSquare, k);
+                Index index = quadtree.GetIndexFromQuad(quadSquare, (int)k);
                 
-                /* 
-                // Display the points individually.
-                Point newPoint = lineStrips->lineStrips[index.stripIdx].points[index.pointIdx];
-                decimal ii = (newPoint.x - leftOffset) / effectiveSize;
-                decimal jj = (newPoint.y - topOffset) / effectiveSize;
-
-                if (ii > 0 && jj > 0 && ii < 1 && jj < 1)
-                {
-                    (*rasterStore)[(int)(ii * size) + (int)(jj * size) * size] = 1e6;
-                }*/
-
                 decimal lineDist = GetLineDistance(index, point);
                 if (lineDist < wiggleDist)
                 {
