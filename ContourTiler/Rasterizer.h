@@ -29,6 +29,7 @@ class Rasterizer
     void AddAreasToSearch(int distance, sf::Vector2i startQuad, std::vector<sf::Vector2i>& searchQuads);
 
     // Returns the height of the closest point to the specified coordinates.
+    int GetQuadrant(decimal angle);
     decimal FindClosestPoint(Point point);
 
     // Rasterizes a range of columns to improve perf.

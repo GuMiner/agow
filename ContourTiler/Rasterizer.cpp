@@ -13,13 +13,13 @@ void Rasterizer :: AddLinePortionsToQuadtree(sf::Vector2i quadStart, Index index
 {
     quadtree.AddToIndex(quadStart, index);
     
-    const double stepSize = (1.0 / (double)size) / 3; // This will miss tight corners but will be acceptable for my application.
+    const decimal stepSize = (1.0 / (decimal)size) / 3; // This will miss tight corners but will be acceptable for my application.
 
     const Point startToEnd(endPoint.x - startPoint.x, endPoint.y - startPoint.y);
-    const double startToEndLength = sqrt(pow(startToEnd.x, 2) + pow(startToEnd.y, 2));
+    const decimal startToEndLength = sqrt(pow(startToEnd.x, 2) + pow(startToEnd.y, 2));
     
     sf::Vector2i currentQuad(quadStart.x, quadStart.y);
-    double currentLength = stepSize;
+    decimal currentLength = stepSize;
     while (currentLength < startToEndLength)
     {
         decimal fraction = currentLength / startToEndLength;
@@ -87,10 +87,10 @@ decimal Rasterizer::GetLineDistanceWithAngle(Index idx, Point point, decimal* an
     Point start = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx];
     Point end = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx + 1];
     
-    double startEndLength = sqrt(pow(end.x - start.x, 2) + pow(end.y - start.y, 2));
+    decimal startEndLength = sqrt(pow(end.x - start.x, 2) + pow(end.y - start.y, 2));
     Point startToEnd(end.x - start.x, end.y - start.y);
     Point startToPoint(point.x - start.x, point.y - start.y);
-    double projectionLength = (startToPoint.x * startToEnd.x + startToPoint.y * startToEnd.y) / startEndLength;
+    decimal projectionLength = (startToPoint.x * startToEnd.x + startToPoint.y * startToEnd.y) / startEndLength;
 
     if (projectionLength > 0 && projectionLength < startEndLength)
     {
@@ -142,6 +142,47 @@ void Rasterizer::AddAreasToSearch(int distance, sf::Vector2i startQuad, std::vec
     }
 }
 
+int Rasterizer::GetQuadrant(decimal angle)
+{
+    // Angle is from -pi to pi. Split it into the appropriate bucket.
+    const decimal pi = 3.14159;
+    int quadrant;
+    if (angle > -pi && angle < -3 * pi / 4)
+    {
+        quadrant = 0;
+    }
+    else if (angle > -3 * pi / 4 && angle < -pi / 2)
+    {
+        quadrant = 1;
+    }
+    else if (angle > -pi / 2 && angle < -pi / 4)
+    {
+        quadrant = 2;
+    }
+    else if (angle > -pi / 4 && angle < 0)
+    {
+        quadrant = 3;
+    }
+    else if (angle > 0 && angle < pi / 4)
+    {
+        quadrant = 4;
+    }
+    else if (angle > pi / 4 && angle < pi / 2)
+    {
+        quadrant = 5;
+    }
+    else if (angle > pi / 2 && angle < 3 * pi / 4)
+    {
+        quadrant = 6;
+    }
+    else
+    {
+        quadrant = 7;
+    }
+
+    return quadrant;
+}
+
 decimal Rasterizer::FindClosestPoint(Point point)
 {
     sf::Vector2i quadSquare = GetQuadtreeSquare(point);
@@ -165,71 +206,50 @@ decimal Rasterizer::FindClosestPoint(Point point)
 
     bool foundAPoint = false;
     int overrun = 0;
-    const int overrunLimit = 2;
+    const int overrunLimit = 15;
     while (true)
     {
         searchQuads.clear();
         AddAreasToSearch(gridDistance, quadSquare, searchQuads);
-        
+
         for (int k = 0; k < searchQuads.size(); k++)
         {
             int indexCount = quadtree.QuadSize(searchQuads[k]);
             for (size_t i = 0; i < indexCount; i++)
             {
-                const decimal pi = 3.14159;
                 decimal angle;
                 decimal lineDist = GetLineDistanceWithAngle(quadtree.GetIndexFromQuad(searchQuads[k], i), point, &angle);
-                
-                int quadrant;
-                if (angle > -pi && angle < -3 * pi / 4)
+                int quadrant = GetQuadrant(angle);
+
+                decimal elevation = lineStrips->GetStripElevation(quadtree.GetIndexFromQuad(searchQuads[k], i).stripIdx);
+                if (lineDist < 1e-7)
                 {
-                    quadrant = 0;
-                }
-                else if (angle > -3 * pi / 4 && angle < -pi / 2)
-                {
-                    quadrant = 1;
-                }
-                else if (angle > -pi / 2 && angle < -pi / 4)
-                {
-                    quadrant = 2;
-                }
-                else if (angle > -pi / 4 && angle < 0)
-                {
-                    quadrant = 3;
-                }
-                else if (angle > 0 && angle < pi / 4)
-                {
-                    quadrant = 4;
-                }
-                else if (angle > pi / 4 && angle < pi / 2)
-                {
-                    quadrant = 5;
-                }
-                else if (angle > pi / 2 && angle < 3 * pi / 4)
-                {
-                    quadrant = 6;
-                }
-                else
-                {
-                    quadrant = 7;
+                    return elevation;
                 }
 
-                if (lineDist == 0)
-                {
-                    lineDist += 1e-7;
-                }
-
-                // Angle is from -pi to pi. Split it into the appropriate bucket.
                 pointTotal[quadrant]++;
-                decimal inverseDistance = 1.0 / (lineDist * (decimal)pointTotal[quadrant]);
-                totalElevations[quadrant] += (inverseDistance * lineStrips->GetStripElevation(quadtree.GetIndexFromQuad(searchQuads[k], i).stripIdx));
-                totalInverseDistances[quadrant] += (inverseDistance);
+                decimal inverseDistance = 1.0 / (lineDist);
+                totalElevations[quadrant] += (inverseDistance * elevation);
+                totalInverseDistances[quadrant] += inverseDistance;
 
                 foundAPoint = true;
             }
         }
 
-        if (foundAPoint && overrun >= overrunLimit)
+        // Determine if we have points in opposing quadrants by using the index with the most points as the dividing line.
+        int indexWithMostPoints = 0;
+        int mostPoints = 0;
+        for (int i = 0; i < quadrants; i++)
+        {
+            if (pointTotal[i] > mostPoints)
+            {
+                mostPoints = pointTotal[i];
+                indexWithMostPoints = i;
+            }
+        }
+
+        bool pointsInOpposingQuadrants = pointTotal[(indexWithMostPoints + 3) % quadrants] != 0 || pointTotal[(indexWithMostPoints + 4) % quadrants] != 0 || pointTotal[(indexWithMostPoints + 5) % quadrants] != 0;
+        if (foundAPoint && (overrun >= overrunLimit || pointsInOpposingQuadrants))
         {
             decimal elevation = 0;
             int quadrantsWithPoints = 0;
