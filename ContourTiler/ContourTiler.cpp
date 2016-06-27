@@ -246,7 +246,7 @@ void ContourTiler::Run()
     window.setFramerateLimit(60);
 
     // Load our data file.
-    if (!lineStripLoader.InitializeFiles(Constant::ContourFile, Constant::ContourIndexFile, Constant::ElevationIndexFile))
+    if (!lineStripLoader.Initialize(Constant::ContourFile))
     {
         std::cout << "Could not read the line strips file!" << std::endl;
         return;

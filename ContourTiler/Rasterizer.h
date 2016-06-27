@@ -16,11 +16,8 @@ class Rasterizer
 
     sf::Vector2i GetQuadtreeSquare(Point givenPoint);
 
-    void AddLinePortionsToQuadtree(sf::Vector2i quadStart, Index index, Point startPoint, Point endPoint);
-
-    // Same as the above but treats the index as a line.
-    decimal GetPointToPointAngle(Point start, Point end);
-    decimal GetLineDistanceWithAngle(Index idx, Point point, decimal* angle);
+    // Gets the closest distance from a point to a line ensuring we account for endpoints.
+    decimal GetLineDistance(Index idx, Point point);
 
     // Adds an area if it is valid.
     void AddIfValid(int xP, int yP, std::vector<sf::Vector2i>& searchQuads);

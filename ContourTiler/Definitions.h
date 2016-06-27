@@ -4,9 +4,6 @@
 namespace Constant
 {
     const std::string ContourFile = "data.bin";
-    const std::string ContourIndexFile = "indices.bin";
-    const std::string ElevationIndexFile = "elevations.bin";
-    const std::string QuadtreeFolder = "quadtree";
     
     const double XMin = 1214976.7500000000;
     const double XMax = 1583489.0000000000;
@@ -47,5 +44,7 @@ struct Point
 // Line data format.
 struct LineStrip
 {
+    double elevation;
+    int elevationId;
     std::vector<Point> points;
 };
