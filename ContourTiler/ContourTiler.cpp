@@ -77,6 +77,11 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 rescale = !rescale;
                 std::cout << "Toggled rescale: " << rescale << std::endl;
             }
+            else if (event.key.code == sf::Keyboard::U)
+            {
+                std::cout << "Forced an update." << std::endl;
+                rerender = true;
+            }
             else if (event.key.code == sf::Keyboard::A)
             {
                 decimal x = leftOffset + (mousePos.x / (decimal)size) * effectiveSize;
@@ -88,7 +93,6 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
             else if (event.key.code == sf::Keyboard::W)
             {
                 quadExclusions.WriteExclusions();
-                std::cout << "Wrote out the quad exclusion list." << std::endl;
             }
             else if (event.key.code == sf::Keyboard::H)
             {
@@ -118,7 +122,7 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 }
                 if (leftOffset < 0)
                 {
-                    topOffset = 0;
+                    leftOffset = 0;
                 }
                 if (topOffset + effectiveSize > 1)
                 {
@@ -151,7 +155,7 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
             decimal endY = ((((decimal)nextPoint.y / (decimal)size) - topOffset) / effectiveSize) * size;
 
             sf::Vector2f size(sf::Vector2f(std::abs(startX - endX), std::abs(startY - endY)));
-            exclusionShape.setPosition(sf::Vector2f(startX, endY));
+            exclusionShape.setPosition(sf::Vector2f(startX, startY));
             exclusionShape.setSize(size);
             // std::cout << "Moved exclusion shape to [" << startX << ", " << startY << "], scaled to [" << size.x << ", " << size.y << "]." << std::endl;
         }
@@ -194,7 +198,7 @@ void ContourTiler::SetupGraphicsElements()
     zoomShape.setFillColor(sf::Color::Transparent);
 
     // And the exclusion shape.
-    exclusionShape.setFillColor(sf::Color(0, 0, 255, 200));
+    exclusionShape.setFillColor(sf::Color(0, 0, 255, 140));
 }
 
 void ContourTiler::FillOverallTexture()
@@ -281,7 +285,7 @@ void ContourTiler::Render(sf::RenderWindow& window, sf::Time elapsedTime)
     }
 
     // Update the texture at a reasonable but not too fast pace.
-    if (elapsedTime - lastUpdateTime > sf::milliseconds(100))
+    if (elapsedTime - lastUpdateTime > sf::milliseconds(333))
     {
         lastUpdateTime = elapsedTime;
         UpdateTextureFromBuffer();
@@ -320,6 +324,9 @@ void ContourTiler::Run()
         std::cout << "Could not read the line strips file!" << std::endl;
         return;
     }
+
+    // Load the exclusion file.
+    quadExclusions.ReadExclusions();
 
     rasterizer.Setup();
 

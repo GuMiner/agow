@@ -127,6 +127,7 @@ decimal Rasterizer::FindClosestPoint(Point point)
     bool foundAPoint = false;
     int overrun = 0;
     const int overrunLimit = 5; // Empirically determined to be 'ok'
+    const int minOverscan = 1;
     std::map<int, decimal> closestElevations;
     std::map<int, decimal> closestDistances;
     while (true)
@@ -166,7 +167,7 @@ decimal Rasterizer::FindClosestPoint(Point point)
             }
         }
 
-        if (foundAPoint && (overrun >= overrunLimit || closestElevations.size() > 1))
+        if (foundAPoint && (overrun >= overrunLimit || (closestElevations.size() > 1 && overrun >= minOverscan)))
         {
             decimal elevation = 0;
             decimal inverseWeights = 0;

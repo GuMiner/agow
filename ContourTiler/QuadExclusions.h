@@ -17,11 +17,10 @@ class QuadExclusions
 
 public:
     QuadExclusions();
-    bool ReadExclusions();
+    void ReadExclusions();
+    void WriteExclusions();
 
     bool IsExcluded(const sf::Vector2i& point) const;
     bool ToggleExclusion(const sf::Vector2i& point);
-
-    void WriteExclusions();
 };
 
