@@ -5,8 +5,8 @@
 #include <map>
 #include "Rasterizer.h"
 
-Rasterizer::Rasterizer(LineStripLoader* lineStripLoader, int size)
-    : lineStrips(lineStripLoader), quadtree(size), size(size)
+Rasterizer::Rasterizer(LineStripLoader* lineStripLoader, QuadExclusions* quadExclusions, int size)
+    : lineStrips(lineStripLoader), quadExclusions(quadExclusions), quadtree(size), size(size)
 {
 }
 
@@ -52,34 +52,35 @@ void Rasterizer::Setup()
 }
 
 // Same as the above but treats the index as a line.
-decimal Rasterizer::GetLineDistance(Index idx, Point point)
+decimal Rasterizer::GetLineDistanceSqd(Index idx, Point point)
 {
-    Point start = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx];
-    Point end = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx + 1];
+    Point& start = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx];
+    Point& end = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx + 1];
     
-    decimal startEndLength = sqrt(pow(end.x - start.x, 2) + pow(end.y - start.y, 2));
     Point startToEnd(end.x - start.x, end.y - start.y);
+    decimal startEndLengthSqd = pow(startToEnd.x, 2) + pow(startToEnd.y, 2);
+    
+    // Taking the dot product of the start-to-point vector with the (normalized) start-to-end vector.
     Point startToPoint(point.x - start.x, point.y - start.y);
-    decimal projectionLength = (startToPoint.x * startToEnd.x + startToPoint.y * startToEnd.y) / startEndLength;
+    decimal projectionFraction = (startToPoint.x * startToEnd.x + startToPoint.y * startToEnd.y) / startEndLengthSqd;
 
-    if (projectionLength > 0 && projectionLength < startEndLength)
+    if (projectionFraction > 0 && projectionFraction < 1)
     {
-        decimal fraction = projectionLength / startEndLength;
-        Point closestPoint(start.x + startToEnd.x * fraction, start.y + startToEnd.y * fraction);
-
-        return sqrt(pow(closestPoint.x - point.x, 2) + pow(closestPoint.y - point.y, 2));
+        Point closestPoint(start.x + startToEnd.x * projectionFraction, start.y + startToEnd.y * projectionFraction);
+        return pow(closestPoint.x - point.x, 2) + pow(closestPoint.y - point.y, 2);
     }
-    else if (projectionLength < 0)
+    else if (projectionFraction < 0)
     {
-        return sqrt(pow(start.x - point.x, 2) + pow(start.y - point.y, 2));
+        return pow(start.x - point.x, 2) + pow(start.y - point.y, 2);
     }
 
-    return sqrt(pow(end.x - point.x, 2) + pow(end.y - point.y, 2));
+    return pow(end.x - point.x, 2) + pow(end.y - point.y, 2);
 }
 
 void Rasterizer::AddIfValid(int xP, int yP, std::vector<sf::Vector2i>& searchQuads)
 {
-    if (xP >= 0 && yP >= 0 && xP < size && yP < size && quadtree.QuadSize(sf::Vector2i(xP, yP)) != 0)
+    sf::Vector2i pt(xP, yP);
+    if (xP >= 0 && yP >= 0 && xP < size && yP < size && !quadExclusions->IsExcluded(pt) && quadtree.QuadSize(pt) != 0)
     {
         searchQuads.push_back(sf::Vector2i(xP, yP));
     }
@@ -93,7 +94,7 @@ void Rasterizer::AddAreasToSearch(int distance, sf::Vector2i startQuad, std::vec
     }
     else
     {
-        // Add the horizontal bars.
+        // Add the horizontal bars
         for (int i = startQuad.x - distance; i <= startQuad.x + distance; i++)
         {
             AddIfValid(i, startQuad.y + distance, searchQuads);
@@ -113,13 +114,19 @@ decimal Rasterizer::FindClosestPoint(Point point)
 {
     sf::Vector2i quadSquare = GetQuadtreeSquare(point);
 
+    if (quadExclusions->IsExcluded(quadSquare))
+    {
+        // The point the point is within is excluded. Return immediately.
+        return 2e8;
+    }
+
     // Loop forever as we are guaranteed to eventually find a point.
     int gridDistance = 0;
     std::vector<sf::Vector2i> searchQuads;
 
     bool foundAPoint = false;
     int overrun = 0;
-    const int overrunLimit = 7; // Empirically determined to be 'ok'
+    const int overrunLimit = 5; // Empirically determined to be 'ok'
     std::map<int, decimal> closestElevations;
     std::map<int, decimal> closestDistances;
     while (true)
@@ -134,27 +141,25 @@ decimal Rasterizer::FindClosestPoint(Point point)
             {
                 Index index = quadtree.GetIndexFromQuad(searchQuads[k], (int)i);
                 
-                decimal lineDist = GetLineDistance(index, point);
-                if (lineDist < 1e-12)
+                decimal lineDistSqd = GetLineDistanceSqd(index, point);
+                if (lineDistSqd < 1e-12)
                 {
                     return (decimal)lineStrips->lineStrips[index.stripIdx].elevation;
                 }
-
-                // int quadrant = GetQuadrant(angle);
 
                 // See if there's a closest line for this elevation and replace as needed
                 int elevationId = lineStrips->lineStrips[index.stripIdx].elevationId;
                 if (closestDistances.find(elevationId) != closestDistances.end())
                 {
-                    if (lineDist < closestDistances[elevationId])
+                    if (lineDistSqd < closestDistances[elevationId])
                     {
-                        closestDistances[elevationId] = lineDist;
+                        closestDistances[elevationId] = lineDistSqd;
                     }
                 }
                 else
                 {
                     closestElevations[elevationId] = (decimal)lineStrips->lineStrips[index.stripIdx].elevation;
-                    closestDistances[elevationId] = lineDist;
+                    closestDistances[elevationId] = lineDistSqd;
                 }
 
                 foundAPoint = true;
@@ -168,9 +173,9 @@ decimal Rasterizer::FindClosestPoint(Point point)
 
             for (std::map<int, decimal>::iterator iter = closestElevations.begin(); iter != closestElevations.end(); iter++)
             {
-                int elevationId = iter->first;
-                elevation += iter->second / closestDistances[elevationId];
-                inverseWeights += (decimal)1.0 / closestDistances[elevationId];
+                decimal closestDist = sqrt(closestDistances[iter->first]);
+                elevation += iter->second / closestDist;
+                inverseWeights += (decimal)1.0 / closestDist;
             }
 
             return elevation / inverseWeights;
@@ -200,20 +205,24 @@ void Rasterizer::RasterizeColumnRange(decimal leftOffset, decimal topOffset, dec
             decimal elevation = FindClosestPoint(point);
             (*rasterStore)[i + j * size] = elevation;
 
-            if (elevation < *minElevation)
+            // Avoid scaling based on the exclusion lists.
+            if (elevation < 1e8)
             {
-                *minElevation = elevation;
-            }
+                if (elevation < *minElevation)
+                {
+                    *minElevation = elevation;
+                }
 
-            if (elevation > *maxElevation)
-            {
-                *maxElevation = elevation;
+                if (elevation > *maxElevation)
+                {
+                    *maxElevation = elevation;
+                }
             }
         }
 
-        if (i % 20 == 0)
+        if (i % 50 == 0)
         {
-            std::cout << "Rasterized line " << i << " of " << size << std::endl;
+            std::cout << "Rasterized " << i << " of " << size << std::endl;
         }
     }
 
@@ -225,7 +234,7 @@ void Rasterizer::Rasterize(decimal leftOffset, decimal topOffset, decimal effect
     minElevation = std::numeric_limits<double>::max();
     maxElevation = std::numeric_limits<double>::min();
 
-    const int splitFactor = 7;
+    const int splitFactor = 5;
     double minElevations[splitFactor];
     double maxElevations[splitFactor];
     std::thread* threads[splitFactor];
@@ -263,40 +272,65 @@ void Rasterizer::Rasterize(decimal leftOffset, decimal topOffset, decimal effect
     std::cout << "Rasterization complete." << std::endl;
 }
 
-void Rasterizer::LineRaster(decimal leftOffset, decimal topOffset, decimal effectiveSize, double** rasterStore)
+// Rasterizes a range of lines to improve perf.
+void Rasterizer::RasterizeLineColumnRange(decimal leftOffset, decimal topOffset, decimal effectiveSize, int startColumn, int columnCount, double** rasterStore)
 {
-    // This could also be parallelized.
-    std::cout << "Line Rasterizing..." << std::endl;
-    int m = 0;
-    for (int i = 0; i < size; i++)
+    for (int i = startColumn; i < startColumn + columnCount; i++)
     {
         for (int j = 0; j < size; j++)
         {
             decimal x = leftOffset + ((decimal)i / (decimal)size) * effectiveSize;
             decimal y = topOffset + ((decimal)j / (decimal)size) * effectiveSize;
-            decimal wiggleDist = effectiveSize / (decimal)size;
+            decimal wiggleDistSqd = pow(effectiveSize / (decimal)size, 2);
 
             Point point(x, y);
-
             sf::Vector2i quadSquare = GetQuadtreeSquare(point);
-           
+
+            bool filled = false;
             for (size_t k = 0; k < quadtree.QuadSize(quadSquare); k++)
             {
                 Index index = quadtree.GetIndexFromQuad(quadSquare, (int)k);
-                
-                decimal lineDist = GetLineDistance(index, point);
-                if (lineDist < wiggleDist)
+
+                decimal lineDistSqd = GetLineDistanceSqd(index, point);
+                if (lineDistSqd < wiggleDistSqd)
                 {
-                    (*rasterStore)[i + j * size] = 2e8; // Bigger than anything we'll hit.
+                    filled = true;
                     break;
                 }
             }
+
+            (*rasterStore)[i + j * size] = filled ? 1 : 0;
         }
 
         if (i % 20 == 0)
         {
-            std::cout << "Line rasterized line " << i << " of " << size << std::endl;
+            std::cout << "Line rendered " << i << " of " << size << std::endl;
         }
+    }
+
+    std::cout << "Thread from " << startColumn << " to " << (startColumn + columnCount) << " complete." << std::endl;
+}
+
+void Rasterizer::LineRaster(decimal leftOffset, decimal topOffset, decimal effectiveSize, double** rasterStore)
+{
+    // This could also be parallelized.
+    std::cout << "Line Rasterizing..." << std::endl;
+    
+    const int splitFactor = 5;
+    std::thread* threads[splitFactor];
+
+    int range = size / splitFactor;
+    for (int i = 0; i < splitFactor; i++)
+    {
+        threads[i] = new std::thread(&Rasterizer::RasterizeLineColumnRange, this, leftOffset, topOffset, effectiveSize, i * range, range, rasterStore);
+    }
+
+    std::cout << "Rasterizing..." << std::endl;
+
+    for (int i = 0; i < splitFactor; i++)
+    {
+        threads[i]->join();
+        delete threads[i];
     }
 
     std::cout << "Rasterization complete." << std::endl;

@@ -2,6 +2,7 @@
 #include <SFML\System.hpp>
 #include <SFML\Graphics.hpp>
 #include <vector>
+#include <future>
 #include <string>
 #include "ColorMapper.h"
 #include "Definitions.h"
@@ -18,6 +19,9 @@ class ContourTiler
     sf::Vector2i mousePos;
     sf::RectangleShape zoomShape;
 
+    sf::RectangleShape exclusionShape;
+    bool hideExclusionShape;
+
     decimal leftOffset;
     decimal topOffset;
     decimal effectiveSize;
@@ -25,14 +29,21 @@ class ContourTiler
     double minElevation, maxElevation;
     double* rasterizationBuffer;
     Rasterizer rasterizer;
+    std::future<void> renderingThread;
+    bool isRendering;
+    sf::Time rasterStartTime;
     LineStripLoader lineStripLoader;
+    QuadExclusions quadExclusions;
+
+    double* linesBuffer;
 
     bool colorize, rescale, lines;
     ColorMapper colorMapper;
+    sf::Time lastUpdateTime;
     
     sf::Texture overallTexture;
     sf::Sprite overallSprite;
-    void CreateOverallTexture();
+    void SetupGraphicsElements();
     void FillOverallTexture();
     void UpdateTextureFromBuffer();
     
@@ -40,7 +51,7 @@ class ContourTiler
     void HandleEvents(sf::RenderWindow& window, bool& alive);
 
     // Renders the scene.
-    void Render(sf::RenderWindow& window);
+    void Render(sf::RenderWindow& window, sf::Time elapsedTime);
 
 public:
     // Initializes the ContourTiler

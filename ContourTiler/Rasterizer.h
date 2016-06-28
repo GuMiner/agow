@@ -4,11 +4,13 @@
 #include <vector>
 #include "Definitions.h"
 #include "LineStripLoader.h"
+#include "QuadExclusions.h"
 #include "Quadtree.h"
 
 class Rasterizer
 {
     LineStripLoader* lineStrips;
+    QuadExclusions* quadExclusions;
     Quadtree quadtree;
 
     // The number of quadtree xy grid spaces.
@@ -17,7 +19,7 @@ class Rasterizer
     sf::Vector2i GetQuadtreeSquare(Point givenPoint);
 
     // Gets the closest distance from a point to a line ensuring we account for endpoints.
-    decimal GetLineDistance(Index idx, Point point);
+    decimal GetLineDistanceSqd(Index idx, Point point);
 
     // Adds an area if it is valid.
     void AddIfValid(int xP, int yP, std::vector<sf::Vector2i>& searchQuads);
@@ -26,14 +28,16 @@ class Rasterizer
     void AddAreasToSearch(int distance, sf::Vector2i startQuad, std::vector<sf::Vector2i>& searchQuads);
 
     // Returns the height of the closest point to the specified coordinates.
-    int GetQuadrant(decimal angle);
     decimal FindClosestPoint(Point point);
 
     // Rasterizes a range of columns to improve perf.
     void RasterizeColumnRange(decimal leftOffset, decimal topOffset, decimal effectiveSize, int startColumn, int columnCount, double** rasterStore, double* minElevation, double* maxElevation);
 
+    // Rasterizes a range of lines to improve perf.
+    void RasterizeLineColumnRange(decimal leftOffset, decimal topOffset, decimal effectiveSize, int startColumn, int columnCount, double** rasterStore);
+
 public:
-    Rasterizer(LineStripLoader* lineStripLoader, int size);
+    Rasterizer(LineStripLoader* lineStripLoader, QuadExclusions* quadExclusions, int size);
 
     // Setup to be done before rasterization can be performed.
     void Setup();

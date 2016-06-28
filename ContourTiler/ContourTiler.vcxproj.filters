@@ -6,6 +6,7 @@
     <ClCompile Include="ColorMapper.cpp" />
     <ClCompile Include="LineStripLoader.cpp" />
     <ClCompile Include="Quadtree.cpp" />
+    <ClCompile Include="QuadExclusions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ContourTiler.h" />
@@ -14,5 +15,6 @@
     <ClInclude Include="ColorMapper.h" />
     <ClInclude Include="LineStripLoader.h" />
     <ClInclude Include="Quadtree.h" />
+    <ClInclude Include="QuadExclusions.h" />
   </ItemGroup>
 </Project>

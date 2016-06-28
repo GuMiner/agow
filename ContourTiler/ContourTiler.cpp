@@ -1,5 +1,6 @@
 #include <array>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <future>
 #include <limits>
@@ -21,15 +22,16 @@
     #pragma comment(lib, "lib/sfml-graphics-d")
 #endif
 
-ContourTiler::ContourTiler() // Size must be divisible by 7.
-    : lineStripLoader(), size(1050), rasterizer(&lineStripLoader, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]),
-    leftOffset((decimal)0.0703289), topOffset((decimal)0.27929), effectiveSize((decimal)0.0188231), mouseStart(-1, -1), mousePos(-1, -1),
-    rerender(false), colorize(false), rescale(false), lines(false)
+ContourTiler::ContourTiler() // Size must be divisible by 5.
+    : lineStripLoader(), quadExclusions(), size(1000), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]),
+      leftOffset((decimal)0.0703289), topOffset((decimal)0.27929), effectiveSize((decimal)0.0188231), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false),
+      rerender(false), colorize(false), rescale(false), lines(true), hideExclusionShape(false)
 { }
 
 ContourTiler::~ContourTiler()
 {
     delete[] rasterizationBuffer;
+    delete[] linesBuffer;
 }
 
 void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
@@ -63,21 +65,35 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 // Draw lines
                 lines = !lines;
                 std::cout << "Lines: " << lines << std::endl;
-                sf::sleep(sf::milliseconds(500));
-                rerender = true;
             }
             else if (event.key.code == sf::Keyboard::C)
             {
                 // Colorize (true/false)
                 colorize = !colorize;
                 std::cout << "Toggled colorize: " << rescale << std::endl;
-                UpdateTextureFromBuffer();
             }
             else if (event.key.code == sf::Keyboard::S)
             {
                 rescale = !rescale;
                 std::cout << "Toggled rescale: " << rescale << std::endl;
-                UpdateTextureFromBuffer();
+            }
+            else if (event.key.code == sf::Keyboard::A)
+            {
+                decimal x = leftOffset + (mousePos.x / (decimal)size) * effectiveSize;
+                decimal y = topOffset + (mousePos.y / (decimal)size) * effectiveSize;
+
+                sf::Vector2i point(std::min((int)(x * size), size - 1), std::min((int)(y * size), size - 1));
+                std::cout << "Toggled point [" << point.x << ", " << point.y << "] to " << quadExclusions.ToggleExclusion(point) << std::endl;
+            }
+            else if (event.key.code == sf::Keyboard::W)
+            {
+                quadExclusions.WriteExclusions();
+                std::cout << "Wrote out the quad exclusion list." << std::endl;
+            }
+            else if (event.key.code == sf::Keyboard::H)
+            {
+                hideExclusionShape = !hideExclusionShape;
+                std::cout << "Toggled hiding the exclusion shape." << std::endl;
             }
         }
         else if (event.type == sf::Event::MouseButtonPressed)
@@ -120,7 +136,24 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
         }
         else if (event.type == sf::Event::MouseMoved)
         {
+            // Update for the zoom rectangle and exclusion shape.
             mousePos = sf::Vector2i(event.mouseMove.x, event.mouseMove.y);
+
+            decimal x = leftOffset + (mousePos.x / (decimal)size) * effectiveSize;
+            decimal y = topOffset + (mousePos.y / (decimal)size) * effectiveSize;
+
+            sf::Vector2i point(std::min((int)(x * size), size - 1), std::min((int)(y * size), size - 1));
+            sf::Vector2i nextPoint(point.x + 1, point.y + 1);
+
+            decimal startX = ((((decimal)point.x / (decimal)size) - leftOffset) / effectiveSize) * size;
+            decimal startY = ((((decimal)point.y / (decimal)size) - topOffset) / effectiveSize) * size;
+            decimal endX = ((((decimal)nextPoint.x / (decimal)size) - leftOffset) / effectiveSize) * size;
+            decimal endY = ((((decimal)nextPoint.y / (decimal)size) - topOffset) / effectiveSize) * size;
+
+            sf::Vector2f size(sf::Vector2f(std::abs(startX - endX), std::abs(startY - endY)));
+            exclusionShape.setPosition(sf::Vector2f(startX, endY));
+            exclusionShape.setSize(size);
+            // std::cout << "Moved exclusion shape to [" << startX << ", " << startY << "], scaled to [" << size.x << ", " << size.y << "]." << std::endl;
         }
         else if (event.type == sf::Event::MouseButtonReleased)
         {
@@ -147,7 +180,7 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
     }
 }
 
-void ContourTiler::CreateOverallTexture()
+void ContourTiler::SetupGraphicsElements()
 {
     overallTexture.create(size, size);
     overallTexture.setRepeated(false);
@@ -159,16 +192,18 @@ void ContourTiler::CreateOverallTexture()
     zoomShape.setOutlineColor(sf::Color::Green);
     zoomShape.setOutlineThickness(1);
     zoomShape.setFillColor(sf::Color::Transparent);
+
+    // And the exclusion shape.
+    exclusionShape.setFillColor(sf::Color(0, 0, 255, 200));
 }
 
 void ContourTiler::FillOverallTexture()
 {
     // Rasterize
     rasterizer.Rasterize(leftOffset, topOffset, effectiveSize, &rasterizationBuffer, minElevation, maxElevation);
-
     if (lines)
     {
-        rasterizer.LineRaster(leftOffset, topOffset, effectiveSize, &rasterizationBuffer);
+        rasterizer.LineRaster(leftOffset, topOffset, effectiveSize, &linesBuffer);
     }
 
     UpdateTextureFromBuffer();
@@ -182,17 +217,20 @@ void ContourTiler::UpdateTextureFromBuffer()
     {
         for (int j = 0; j < size; j++)
         {
-            int pixelIdx = (i + j * size) * 4;
             double elevation = rasterizationBuffer[i + j * size];
-            if (elevation < minElevation || elevation > maxElevation)
+            double elevationPercent = rescale ? (elevation - minElevation) / (maxElevation - minElevation) : elevation;
+            int pixelIdx = (i + j * size) * 4;
+
+            if (elevation > 1)
             {
-                pixels[pixelIdx] = 255;
-                pixels[pixelIdx + 1] = 255;
-                pixels[pixelIdx + 2] = 0;
+                // Exclusion zones.
+                pixels[pixelIdx] = 200;
+                pixels[pixelIdx + 1] = 0;
+                pixels[pixelIdx + 2] = 230;
             }
             else
             {
-                double elevationPercent = rescale ? (elevation - minElevation) / (maxElevation - minElevation) : elevation;
+                // Rasterization buffer.
                 if (colorize)
                 {
                     colorMapper.MapColor(elevationPercent, &pixels[pixelIdx], &pixels[pixelIdx + 1], &pixels[pixelIdx + 2]);
@@ -207,6 +245,13 @@ void ContourTiler::UpdateTextureFromBuffer()
                 }
             }
 
+            // Lines buffer modification, only if applicable.
+            if (lines && linesBuffer[i + j * size] > 0.5)
+            {
+                pixels[pixelIdx] = std::min(255, pixels[pixelIdx] + 50);
+                pixels[pixelIdx + 1] = std::min(255, pixels[pixelIdx] + 50);
+            }
+
             pixels[pixelIdx + 3] = 255;
         }
     }
@@ -215,16 +260,35 @@ void ContourTiler::UpdateTextureFromBuffer()
     delete[] pixels;
 }
 
-void ContourTiler::Render(sf::RenderWindow& window)
+void ContourTiler::Render(sf::RenderWindow& window, sf::Time elapsedTime)
 {
-    window.clear(sf::Color::Blue);
-
-    if (rerender)
+    // Rerender as needed on a separate thread.
+    if (rerender && !isRendering)
     {
-        FillOverallTexture();
-        rerender = false;
+        isRendering = true;
+        rasterStartTime = elapsedTime;
+        renderingThread = std::async(std::launch::async, &ContourTiler::FillOverallTexture, this);
+    }
+    else if (isRendering)
+    {
+        std::future_status status = renderingThread.wait_until(std::chrono::system_clock::now());
+        if (status == std::future_status::ready)
+        {
+            rerender = false;
+            isRendering = false;
+            std::cout << "Raster time: " << (elapsedTime - rasterStartTime).asSeconds() << " s." << std::endl;
+        }
     }
 
+    // Update the texture at a reasonable but not too fast pace.
+    if (elapsedTime - lastUpdateTime > sf::milliseconds(100))
+    {
+        lastUpdateTime = elapsedTime;
+        UpdateTextureFromBuffer();
+    }
+
+    // Draw the raster result and our zoom box if applicable.
+    window.clear(sf::Color::Blue);
     window.draw(overallSprite);
 
     if (mouseStart.x != -1)
@@ -233,6 +297,11 @@ void ContourTiler::Render(sf::RenderWindow& window)
         float minDiff = std::min((float)(mousePos.x - mouseStart.x), (float)(mousePos.y - mouseStart.y));
         zoomShape.setSize(sf::Vector2f(minDiff, minDiff));
         window.draw(zoomShape);
+    }
+
+    if (!hideExclusionShape)
+    {
+        window.draw(exclusionShape);
     }
 }
 
@@ -254,15 +323,17 @@ void ContourTiler::Run()
 
     rasterizer.Setup();
 
-    CreateOverallTexture();
+    SetupGraphicsElements();
     rerender = true;
 
     // Start the main loop
     bool alive = true;
+    sf::Clock timer;
+    lastUpdateTime = timer.getElapsedTime();
     while (alive)
     {
         HandleEvents(window, alive);
-        Render(window);
+        Render(window, timer.getElapsedTime());
 
         // Display what we rendered.
         window.display();
