@@ -24,7 +24,7 @@
 
 ContourTiler::ContourTiler() // Size must be divisible by 5.
     : lineStripLoader(), quadExclusions(), size(1000), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]),
-      leftOffset((decimal)0.0703289), topOffset((decimal)0.27929), effectiveSize((decimal)0.0188231), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false),
+      leftOffset((decimal)0.169734), topOffset((decimal)0.291619), effectiveSize((decimal)0.0181266), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false),
       rerender(false), colorize(false), rescale(false), lines(true), hideExclusionShape(false)
 { }
 

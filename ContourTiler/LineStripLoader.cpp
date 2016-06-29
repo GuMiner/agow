@@ -71,23 +71,24 @@ bool LineStripLoader::Initialize(std::string lineStripFilename)
         lineStripFile.read((char*)&pointCount, sizeof(int));
 
         lineStrips[i].points.reserve(pointCount);
+        double* allPoints = new double[pointCount * 2];
+        lineStripFile.read((char*)allPoints, sizeof(double) * 2 * pointCount);
+
         for (int j = 0; j < pointCount; j++)
         {
-            double xy[2];
-            lineStripFile.read((char*)&xy, sizeof(double) * 2);
-
-            Point point;
-            point.x = (decimal)((xy[0] - Constant::XMin) / (Constant::XMax - Constant::XMin));
-            point.y = (decimal)((xy[1] - Constant::YMin) / (Constant::YMax - Constant::YMin));
-            lineStrips[i].points.push_back(point);
-
             ++points;
             if (points % 1000000 == 0)
             {
-                std::cout << "Read in point " << points << ". ("  << (float)points / 1.5e7f << "%)" << std::endl;
+                std::cout << "Read in point " << points << ". (" << (float)points / 1.5e7f << "%)" << std::endl;
             }
+
+            Point point;
+            point.x = (decimal)((allPoints[j * 2] - Constant::XMin) / (Constant::XMax - Constant::XMin));
+            point.y = (decimal)((allPoints[j * 2 + 1] - Constant::YMin) / (Constant::YMax - Constant::YMin));
+            lineStrips[i].points.push_back(point);
         }
 
+        delete[] allPoints;
         if (i % 10000 == 0)
         {
             std::cout << "Read in line strip " << i << std::endl;

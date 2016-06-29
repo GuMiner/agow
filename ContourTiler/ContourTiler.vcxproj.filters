@@ -7,6 +7,7 @@
     <ClCompile Include="LineStripLoader.cpp" />
     <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="QuadExclusions.cpp" />
+    <ClCompile Include="CloseContourRanker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ContourTiler.h" />
@@ -16,5 +17,6 @@
     <ClInclude Include="LineStripLoader.h" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="QuadExclusions.h" />
+    <ClInclude Include="CloseContourRanker.h" />
   </ItemGroup>
 </Project>

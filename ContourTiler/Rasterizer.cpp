@@ -3,18 +3,23 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include "CloseContourRanker.h"
 #include "Rasterizer.h"
+
+double toggle;
 
 Rasterizer::Rasterizer(LineStripLoader* lineStripLoader, QuadExclusions* quadExclusions, int size)
     : lineStrips(lineStripLoader), quadExclusions(quadExclusions), quadtree(size), size(size)
 {
+    toggle = 0;
 }
+
 
 sf::Vector2i Rasterizer::GetQuadtreeSquare(Point givenPoint)
 {
     return sf::Vector2i(
-        std::min((int)(givenPoint.x * size), size - 1),
-        std::min((int)(givenPoint.y * size), size - 1));
+        std::min((int)(givenPoint.x * (decimal)size + (decimal)toggle), size - 1),
+        std::min((int)(givenPoint.y * (decimal)size + (decimal)toggle), size - 1));
 }
 
 void Rasterizer::Setup()
@@ -47,6 +52,8 @@ void Rasterizer::Setup()
             }
         }
     }
+
+    toggle = 0;
 
     std::cout << "Quadtree initialized!" << std::endl;
 }
@@ -88,27 +95,27 @@ void Rasterizer::AddIfValid(int xP, int yP, std::vector<sf::Vector2i>& searchQua
 
 void Rasterizer::AddAreasToSearch(int distance, sf::Vector2i startQuad, std::vector<sf::Vector2i>& searchQuads)
 {
-    if (distance == 0)
+    if (distance == 1)
     {
         searchQuads.push_back(startQuad);
     }
-    else
-    {
-        // Add the horizontal bars
-        for (int i = startQuad.x - distance; i <= startQuad.x + distance; i++)
-        {
-            AddIfValid(i, startQuad.y + distance, searchQuads);
-            AddIfValid(i, startQuad.y - distance, searchQuads);
-        }
 
-        // Add the vertical bars, skipping the corners that otherwise would be duplicated.
-        for (int j = startQuad.y - (distance - 1); j <= startQuad.y + (distance - 1); j++)
-        {
-            AddIfValid(startQuad.x + distance, j, searchQuads);
-            AddIfValid(startQuad.x - distance, j, searchQuads);
-        }
+    // Add the horizontal bars
+    for (int i = startQuad.x - distance; i <= startQuad.x + distance; i++)
+    {
+        AddIfValid(i, startQuad.y + distance, searchQuads);
+        AddIfValid(i, startQuad.y - distance, searchQuads);
+    }
+
+    // Add the vertical bars, skipping the corners that otherwise would be duplicated.
+    for (int j = startQuad.y - (distance - 1); j <= startQuad.y + (distance - 1); j++)
+    {
+        AddIfValid(startQuad.x + distance, j, searchQuads);
+        AddIfValid(startQuad.x - distance, j, searchQuads);
     }
 }
+
+
 
 decimal Rasterizer::FindClosestPoint(Point point)
 {
@@ -121,15 +128,13 @@ decimal Rasterizer::FindClosestPoint(Point point)
     }
 
     // Loop forever as we are guaranteed to eventually find a point.
-    int gridDistance = 0;
+    int gridDistance = 1;
     std::vector<sf::Vector2i> searchQuads;
 
     bool foundAPoint = false;
     int overrun = 0;
     const int overrunLimit = 5; // Empirically determined to be 'ok'
-    const int minOverscan = 1;
-    std::map<int, decimal> closestElevations;
-    std::map<int, decimal> closestDistances;
+    CloseContourRanker contourRanker = CloseContourRanker();
     while (true)
     {
         searchQuads.clear();
@@ -148,38 +153,16 @@ decimal Rasterizer::FindClosestPoint(Point point)
                     return (decimal)lineStrips->lineStrips[index.stripIdx].elevation;
                 }
 
-                // See if there's a closest line for this elevation and replace as needed
+                // Add to the ranker, which manages priority of lines.
                 int elevationId = lineStrips->lineStrips[index.stripIdx].elevationId;
-                if (closestDistances.find(elevationId) != closestDistances.end())
-                {
-                    if (lineDistSqd < closestDistances[elevationId])
-                    {
-                        closestDistances[elevationId] = lineDistSqd;
-                    }
-                }
-                else
-                {
-                    closestElevations[elevationId] = (decimal)lineStrips->lineStrips[index.stripIdx].elevation;
-                    closestDistances[elevationId] = lineDistSqd;
-                }
-
+                contourRanker.AddElevationToRank(CloseContourLine(lineDistSqd, elevationId, (decimal)lineStrips->lineStrips[index.stripIdx].elevation));
                 foundAPoint = true;
             }
         }
 
-        if (foundAPoint && (overrun >= overrunLimit || (closestElevations.size() > 1 && overrun >= minOverscan)))
+        if (foundAPoint && (overrun >= overrunLimit || (contourRanker.FilledSufficientLines() && overrun != 0)))
         {
-            decimal elevation = 0;
-            decimal inverseWeights = 0;
-
-            for (std::map<int, decimal>::iterator iter = closestElevations.begin(); iter != closestElevations.end(); iter++)
-            {
-                decimal closestDist = sqrt(closestDistances[iter->first]);
-                elevation += iter->second / closestDist;
-                inverseWeights += (decimal)1.0 / closestDist;
-            }
-
-            return elevation / inverseWeights;
+            return contourRanker.GetWeightedElevation();
         }
         else if (foundAPoint)
         {

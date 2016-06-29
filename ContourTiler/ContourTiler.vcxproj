@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CloseContourRanker.cpp" />
     <ClCompile Include="ColorMapper.cpp" />
     <ClCompile Include="ContourTiler.cpp" />
     <ClCompile Include="LineStripLoader.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="Rasterizer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CloseContourRanker.h" />
     <ClInclude Include="ColorMapper.h" />
     <ClInclude Include="ContourTiler.h" />
     <ClInclude Include="Definitions.h" />
