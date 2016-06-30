@@ -23,7 +23,7 @@
 #endif
 
 ContourTiler::ContourTiler() // Size must be divisible by 5.
-    : lineStripLoader(), quadExclusions(), size(1000), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]),
+    : lineStripLoader(), quadExclusions(), size(1000), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]), coverBuffer(new bool[size * size]),
       leftOffset((decimal)0.169734), topOffset((decimal)0.291619), effectiveSize((decimal)0.0181266), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false),
       rerender(false), colorize(false), rescale(false), lines(true), hideExclusionShape(false)
 { }
@@ -88,7 +88,21 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 decimal y = topOffset + (mousePos.y / (decimal)size) * effectiveSize;
 
                 sf::Vector2i point(std::min((int)(x * size), size - 1), std::min((int)(y * size), size - 1));
-                std::cout << "Toggled point [" << point.x << ", " << point.y << "] to " << quadExclusions.ToggleExclusion(point) << std::endl;
+                bool exclusionStatus = quadExclusions.ToggleExclusion(point);
+                std::cout << "Toggled point [" << point.x << ", " << point.y << "] to " << exclusionStatus << std::endl;
+
+                // Update our temporary display accordingly.
+                int xStart = (int)exclusionShape.getPosition().x;
+                int yStart = (int)exclusionShape.getPosition().y;
+                int xEnd = xStart + (int)exclusionShape.getSize().x;
+                int yEnd = yStart + (int)exclusionShape.getSize().y;
+                for (int i = xStart; i < xEnd; i++)
+                {
+                    for (int j = yStart; j < yEnd; j++)
+                    {
+                        coverBuffer[i + j * size] = exclusionStatus;
+                    }
+                }
             }
             else if (event.key.code == sf::Keyboard::W)
             {
@@ -98,6 +112,11 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
             {
                 hideExclusionShape = !hideExclusionShape;
                 std::cout << "Toggled hiding the exclusion shape." << std::endl;
+            }
+            else if (event.key.code == sf::Keyboard::Z)
+            {
+                isZoomMode = !isZoomMode;
+                std::cout << "Toggled zoom/exclude mode: " << isZoomMode << "." << std::endl;
             }
         }
         else if (event.type == sf::Event::MouseButtonPressed)
@@ -167,15 +186,51 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 int yNew = event.mouseButton.y;
                 if (xNew > mouseStart.x && yNew > mouseStart.y)
                 {
-                    // We have a valid zoom-in. Determine the new bounding box. However, we want a proper scaling factor.
-                    decimal scalingFactor = std::min(((decimal)(xNew - mouseStart.x) / (decimal)size), ((decimal)(yNew - mouseStart.y / (decimal)size)));
+                    if (isZoomMode)
+                    {
+                        // We have a valid zoom-in. Determine the new bounding box. However, we want a proper scaling factor.
+                        decimal scalingFactor = std::min(((decimal)(xNew - mouseStart.x) / (decimal)size), ((decimal)(yNew - mouseStart.y / (decimal)size)));
 
-                    leftOffset += ((decimal)mouseStart.x / (decimal)size) * effectiveSize;
-                    topOffset += ((decimal)mouseStart.y / (decimal)size) * effectiveSize;
-                    effectiveSize = scalingFactor * effectiveSize;
-                    std::cout << "Using a new bounding box of [" << leftOffset << ", " << topOffset << ", " << effectiveSize << ", " << effectiveSize << std::endl;
-                    sf::sleep(sf::milliseconds(500));
-                    rerender = true;
+                        leftOffset += ((decimal)mouseStart.x / (decimal)size) * effectiveSize;
+                        topOffset += ((decimal)mouseStart.y / (decimal)size) * effectiveSize;
+                        effectiveSize = scalingFactor * effectiveSize;
+                        std::cout << "Using a new bounding box of [" << leftOffset << ", " << topOffset << ", " << effectiveSize << ", " << effectiveSize << std::endl;
+                        sf::sleep(sf::milliseconds(500));
+                        rerender = true;
+                    }
+                    else
+                    {
+                        // We have a valid exclusion. Exclude all the points within the bounding box.
+                        decimal xStart = leftOffset + (mouseStart.x / (decimal)size) * effectiveSize;
+                        decimal yStart = topOffset + (mouseStart.y / (decimal)size) * effectiveSize;
+                        decimal xEnd = leftOffset + (mousePos.x / (decimal)size) * effectiveSize;
+                        decimal yEnd = topOffset + (mousePos.y / (decimal)size) * effectiveSize;
+
+                        sf::Vector2i pointStart(std::min((int)(xStart * size), size - 1), std::min((int)(yStart * size), size - 1));
+                        sf::Vector2i pointEnd(std::min((int)(xEnd * size), size - 1), std::min((int)(yEnd * size), size - 1));
+                        
+                        for (int x = std::min(pointStart.x, pointEnd.x); x <= std::max(pointStart.x, pointEnd.x); x++)
+                        {
+                            for (int y = std::min(pointStart.y, pointEnd.y); y <= std::max(pointStart.y, pointEnd.y); y++)
+                            {
+                                sf::Vector2i point(x, y);
+                                if (!quadExclusions.ToggleExclusion(point))
+                                {
+                                    quadExclusions.ToggleExclusion(point);
+                                }
+                                std::cout << "Excluded point [" << point.x << ", " << point.y << "]." << std::endl;
+                            }
+                        }
+                        
+                        // Now update the visible display, but in a less strict manner for basic setup.
+                        for (int i = mouseStart.x; i < mousePos.x; i++)
+                        {
+                            for (int j = mouseStart.y; j < mousePos.y; j++)
+                            {
+                                coverBuffer[i + j * size] = true;
+                            }
+                        }
+                    }
                 }
 
                 mouseStart = sf::Vector2i(-1, -1);
@@ -213,6 +268,17 @@ void ContourTiler::FillOverallTexture()
     UpdateTextureFromBuffer();
 }
 
+void ContourTiler::ClearCoverPane()
+{
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            coverBuffer[i + j*size] = false;
+        }
+    }
+}
+
 void ContourTiler::UpdateTextureFromBuffer()
 {
     // Copy over to the image with an appropriate color mapping.
@@ -225,7 +291,7 @@ void ContourTiler::UpdateTextureFromBuffer()
             double elevationPercent = rescale ? (elevation - minElevation) / (maxElevation - minElevation) : elevation;
             int pixelIdx = (i + j * size) * 4;
 
-            if (elevation > 1)
+            if (elevation > 1 || coverBuffer[i + j * size])
             {
                 // Exclusion zones.
                 pixels[pixelIdx] = 200;
@@ -269,6 +335,7 @@ void ContourTiler::Render(sf::RenderWindow& window, sf::Time elapsedTime)
     // Rerender as needed on a separate thread.
     if (rerender && !isRendering)
     {
+        ClearCoverPane();
         isRendering = true;
         rasterStartTime = elapsedTime;
         renderingThread = std::async(std::launch::async, &ContourTiler::FillOverallTexture, this);

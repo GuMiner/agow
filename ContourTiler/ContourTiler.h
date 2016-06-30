@@ -36,7 +36,9 @@ class ContourTiler
     QuadExclusions quadExclusions;
 
     double* linesBuffer;
+    bool* coverBuffer;
 
+    bool isZoomMode;
     bool colorize, rescale, lines;
     ColorMapper colorMapper;
     sf::Time lastUpdateTime;
@@ -47,6 +49,8 @@ class ContourTiler
     void FillOverallTexture();
     void UpdateTextureFromBuffer();
     
+    void ClearCoverPane();
+
     // Handles GUI-based events, such as closing the application, resizing the window, etc.
     void HandleEvents(sf::RenderWindow& window, bool& alive);
 
