@@ -3,6 +3,8 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <immintrin.h>
+#include <xmmintrin.h>
 #include "CloseContourRanker.h"
 #include "Rasterizer.h"
 
@@ -61,27 +63,45 @@ void Rasterizer::Setup()
 // Same as the above but treats the index as a line.
 decimal Rasterizer::GetLineDistanceSqd(Index idx, Point point)
 {
-    Point& start = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx];
-    Point& end = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx + 1];
-    
-    Point startToEnd(end.x - start.x, end.y - start.y);
-    decimal startEndLengthSqd = pow(startToEnd.x, 2) + pow(startToEnd.y, 2);
-    
+    // Loads start into the first two bytes, end into the next two.
+    __m128 start = _mm_loadu_ps(&(lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx].x));
+
+    __m128 end;
+    end.m128_f32[0] = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx + 1].x;
+    end.m128_f32[1] = lineStrips->lineStrips[idx.stripIdx].points[idx.pointIdx + 1].y;
+    end.m128_f32[2] = 0;
+    end.m128_f32[3] = 0;
+
+    __m128 pt;
+    pt.m128_f32[0] = point.x;
+    pt.m128_f32[1] = point.y;
+    pt.m128_f32[2] = point.x;
+    pt.m128_f32[3] = point.y;
+
+    __m128 startToEnd = _mm_sub_ps(start, end);
+    __m128 startEndLengthSqd = _mm_mul_ps(startToEnd, startToEnd);
+    startEndLengthSqd = _mm_set1_ps(startEndLengthSqd.m128_f32[0] + startEndLengthSqd.m128_f32[1]);
+
     // Taking the dot product of the start-to-point vector with the (normalized) start-to-end vector.
-    Point startToPoint(point.x - start.x, point.y - start.y);
-    decimal projectionFraction = (startToPoint.x * startToEnd.x + startToPoint.y * startToEnd.y) / startEndLengthSqd;
+    __m128 startToPoint = _mm_sub_ps(pt, start);
+    __m128 projectionFraction = _mm_mul_ps(startToPoint, startToEnd);
+    projectionFraction = _mm_set1_ps(projectionFraction.m128_f32[0] + projectionFraction.m128_f32[1]);
+    projectionFraction = _mm_div_ps(projectionFraction, startEndLengthSqd);
 
-    if (projectionFraction > 0 && projectionFraction < 1)
+    if (projectionFraction.m128_f32[0] > 0 && projectionFraction.m128_f32[0] < 1)
     {
-        Point closestPoint(start.x + startToEnd.x * projectionFraction, start.y + startToEnd.y * projectionFraction);
-        return pow(closestPoint.x - point.x, 2) + pow(closestPoint.y - point.y, 2);
+        __m128 closestPoint = _mm_sub_ps(_mm_add_ps(start, _mm_mul_ps(startToEnd, projectionFraction)), pt);
+        closestPoint = _mm_mul_ps(closestPoint, closestPoint);
+        return closestPoint.m128_f32[0] + closestPoint.m128_f32[1];
     }
-    else if (projectionFraction < 0)
+    else if (projectionFraction.m128_f32[0] < 0)
     {
-        return pow(start.x - point.x, 2) + pow(start.y - point.y, 2);
+        startToPoint = _mm_mul_ps(startToPoint, startToPoint);
+        return start.m128_f32[0] + start.m128_f32[1];
     }
 
-    return pow(end.x - point.x, 2) + pow(end.y - point.y, 2);
+    startToPoint = _mm_mul_ps(startToPoint, startToPoint);
+    return end.m128_f32[2] + end.m128_f32[3];
 }
 
 void Rasterizer::AddIfValid(int xP, int yP, std::vector<sf::Vector2i>& searchQuads)
