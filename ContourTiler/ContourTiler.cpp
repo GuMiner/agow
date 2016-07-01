@@ -1,6 +1,7 @@
 #include <array>
 #include <algorithm>
 #include <cmath>
+#include <direct.h>
 #include <iostream>
 #include <future>
 #include <limits>
@@ -10,6 +11,7 @@
 #include <GL/glew.h>
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
+#include <stb/stb_image_write.h>
 #include "ContourTiler.h"
 
 #ifndef _DEBUG
@@ -22,10 +24,10 @@
     #pragma comment(lib, "lib/sfml-graphics-d")
 #endif
 
-ContourTiler::ContourTiler() // Size must be divisible by 5.
-    : lineStripLoader(), quadExclusions(), size(1000), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]), coverBuffer(new bool[size * size]),
-      leftOffset((decimal)0.169734), topOffset((decimal)0.291619), effectiveSize((decimal)0.0181266), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false),
-      rerender(false), colorize(false), rescale(false), lines(true), hideExclusionShape(false)
+ContourTiler::ContourTiler() // Size must be divisible by 8.
+    : lineStripLoader(), quadExclusions(), size(1000), regionSize(70), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]), coverBuffer(new bool[size * size]),
+      leftOffset((decimal)0), topOffset((decimal)0), effectiveSize((decimal)1), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false), isZoomMode(true),
+      rerender(false), colorize(false), rescale(false), lines(true), hideExclusionShape(false), isBulkProcessing(false), regionX(0), regionY(0)
 { }
 
 ContourTiler::~ContourTiler()
@@ -117,6 +119,15 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
             {
                 isZoomMode = !isZoomMode;
                 std::cout << "Toggled zoom/exclude mode: " << isZoomMode << "." << std::endl;
+            }
+            else if (event.key.code == sf::Keyboard::P)
+            {
+                // Bulk processing divides the area into 3-ft resolution areas 70x70 all 1000x1000 pixels.
+                std::cout << "Starting bulk processing mode." << std::endl;
+                
+                // Point of no return -- this continues until done.
+                ZoomToRegion(0, 0);
+                isBulkProcessing = true;
             }
         }
         else if (event.type == sf::Event::MouseButtonPressed)
@@ -218,8 +229,9 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                                 {
                                     quadExclusions.ToggleExclusion(point);
                                 }
-                                std::cout << "Excluded point [" << point.x << ", " << point.y << "]." << std::endl;
                             }
+
+                            std::cout << "Excluded point range [" << x << ", [" << pointStart.y << ", " << pointEnd.y << "]]." << std::endl;
                         }
                         
                         // Now update the visible display, but in a less strict manner for basic setup.
@@ -237,6 +249,15 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
             }
         }
     }
+}
+
+void ContourTiler::ZoomToRegion(int x, int y)
+{
+    decimal viewSize = (decimal)1.0 / (decimal)regionSize;
+    leftOffset = (decimal)x * viewSize;
+    topOffset = (decimal)y * viewSize;
+    effectiveSize = viewSize;
+    rerender = true;
 }
 
 void ContourTiler::SetupGraphicsElements()
@@ -348,6 +369,65 @@ void ContourTiler::Render(sf::RenderWindow& window, sf::Time elapsedTime)
             rerender = false;
             isRendering = false;
             std::cout << "Raster time: " << (elapsedTime - rasterStartTime).asSeconds() << " s." << std::endl;
+
+            if (isBulkProcessing)
+            {
+                // Create a new folder if we haven't already
+                if (regionX == size - 1 || (regionX == 0 && regionY == 0))
+                {
+                    std::stringstream folder;
+                    folder << ".\\rasters\\" << regionY;
+                    _mkdir(folder.str().c_str());
+                }
+
+                // Save out our current data
+                std::stringstream file;
+                file << "rasters/" << regionY << "/" << regionX << ".png";
+
+                unsigned char* data = new unsigned char[size * size * 4];
+                for (int i = 0; i < size; i++)
+                {
+                    for (int j = 0; j < size; j++)
+                    {
+                        // RGBA order
+                        int scaledVersion = std::min((int)(rasterizationBuffer[i + j * size] * (65536)), 65535);
+                        // RED == upper 8 bytes.
+                        // GREEN == lower 8 bytes.
+
+                        data[(i + j * size) * 4] = (unsigned char)(scaledVersion & 0x00FF);
+                        data[(i + j * size) * 4 + 1] = (unsigned char)((scaledVersion & 0xFF00) >> 8);
+                        data[(i + j * size) * 4 + 2] = 255;
+                        data[(i + j * size) * 4 + 3] = 255;
+                    }
+                }
+
+                const int RGBA = 4;
+                int result = stbi_write_png(file.str().c_str(), size, size, RGBA, &data[0], size * 4 * sizeof(unsigned char));
+                if (result != 0)
+                {
+                    std::cout << "Failed to write a file: " << result << " for raster " << regionX << ", " << regionY << std::endl;
+                }
+                
+                std::cout << "Wrote the file " << regionX << ", " << regionY << std::endl;
+                delete[] data;
+
+                // Move to the next region.
+                regionX++;
+                if (regionX == size - 1)
+                {
+                    regionY++;
+                }
+
+                // Continue;
+                if (regionY != size)
+                {
+                    ZoomToRegion(regionX, regionY);
+                }
+                else
+                {
+                    isBulkProcessing = false;
+                }
+            }
         }
     }
 

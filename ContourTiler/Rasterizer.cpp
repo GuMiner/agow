@@ -115,8 +115,6 @@ void Rasterizer::AddAreasToSearch(int distance, sf::Vector2i startQuad, std::vec
     }
 }
 
-
-
 decimal Rasterizer::FindClosestPoint(Point point)
 {
     sf::Vector2i quadSquare = GetQuadtreeSquare(point);
@@ -218,7 +216,7 @@ void Rasterizer::Rasterize(decimal leftOffset, decimal topOffset, decimal effect
     minElevation = std::numeric_limits<double>::max();
     maxElevation = std::numeric_limits<double>::min();
 
-    const int splitFactor = 5;
+    const int splitFactor = 8;
     double minElevations[splitFactor];
     double maxElevations[splitFactor];
     std::thread* threads[splitFactor];
@@ -300,7 +298,7 @@ void Rasterizer::LineRaster(decimal leftOffset, decimal topOffset, decimal effec
     // This could also be parallelized.
     std::cout << "Line Rasterizing..." << std::endl;
     
-    const int splitFactor = 5;
+    const int splitFactor = 8;
     std::thread* threads[splitFactor];
 
     int range = size / splitFactor;

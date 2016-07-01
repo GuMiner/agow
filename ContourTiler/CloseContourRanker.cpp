@@ -121,20 +121,21 @@ decimal CloseContourRanker::GetWeightedElevation() const
     decimal elevation = 0;
     decimal inverseWeights = 0;
 
-    decimal distCL = sqrt(closestLine.distanceSqd);
+    // Double the sqrt for a less drastic flow.
+    decimal distCL = closestLine.distanceSqd;
     elevation += closestLine.elevation / distCL;
     inverseWeights += (decimal)1.0 / distCL;
 
     if (secondClosestLine.elevationId != -1)
     {
-        distCL = sqrt(secondClosestLine.distanceSqd);
+        distCL = secondClosestLine.distanceSqd;
         elevation += secondClosestLine.elevation / distCL;
         inverseWeights += (decimal)1.0 / distCL;
     }
 
     if (thirdClosestLine.elevationId != -1)
     {
-        distCL = sqrt(thirdClosestLine.distanceSqd);
+        distCL = thirdClosestLine.distanceSqd;
         elevation += thirdClosestLine.elevation / distCL;
         inverseWeights += (decimal)1.0 / distCL;
     }

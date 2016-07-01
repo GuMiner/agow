@@ -13,6 +13,7 @@
 class ContourTiler
 {
     int size;
+    int regionSize;
 
     bool rerender;
     sf::Vector2i mouseStart;
@@ -50,6 +51,11 @@ class ContourTiler
     void UpdateTextureFromBuffer();
     
     void ClearCoverPane();
+
+    int regionX, regionY;
+    void ZoomToRegion(int x, int y);
+    bool isBulkProcessing;
+    sf::Time regionStartTime;
 
     // Handles GUI-based events, such as closing the application, resizing the window, etc.
     void HandleEvents(sf::RenderWindow& window, bool& alive);

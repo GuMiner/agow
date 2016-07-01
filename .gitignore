@@ -4,6 +4,7 @@
 # Contour data files
 *.bin
 *.xml
+rasters/
 
 # User-specific files
 *.suo

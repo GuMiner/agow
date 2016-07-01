@@ -25,7 +25,7 @@ bool LineStripLoader::Initialize(std::string lineStripFilename)
     lineStripFile.read((char*)&lineStripCount, sizeof(int));
     std::cout << "Line strips: " << lineStripCount << std::endl;
 
-    lineStripCount = 600000; // Override to limit load time for rasterization changes.
+    // lineStripCount = 600000; // Override to limit load time for rasterization changes.
 
     // Reported settings.
     double xMinRep, xMaxRep, yMinRep, yMaxRep, minERep, maxERep;
@@ -70,9 +70,17 @@ bool LineStripLoader::Initialize(std::string lineStripFilename)
         int pointCount;
         lineStripFile.read((char*)&pointCount, sizeof(int));
 
+        int actualPointCount = pointCount;
+        if (pointCount > 100)
+        {
+            // pointCount = 100; // Override to speed up loading yet keep a reasonable overview.
+        }
+
         lineStrips[i].points.reserve(pointCount);
-        double* allPoints = new double[pointCount * 2];
-        lineStripFile.read((char*)allPoints, sizeof(double) * 2 * pointCount);
+
+        // Read in all the data, but don't process the bulk of it for quick exclusion tests.
+        double* allPoints = new double[actualPointCount * 2];
+        lineStripFile.read((char*)allPoints, sizeof(double) * 2 * actualPointCount);
 
         for (int j = 0; j < pointCount; j++)
         {

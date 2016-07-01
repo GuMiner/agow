@@ -155,6 +155,7 @@
     <ClCompile Include="QuadExclusions.cpp" />
     <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Rasterizer.cpp" />
+    <ClCompile Include="stb_implementations.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CloseContourRanker.h" />
