@@ -9,6 +9,16 @@
 #include "LineStripLoader.h"
 #include "Rasterizer.h"
 
+struct ViewOptions
+{
+    bool colorize, rescale, lines;
+
+    ViewOptions()
+        : colorize(false), rescale(false), lines(true)
+    {
+    }
+};
+
 // Handles startup and the base graphics rendering loop.
 class ContourTiler
 {
@@ -40,7 +50,7 @@ class ContourTiler
     bool* coverBuffer;
 
     bool isZoomMode;
-    bool colorize, rescale, lines;
+    ViewOptions viewOptions;
     ColorMapper colorMapper;
     sf::Time lastUpdateTime;
     

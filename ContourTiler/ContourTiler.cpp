@@ -27,7 +27,7 @@
 ContourTiler::ContourTiler() // Size must be divisible by 8.
     : lineStripLoader(), quadExclusions(), size(1000), regionSize(70), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]), coverBuffer(new bool[size * size]),
       leftOffset((decimal)0), topOffset((decimal)0), effectiveSize((decimal)1), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false), isZoomMode(true),
-      rerender(false), colorize(false), rescale(false), lines(true), hideExclusionShape(false), isBulkProcessing(false), regionX(0), regionY(0)
+      rerender(false), viewOptions(), hideExclusionShape(false), isBulkProcessing(false), regionX(0), regionY(2)
 { }
 
 ContourTiler::~ContourTiler()
@@ -65,19 +65,19 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
             else if (event.key.code == sf::Keyboard::L)
             {
                 // Draw lines
-                lines = !lines;
-                std::cout << "Lines: " << lines << std::endl;
+                viewOptions.lines = !viewOptions.lines;
+                std::cout << "Lines: " << viewOptions.lines << std::endl;
             }
             else if (event.key.code == sf::Keyboard::C)
             {
                 // Colorize (true/false)
-                colorize = !colorize;
-                std::cout << "Toggled colorize: " << rescale << std::endl;
+                viewOptions.colorize = !viewOptions.colorize;
+                std::cout << "Toggled colorize: " << viewOptions.colorize << std::endl;
             }
             else if (event.key.code == sf::Keyboard::S)
             {
-                rescale = !rescale;
-                std::cout << "Toggled rescale: " << rescale << std::endl;
+                viewOptions.rescale = !viewOptions.rescale;
+                std::cout << "Toggled rescale: " << viewOptions.rescale << std::endl;
             }
             else if (event.key.code == sf::Keyboard::U)
             {
@@ -126,7 +126,7 @@ void ContourTiler::HandleEvents(sf::RenderWindow& window, bool& alive)
                 std::cout << "Starting bulk processing mode." << std::endl;
                 
                 // Point of no return -- this continues until done.
-                ZoomToRegion(0, 0);
+                ZoomToRegion(regionX, regionY);
                 isBulkProcessing = true;
             }
         }
@@ -281,7 +281,7 @@ void ContourTiler::FillOverallTexture()
 {
     // Rasterize
     rasterizer.Rasterize(leftOffset, topOffset, effectiveSize, &rasterizationBuffer, minElevation, maxElevation);
-    if (lines)
+    if (viewOptions.lines)
     {
         rasterizer.LineRaster(leftOffset, topOffset, effectiveSize, &linesBuffer);
     }
@@ -309,7 +309,7 @@ void ContourTiler::UpdateTextureFromBuffer()
         for (int j = 0; j < size; j++)
         {
             double elevation = rasterizationBuffer[i + j * size];
-            double elevationPercent = rescale ? (elevation - minElevation) / (maxElevation - minElevation) : elevation;
+            double elevationPercent = viewOptions.rescale ? (elevation - minElevation) / (maxElevation - minElevation) : elevation;
             int pixelIdx = (i + j * size) * 4;
 
             if (elevation > 1 || coverBuffer[i + j * size])
@@ -322,7 +322,7 @@ void ContourTiler::UpdateTextureFromBuffer()
             else
             {
                 // Rasterization buffer.
-                if (colorize)
+                if (viewOptions.colorize)
                 {
                     colorMapper.MapColor(elevationPercent, &pixels[pixelIdx], &pixels[pixelIdx + 1], &pixels[pixelIdx + 2]);
                 }
@@ -337,7 +337,7 @@ void ContourTiler::UpdateTextureFromBuffer()
             }
 
             // Lines buffer modification, only if applicable.
-            if (lines && linesBuffer[i + j * size] > 0.5)
+            if (viewOptions.lines && linesBuffer[i + j * size] > 0.5)
             {
                 pixels[pixelIdx] = std::min(255, pixels[pixelIdx] + 50);
                 pixels[pixelIdx + 1] = std::min(255, pixels[pixelIdx] + 50);
@@ -373,7 +373,7 @@ void ContourTiler::Render(sf::RenderWindow& window, sf::Time elapsedTime)
             if (isBulkProcessing)
             {
                 // Create a new folder if we haven't already
-                if (regionX == size - 1 || (regionX == 0 && regionY == 0))
+                if (regionX == regionSize - 1 || (regionX == 0 && regionY == 0))
                 {
                     std::stringstream folder;
                     folder << ".\\rasters\\" << regionY;
@@ -413,13 +413,14 @@ void ContourTiler::Render(sf::RenderWindow& window, sf::Time elapsedTime)
 
                 // Move to the next region.
                 regionX++;
-                if (regionX == size - 1)
+                if (regionX == regionSize - 1)
                 {
+                    regionX = 0;
                     regionY++;
                 }
 
                 // Continue;
-                if (regionY != size)
+                if (regionY != regionSize)
                 {
                     ZoomToRegion(regionX, regionY);
                 }
