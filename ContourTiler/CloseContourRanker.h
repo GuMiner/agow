@@ -35,7 +35,7 @@ class CloseContourRanker
 
 public:
     CloseContourRanker();
-    void AddElevationToRank(CloseContourLine contourLine);
+    void AddElevationToRank(const CloseContourLine& contourLine);
     bool FilledSufficientLines() const;
     decimal GetWeightedElevation() const;
     

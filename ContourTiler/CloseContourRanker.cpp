@@ -66,7 +66,7 @@ bool CloseContourRanker::ResortIfIdentical(CloseContourLine contourLine)
     return false;
 }
 
-void CloseContourRanker::AddElevationToRank(CloseContourLine contourLine)
+void CloseContourRanker::AddElevationToRank(const CloseContourLine& contourLine)
 {
     if (ResortIfIdentical(contourLine))
     {
