@@ -27,7 +27,7 @@
 ContourTiler::ContourTiler()
     : lineStripLoader(), quadExclusions(), size(1000), regionSize(70), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]), coverBuffer(new bool[size * size]),
       leftOffset((decimal)0.64), topOffset((decimal)0.14), effectiveSize((decimal)0.08), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false), isZoomMode(true),
-      rerender(false), viewOptions(), hideExclusionShape(false), isBulkProcessing(false), regionX(21), regionY(2)
+      rerender(false), viewOptions(), hideExclusionShape(false), isBulkProcessing(false), regionX(69), regionY(2)
 { }
 
 ContourTiler::~ContourTiler()
@@ -372,8 +372,8 @@ void ContourTiler::Render(sf::RenderWindow& window, sf::Time elapsedTime)
 
             if (isBulkProcessing)
             {
-                // Create a new folder if we haven't already
-                if (regionX == regionSize - 1 || (regionX == 0 && regionY == 0))
+                // Create a new folder for the current region.
+                if (regionX == 0)
                 {
                     std::stringstream folder;
                     folder << ".\\rasters\\" << regionY;
@@ -413,7 +413,7 @@ void ContourTiler::Render(sf::RenderWindow& window, sf::Time elapsedTime)
 
                 // Move to the next region.
                 regionX++;
-                if (regionX == regionSize - 1)
+                if (regionX == regionSize)
                 {
                     regionX = 0;
                     regionY++;
