@@ -6,7 +6,6 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
 #include "Math\MatrixOps.h"
-#include "Math\VecOps.h"
 #include "Utils\Logger.h"
 #include "agow.h"
 #include "version.h"
@@ -42,58 +41,16 @@ PhysicsOps agow::PhysicsOp;
 agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       imageManager(), modelManager(&imageManager), 
-      scenery(&modelManager, &imageManager),
+      scenery(&imageManager),
       viewer()
 {
 }
 
 Constants::Status agow::LoadPhysics()
 {
-    collisionConfiguration = new btDefaultCollisionConfiguration();
-    collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
-    broadphaseCollisionDetector = new btDbvtBroadphase();
-    constraintSolver = new btSequentialImpulseConstraintSolver();
-    dynamicsWorld = new btDiscreteDynamicsWorld(collisionDispatcher, broadphaseCollisionDetector,
-        constraintSolver, collisionConfiguration);
-
-    dynamicsWorld->setGravity(btVector3(0, 0, -9.80f));
-
-
-    // TODO ideally this is a dictionary somewhere.
-    // TODO all of the new objects should be deleted, which they are not.
-    // In the long term, most of the collision will be player / terrain / box items.
-    collisionShapes.push_back(new btBoxShape(btVector3(1000.0f, 1000.0f, 10.0f)));
-    collisionShapes.push_back(new btBoxShape(btVector3(50.0f, 50.0f, 50.0f)));
-
-    // Add a static ground shape
-    
-    // inertia is zero as this is immobile.
-    btTransform pos;
-    pos.setIdentity();
-    pos.setOrigin(btVector3(0, 0, -9.80f));
-
-    btDefaultMotionState *motionState = new btDefaultMotionState(pos);
-    btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, collisionShapes[0]);
-    dynamicsWorld->addRigidBody(new btRigidBody(ground));
-
-    for (int i = 0; i < 5; i++)
+    if (!physics.LoadPhysics())
     {
-        for (int j = 0; j < 40; j++)
-        {
-            btTransform pos;
-            pos.setIdentity();
-            pos.setOrigin(btVector3(111 * i, 20 + j * 15, 5 + 111 * j));
-
-            btVector3 localInertia;
-            collisionShapes[1]->calculateLocalInertia(20.0f, localInertia);
-            btDefaultMotionState *motionState = new btDefaultMotionState(pos);
-            btRigidBody::btRigidBodyConstructionInfo object(20.0f, motionState, collisionShapes[1], localInertia);
-            
-            btRigidBody* body = new btRigidBody(object);
-            movingTestBodies.push_back(body);
-
-            dynamicsWorld->addRigidBody(body);
-        }
+        return Constants::Status::BAD_PHYSICS;
     }
 
     return Constants::Status::OK;
@@ -101,18 +58,16 @@ Constants::Status agow::LoadPhysics()
 
 void agow::UnloadPhysics()
 {
-    // Delete collision shapes
-    for (int i = 0; i < collisionShapes.size(); i++)
+    // Delete our test data.
+    physics.DynamicsWorld->removeRigidBody(ground.rigidBody);
+    physics.DeleteBody(ground.rigidBody);
+    for (btRigidBody* rigidBody : testCubes.rigidBodies)
     {
-        delete collisionShapes[i];
+        physics.DynamicsWorld->removeRigidBody(rigidBody);
+        physics.DeleteBody(rigidBody);
     }
 
-    // Delete basic setup of physics
-    delete dynamicsWorld;
-    delete constraintSolver;
-    delete broadphaseCollisionDetector;
-    delete collisionDispatcher;
-    delete collisionConfiguration;
+    physics.UnloadPhysics();
 }
 
 void agow::LogGraphicsSettings()
@@ -262,8 +217,23 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_STATS;
     }
 
-    // Load a cube for testing.
-    testCubeModel = modelManager.LoadModel("models/cube");
+    // Load a cube for testing with some physics.
+    testCubes.modelId = modelManager.LoadModel("models/cube");
+    ground.modelId = testCubes.modelId; // Same model, just scaled 20x20x(1/20)
+
+    // Add the static 'ground' for now.
+    ground.rigidBody = physics.GetStaticBody(BasicPhysics::LARGE_CUBE, btVector3(0, 0, -10.0f));
+    physics.DynamicsWorld->addRigidBody(ground.rigidBody);
+    
+    // Load a bunch of dynamic cubes.
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 20; j++)
+        {
+            testCubes.rigidBodies.push_back(physics.GetDynamicBody(BasicPhysics::SMALL_CUBE, btVector3((float)111 * i, (float)(20 + j * 15), (float)(5 + 111 * j)), 20.0f));
+            physics.DynamicsWorld->addRigidBody(testCubes.rigidBodies[testCubes.rigidBodies.size() - 1]);
+        }
+    }
 
     // Now that *all* the models have loaded, prepare for rendering models by initializing OpenGL and sending the model data to OpenGL
     Logger::Log("Sending model VAO to OpenGL...");
@@ -341,27 +311,23 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     scenery.Render(viewMatrix, projectionMatrix);
 
     // Render all the moving objects
-    for (int i = 0; i < movingTestBodies.size(); i++)
+    for (unsigned int i = 0; i < testCubes.rigidBodies.size(); i++)
     {
-        btRigidBody* body = movingTestBodies[i];
-        btTransform worldTransform;
-        body->getMotionState()->getWorldTransform(worldTransform);
-
-        vec::quaternion rotation = VecOps::Convert(worldTransform.getRotation());
-        vec::mat4 mvMatrix = MatrixOps::Translate(VecOps::Convert(worldTransform.getOrigin())) * rotation.asMatrix();
+        btRigidBody* body = testCubes.rigidBodies[i];
+        vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(body);
         
-        if (worldTransform.getOrigin().getZ() < 5.0f)
+        if (BasicPhysics::GetBodyPosition(body).z < -20.0f)
         {
-            worldTransform.setIdentity();
-            worldTransform.setOrigin(btVector3(MathOps::Rand() * 800.0f, MathOps::Rand() * 800.0f, 1000.0f));
-            body->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-            body->activate(true); // Only if it stops moving. It technically doesn't here.
-            body->setWorldTransform(worldTransform);
-            body->getMotionState()->setWorldTransform(worldTransform);
+            BasicPhysics::Warp(body, vec::vec3(MathOps::Rand() * 800.0f, MathOps::Rand() * 800.0f, 1000.0f), vec::vec3(0.0f));
         }
 
-        modelManager.RenderModel(projectionMatrix, testCubeModel, mvMatrix, false);
+        modelManager.RenderModel(projectionMatrix, testCubes.modelId, mvMatrix, false);
     }
+
+    // Render the ground. Note that we scale accordingly.
+    vec::mat4 groundMatrix = BasicPhysics::GetBodyMatrix(ground.rigidBody);
+    groundMatrix = groundMatrix * MatrixOps::Scale(vec::vec3(20.0f, 20.0f, (1.0f / 20.0f)));
+    modelManager.RenderModel(projectionMatrix, ground.modelId, groundMatrix, false);
 
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);
@@ -386,7 +352,7 @@ Constants::Status agow::Run()
     Logger::Log("Graphics Initialized!");
 
     sf::Clock clock;
-    sf::Clock guiClock;
+    sf::Clock physicsClock;
     sf::Time clockStartTime;
     bool alive = true;
     bool focusPaused = false;
@@ -399,7 +365,8 @@ Constants::Status agow::Run()
 
         HandleEvents(window, alive, focusPaused, escapePaused);
         Update(clock.getElapsedTime().asSeconds());
-        dynamicsWorld->stepSimulation(1.0f / 60.0f, 10);
+        
+        physics.Step(physicsClock.restart().asSeconds());
 
         // Render, only if non-paused.
         if (!focusPaused && !escapePaused)

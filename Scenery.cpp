@@ -4,9 +4,8 @@
 #include "Utils\Logger.h"
 #include "Scenery.h"
 
-Scenery::Scenery(ModelManager* modelManager, ImageManager* imageManager)
+Scenery::Scenery(ImageManager* imageManager)
 {
-    this->modelManager = modelManager;
     this->imageManager = imageManager;
 
     groundOrientation = vec::mat4::identity();
@@ -14,14 +13,6 @@ Scenery::Scenery(ModelManager* modelManager, ImageManager* imageManager)
 
 bool Scenery::Initialize(ShaderManager& shaderManager)
 {
-    // Load the ground
-    groundModelId = modelManager->LoadModel("models/scenery/ground");
-    if (groundModelId == 0)
-    {
-        Logger::Log("Error loading the ground scenery model!");
-        return false;
-    }
-
     // Setup the sky program and sky image.
 
     // Sky program.
@@ -79,9 +70,6 @@ bool Scenery::Initialize(ShaderManager& shaderManager)
 
 void Scenery::Render(vec::mat4& viewMatrix, vec::mat4& projectionMatrix)
 {
-    // Render the ground plane
-    modelManager->RenderModel(projectionMatrix, groundModelId, groundOrientation, false);
-
     // Render the sky
     glUseProgram(skyCubeProgram);
     glBindVertexArray(skyCubeVao);

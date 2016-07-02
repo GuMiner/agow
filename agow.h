@@ -1,10 +1,10 @@
 #pragma once
-#include <Bullet\btBulletDynamicsCommon.h>
 #include <SFML\System.hpp>
 #include <vector>
 #include "Config\GraphicsConfig.h"
 #include "Config\KeyBindingConfig.h"
 #include "Config\PhysicsConfig.h"
+#include "Data\Model.h"
 #include "Managers\FontManager.h"
 #include "Managers\ImageManager.h"
 #include "Managers\ModelManager.h"
@@ -13,6 +13,7 @@
 #include "Math\PhysicsOps.h"
 #include "Utils\Constants.h"
 
+#include "BasicPhysics.h"
 #include "Scenery.h"
 #include "Statistics.h"
 #include "Viewer.h"
@@ -32,21 +33,14 @@ class agow
     ShaderManager shaderManager;
 
     // Game data
+    BasicPhysics physics;
     Statistics statistics;
     Viewer viewer;
     Scenery scenery;
 
-    // Bullet Physics
-    btCollisionConfiguration *collisionConfiguration;
-    btCollisionDispatcher *collisionDispatcher;
-    btBroadphaseInterface *broadphaseCollisionDetector;
-    btConstraintSolver *constraintSolver;
-    btDiscreteDynamicsWorld *dynamicsWorld;
-    
-    btAlignedObjectArray<btCollisionShape*> collisionShapes;
-    
-    unsigned int testCubeModel;
-    btAlignedObjectArray<btRigidBody*> movingTestBodies;
+    // TEST DATA
+    PhysicalModel ground;
+    PhysicalModelSet testCubes;
     
     // Physics setup.
     Constants::Status LoadPhysics();

@@ -8,7 +8,7 @@
 class Scenery
 {
     public:
-        Scenery(ModelManager* modelManager, ImageManager* imageManager);
+        Scenery(ImageManager* imageManager);
 
         bool Initialize(ShaderManager& shaderManager);
         void Render(vec::mat4& viewMatrix, vec::mat4& projectionMatrix);
@@ -16,7 +16,6 @@ class Scenery
         ~Scenery();
 
     private:
-
         // Sky cube image segments.
         unsigned char* xNegative;
         unsigned char* yPositive;
@@ -45,7 +44,6 @@ class Scenery
         GLuint skyCubeTexture;
         GLuint colorTransformImageId;
 
-        ModelManager* modelManager;
         ImageManager* imageManager;
 };
 

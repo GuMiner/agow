@@ -90,6 +90,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BasicPhysics.h" />
     <ClInclude Include="Config\GraphicsConfig.h" />
     <ClInclude Include="Config\KeyBindingConfig.h" />
     <ClInclude Include="Config\PhysicsConfig.h" />
@@ -121,6 +122,7 @@
     <ClInclude Include="Viewer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BasicPhysics.cpp" />
     <ClCompile Include="Config\GraphicsConfig.cpp" />
     <ClCompile Include="Config\KeyBindingConfig.cpp" />
     <ClCompile Include="Config\PhysicsConfig.cpp" />

@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+#include <Bullet\btBulletDynamicsCommon.h>
 #include <GL\glew.h>
 #include "Utils\Vertex.h"
 #include "Math\Vec.h"
@@ -18,4 +20,16 @@ struct TextureModel
     // Model bounding box.
     vec::vec3 minBounds;
     vec::vec3 maxBounds;
+};
+
+struct PhysicalModel
+{
+    unsigned int modelId;
+    btRigidBody* rigidBody;
+};
+
+struct PhysicalModelSet
+{
+    unsigned int modelId;
+    std::vector<btRigidBody*> rigidBodies;
 };

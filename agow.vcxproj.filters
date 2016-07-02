@@ -68,6 +68,7 @@
     <ClCompile Include="Utils\ImageUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="BasicPhysics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="Utils\ImageUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="BasicPhysics.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Managers">
