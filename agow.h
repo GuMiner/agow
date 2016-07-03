@@ -41,6 +41,7 @@ class agow
 
     // TEST DATA
     Terrain terrain; // This is eventually going into a Region (todo) to manage dynamic loading.
+    TerrainTile* testTile;
     PhysicalModel ground;
     PhysicalModelSet testCubes;
     

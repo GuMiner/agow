@@ -11,7 +11,16 @@ Terrain::Terrain(ShaderManager* shaderManager, std::string terrainRootFolder, in
 
 bool Terrain::LoadBasics()
 {
-    // TODO -- need to load the shader series.
+    if (!shaderManager->CreateShaderProgramWithTesselation("terrainRender", &terrainRenderProgram))
+    {
+        Logger::LogError("Failed to load the basic terrain rendering shader; cannot continue.");
+        return false;
+    }
+
+    terrainTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainTexture");
+    projLocation = glGetUniformLocation(terrainRenderProgram, "projMatrix");
+    mvLocation = glGetUniformLocation(terrainRenderProgram, "mvMatrix");
+
     return true;
 }
 
@@ -25,6 +34,7 @@ GLuint Terrain::CreateHeightmapTexture(TerrainTile* tile)
     GLuint newTextureId;
     glGenTextures(1, &newTextureId);
 
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, newTextureId);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_R16, tileWidth, tileHeight);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tileWidth, tileHeight, GL_RED, GL_UNSIGNED_SHORT, tile->heightmap);
@@ -48,6 +58,8 @@ bool Terrain::LoadTerrainTile(int x, int y, TerrainTile** tile)
     tileName << rootFolder << "/" << y << "/" << x << ".png";
 
     TerrainTile* newTile = new TerrainTile();
+    newTile->x = x;
+    newTile->y = y;
 
     int width, height;
     if (!ImageUtils::GetRawImage(tileName.str().c_str(), &newTile->rawImage, &width, &height) || width != tileWidth || height != tileHeight)
@@ -76,7 +88,24 @@ bool Terrain::LoadTerrainTile(int x, int y, TerrainTile** tile)
 
 void Terrain::RenderTile(int x, int y, vec::mat4& projectionMatrix, vec::mat4& mvMatrix)
 {
-    // TODO
+    int tileId = GetTileId(x, y);
+    if (terrainTiles.find(tileId) == terrainTiles.end())
+    {
+        Logger::LogWarn("Attempted to render a terrain tile not loaded with [", x, ", ", y, "].");
+        return; 
+    }
+
+    glUseProgram(terrainRenderProgram);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, terrainTiles[tileId]->heightmapTextureId);
+    glUniform1i(terrainTexLocation, 0);
+
+    glUniformMatrix4fv(projLocation, 1, GL_FALSE, projectionMatrix);
+    glUniformMatrix4fv(mvLocation, 1, GL_FALSE, mvMatrix);
+
+    glPatchParameteri(GL_PATCH_VERTICES, 4);
+    glDrawArraysInstanced(GL_PATCHES, 0, 4, tileWidth * tileHeight  );
 }
 
 Terrain::~Terrain()

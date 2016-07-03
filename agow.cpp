@@ -224,6 +224,13 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_TERRAIN;
     }
 
+    // TERRAIN TESTING
+    if (!terrain.LoadTerrainTile(42, 7, &testTile))
+    {
+        return Constants::Status::BAD_TERRAIN;
+    }
+
+
     // Load a cube for testing with some physics.
     testCubes.modelId = modelManager.LoadModel("models/cube");
     ground.modelId = testCubes.modelId; // Same model, just scaled 20x20x(1/20)
@@ -317,8 +324,12 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     // Render the scenery
     scenery.Render(viewMatrix, projectionMatrix);
 
+    // Render the test terrain tile
+    vec::mat4 identityMatrix = vec::mat4::identity();
+    terrain.RenderTile(testTile->x, testTile->y, projectionMatrix, identityMatrix);
+
     // Render all the moving objects
-    for (unsigned int i = 0; i < testCubes.rigidBodies.size(); i++)
+    /*for (unsigned int i = 0; i < testCubes.rigidBodies.size(); i++)
     {
         btRigidBody* body = testCubes.rigidBodies[i];
         vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(body);
@@ -335,6 +346,7 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     vec::mat4 groundMatrix = BasicPhysics::GetBodyMatrix(ground.rigidBody);
     groundMatrix = groundMatrix * MatrixOps::Scale(vec::vec3(20.0f, 20.0f, (1.0f / 20.0f)));
     modelManager.RenderModel(projectionMatrix, ground.modelId, groundMatrix, false);
+    */
 
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);

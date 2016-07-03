@@ -7,6 +7,7 @@
 
 struct TerrainTile
 {
+    int x, y;
     GLuint heightmapTextureId;
     unsigned char* rawImage;
     unsigned short* heightmap;
@@ -20,9 +21,9 @@ class Terrain
     int maxTileSideCount; // Total number of tiles on each side of the total map.
     int tileWidth, tileHeight; // In pixels
 
-    GLuint terrainRenderLocation;
+    GLuint terrainRenderProgram;
 
-    GLuint terrainHeightmapTextureId;
+    GLuint terrainTexLocation;
     GLuint mvLocation;
     GLuint projLocation;
 
