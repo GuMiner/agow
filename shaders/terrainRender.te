@@ -9,23 +9,30 @@ uniform mat4 mvMatrix;
 in TCS_OUT
 {
     vec2 tc;
+    float vertexId;
 } tes_in[];
 
 out TES_OUT
 {
     vec2 tc;
+    float vertexId;
 } tes_out;
 
 
 void main(void)
 {
-    // TODO make this non-constant
-    const float depth = 1000;
+    // Our scaling factor is based on the height of the contours. 
+    // The maximum height is ~8000 feet, minimum ~600 feet. This gives ~900 total feet, 
+    const float depth = 900;
     
     // Get an average texture coordinate over the quad
     vec2 tc1 = mix(tes_in[0].tc, tes_in[1].tc, gl_TessCoord.x);
     vec2 tc2 = mix(tes_in[2].tc, tes_in[3].tc, gl_TessCoord.x);
     vec2 tc = mix(tc2, tc1, gl_TessCoord.y);
+    
+    float vid1 = mix(tes_in[0].vertexId, tes_in[1].vertexId, gl_TessCoord.x);
+    float vid2 = mix(tes_in[2].vertexId, tes_in[3].vertexId, gl_TessCoord.y);
+    float vid = mix(vid1, vid2, gl_TessCoord.x);
     
     // Get an average position using the same logic as above.
     vec4 pos1 = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);
@@ -33,9 +40,11 @@ void main(void)
     vec4 pos = mix(pos2, pos1, gl_TessCoord.y);
     
     // Note that as the terrain texture only contains height, so 'r' is the only valid (0-1) component.
-    pos.y += texture(terrainTexture, tc).r * depth;
+    pos.z += texture(terrainTexture, tc).r * depth;
     
     gl_Position = projMatrix * mvMatrix * pos;
     tes_out.tc = tc;
+    tes_out.vertexId = vid;
 }
+
 

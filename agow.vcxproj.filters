@@ -70,6 +70,7 @@
     </ClCompile>
     <ClCompile Include="BasicPhysics.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="Region.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -151,6 +152,7 @@
     </ClInclude>
     <ClInclude Include="BasicPhysics.h" />
     <ClInclude Include="Terrain.h" />
+    <ClInclude Include="Region.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Managers">

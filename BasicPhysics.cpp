@@ -1,5 +1,7 @@
+#include <limits>
 #include "Math\MatrixOps.h"
 #include "Math\VecOps.h"
+#include "Utils\Logger.h"
 #include "BasicPhysics.h"
 
 BasicPhysics::BasicPhysics()
@@ -10,7 +12,7 @@ void BasicPhysics::LoadBasicCollisionShapes()
 {
     CollisionShapes.clear();
     CollisionShapes[CShape::LARGE_CUBE] = new btBoxShape(btVector3(1000.0f, 1000.0f, 10.0f));
-    CollisionShapes[CShape::SMALL_CUBE] = new btBoxShape(btVector3(50.0f, 50.0f, 50.0f));
+    CollisionShapes[CShape::SMALL_CUBE] = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
 }
 
 bool BasicPhysics::LoadPhysics()

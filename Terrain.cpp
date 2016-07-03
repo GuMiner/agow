@@ -1,12 +1,18 @@
+#include <limits>
 #include <sstream>
 #include <stb\stb_image.h>
 #include "Terrain.h"
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
 
-Terrain::Terrain(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileWidth, int tileHeight)
-    : shaderManager(shaderManager), rootFolder(terrainRootFolder), maxTileSideCount(maxTileSize), tileWidth(tileWidth), tileHeight(tileHeight)
+Terrain::Terrain(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileSize)
+    : shaderManager(shaderManager), rootFolder(terrainRootFolder), maxTileSideCount(maxTileSize), tileSize(tileSize)
 {
+}
+
+int Terrain::GetTileSize() const
+{
+    return tileSize;
 }
 
 bool Terrain::LoadBasics()
@@ -36,8 +42,12 @@ GLuint Terrain::CreateHeightmapTexture(TerrainTile* tile)
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, newTextureId);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R16, tileWidth, tileHeight);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tileWidth, tileHeight, GL_RED, GL_UNSIGNED_SHORT, tile->heightmap);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R16, tileSize, tileSize);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tileSize, tileSize, GL_RED, GL_FLOAT, tile->heightmap);
+
+    // Ensure we clamp to the edges to avoid border problems.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     return newTextureId;
 }
@@ -62,31 +72,43 @@ bool Terrain::LoadTerrainTile(int x, int y, TerrainTile** tile)
     newTile->y = y;
 
     int width, height;
-    if (!ImageUtils::GetRawImage(tileName.str().c_str(), &newTile->rawImage, &width, &height) || width != tileWidth || height != tileHeight)
+    if (!ImageUtils::GetRawImage(tileName.str().c_str(), &newTile->rawImage, &width, &height) || width != tileSize || height != tileSize)
     {
         Logger::Log("Failed to load tile [", x, ", ", y, "] because of bad image/width/height: [", width, ", ", height, ".");
         return false;
     }
 
-    newTile->heightmap = new unsigned short[width * height];
+    newTile->heightmap = new float[width * height];
     for (int i = 0; i < width; i++)
     {
         for (int j = 0; j < height; j++)
         {
             // Combine the Red (LSB) and Green (MSB) data to get the full height range.
-            newTile->heightmap[i + j * width] = (unsigned short)newTile->rawImage[(i + j * width) * 4] + (((unsigned short)newTile->rawImage[(i + j * width) * 4 + 1]) << 8);
+            newTile->heightmap[i + j * width] =
+                (float)((unsigned short)newTile->rawImage[(i + j * width) * 4] + (((unsigned short)newTile->rawImage[(i + j * width) * 4 + 1]) << 8)) 
+                / (float)std::numeric_limits<unsigned short>::max();
         }
     }
 
-    // TODO use the other image components to store useful data. Also save out the modified raw image accordingly.
+    // TODO use the other image components to store useful data.Also save out the modified raw image accordingly.
     newTile->heightmapTextureId = CreateHeightmapTexture(newTile);
+
+    // After saving to OpenGL, scale accordingly.
+    const float scale = 900.0f;
+    for (int i = 0; i < width; i++)
+    {
+        for (int j = 0; j < height; j++)
+        {
+            newTile->heightmap[i + j * width] *= scale;
+        }
+    }
 
     terrainTiles[terrainId] = newTile;
     *tile = newTile;
     return true;
 }
 
-void Terrain::RenderTile(int x, int y, vec::mat4& projectionMatrix, vec::mat4& mvMatrix)
+void Terrain::RenderTile(int x, int y, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix)
 {
     int tileId = GetTileId(x, y);
     if (terrainTiles.find(tileId) == terrainTiles.end())
@@ -105,7 +127,7 @@ void Terrain::RenderTile(int x, int y, vec::mat4& projectionMatrix, vec::mat4& m
     glUniformMatrix4fv(mvLocation, 1, GL_FALSE, mvMatrix);
 
     glPatchParameteri(GL_PATCH_VERTICES, 4);
-    glDrawArraysInstanced(GL_PATCHES, 0, 4, tileWidth * tileHeight  );
+    glDrawArraysInstanced(GL_PATCHES, 0, 4, tileSize * tileSize);
 }
 
 Terrain::~Terrain()

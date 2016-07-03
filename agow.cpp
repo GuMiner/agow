@@ -42,7 +42,7 @@ agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       shaderManager(), imageManager(), modelManager(&imageManager), 
       scenery(&imageManager),
-      terrain(&shaderManager, "ContourTiler/rasters", 100, 1000, 1000), // All pulled from the Contour tiler.
+      region(&shaderManager, "ContourTiler/rasters", 100, 1000, 10, 10), // All pulled from the Contour tiler.
       viewer()
 {
 }
@@ -60,8 +60,8 @@ Constants::Status agow::LoadPhysics()
 void agow::UnloadPhysics()
 {
     // Delete our test data.
-    physics.DynamicsWorld->removeRigidBody(ground.rigidBody);
-    physics.DeleteBody(ground.rigidBody);
+    region.CleanupRegion(physics.DynamicsWorld);
+
     for (btRigidBody* rigidBody : testCubes.rigidBodies)
     {
         physics.DynamicsWorld->removeRigidBody(rigidBody);
@@ -219,32 +219,18 @@ Constants::Status agow::LoadAssets()
     }
 
     Logger::Log("Terrain basics loading...");
-    if (!terrain.LoadBasics())
+    if (!region.LoadBasics())
     {
         return Constants::Status::BAD_TERRAIN;
     }
 
-    // TERRAIN TESTING
-    if (!terrain.LoadTerrainTile(42, 7, &testTile))
-    {
-        return Constants::Status::BAD_TERRAIN;
-    }
-
-
-    // Load a cube for testing with some physics.
+    // Load cubes for testing with some physics.
     testCubes.modelId = modelManager.LoadModel("models/cube");
-    ground.modelId = testCubes.modelId; // Same model, just scaled 20x20x(1/20)
-
-    // Add the static 'ground' for now.
-    ground.rigidBody = physics.GetStaticBody(BasicPhysics::LARGE_CUBE, btVector3(0, 0, -10.0f));
-    physics.DynamicsWorld->addRigidBody(ground.rigidBody);
-    
-    // Load a bunch of dynamic cubes.
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 20; i++)
     {
         for (int j = 0; j < 20; j++)
         {
-            testCubes.rigidBodies.push_back(physics.GetDynamicBody(BasicPhysics::SMALL_CUBE, btVector3((float)111 * i, (float)(20 + j * 15), (float)(5 + 111 * j)), 20.0f));
+            testCubes.rigidBodies.push_back(physics.GetDynamicBody(BasicPhysics::SMALL_CUBE, btVector3((float)20 * i, (float)(20 * j), (float)(600.0f)), 20.0f));
             physics.DynamicsWorld->addRigidBody(testCubes.rigidBodies[testCubes.rigidBodies.size() - 1]);
         }
     }
@@ -302,9 +288,30 @@ void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused
     }
 }
 
+bool wasPressed = false;
 void agow::Update(float currentGameTime)
 {
     viewer.InputUpdate();
+    
+    // TODO test code
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F) && !wasPressed)
+    {
+        // Fire a cube for collision tests.
+        vec::vec3 pos = viewer.GetViewPosition() + 5.0f * viewer.GetViewOrientation().forwardVector();
+        vec::vec3 vel = 40.0f * viewer.GetViewOrientation().forwardVector();
+
+        btRigidBody* rigidBody = physics.GetDynamicBody(BasicPhysics::SMALL_CUBE, btVector3(pos.x, pos.y, pos.z), 20.0f);
+        rigidBody->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
+        testCubes.rigidBodies.push_back(rigidBody);
+        physics.DynamicsWorld->addRigidBody(rigidBody);
+        wasPressed = true;
+    }
+    else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F) && wasPressed)
+    {
+        wasPressed = false;
+    }
+
+    region.UpdateVisibleRegion(viewer.GetViewPosition(), physics.DynamicsWorld);
 
     // Update useful statistics that are fancier than the standard GUI
     statistics.UpdateRunTime(currentGameTime);
@@ -324,16 +331,16 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     // Render the scenery
     scenery.Render(viewMatrix, projectionMatrix);
 
-    // Render the test terrain tile
+    // Render our ground.
     vec::mat4 identityMatrix = vec::mat4::identity();
-    terrain.RenderTile(testTile->x, testTile->y, projectionMatrix, identityMatrix);
+    region.RenderRegion(projectionMatrix, identityMatrix);
 
     // Render all the moving objects
-    /*for (unsigned int i = 0; i < testCubes.rigidBodies.size(); i++)
+    for (unsigned int i = 0; i < testCubes.rigidBodies.size(); i++)
     {
         btRigidBody* body = testCubes.rigidBodies[i];
         vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(body);
-        
+        mvMatrix = mvMatrix * MatrixOps::Scale(vec::vec3(1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f));
         if (BasicPhysics::GetBodyPosition(body).z < -20.0f)
         {
             BasicPhysics::Warp(body, vec::vec3(MathOps::Rand() * 800.0f, MathOps::Rand() * 800.0f, 1000.0f), vec::vec3(0.0f));
@@ -341,12 +348,6 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
 
         modelManager.RenderModel(projectionMatrix, testCubes.modelId, mvMatrix, false);
     }
-
-    // Render the ground. Note that we scale accordingly.
-    vec::mat4 groundMatrix = BasicPhysics::GetBodyMatrix(ground.rigidBody);
-    groundMatrix = groundMatrix * MatrixOps::Scale(vec::vec3(20.0f, 20.0f, (1.0f / 20.0f)));
-    modelManager.RenderModel(projectionMatrix, ground.modelId, groundMatrix, false);
-    */
 
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);

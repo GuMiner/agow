@@ -10,7 +10,7 @@ struct TerrainTile
     int x, y;
     GLuint heightmapTextureId;
     unsigned char* rawImage;
-    unsigned short* heightmap;
+    float* heightmap;
 };
 
 // Defines loading and displaying a single unit of terrain.
@@ -19,7 +19,7 @@ class Terrain
     ShaderManager* shaderManager;
     std::string rootFolder;
     int maxTileSideCount; // Total number of tiles on each side of the total map.
-    int tileWidth, tileHeight; // In pixels
+    int tileSize; // In pixels
 
     GLuint terrainRenderProgram;
 
@@ -35,8 +35,10 @@ class Terrain
     GLuint CreateHeightmapTexture(TerrainTile* tile);
 
 public:
-    Terrain(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileWidth, int tileHeight);
+    Terrain(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileSize);
     
+    int GetTileSize() const;
+
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();
     
@@ -44,7 +46,7 @@ public:
     bool LoadTerrainTile(int x, int y, TerrainTile** tile);
     
     // Renders a tile. *The tile must have been loaded ahead-of-time.
-    void RenderTile(int x, int y, vec::mat4& projectionMatrix, vec::mat4& mvMatrix);
+    void RenderTile(int x, int y, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix);
 
     virtual ~Terrain();
 };

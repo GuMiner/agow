@@ -7,8 +7,8 @@ ConfigVersion 1
 PhysicsThreadDelay 33
 
 # Speed at which to move the viewer forwards and sideways
-ViewForwardsSpeed 0.3
-ViewSidewaysSpeed 0.3
+ViewForwardsSpeed 0.6
+ViewSidewaysSpeed 0.6
 
 ViewRotateUpFactor 0.012
 ViewRotateAroundFactor 0.012
