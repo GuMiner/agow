@@ -22,7 +22,7 @@ public:
     bool LoadBasics();
 
     void UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorld* dynamicsWorld);
-    void RenderRegion(const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix);
+    void RenderRegion(const vec::mat4& projectionMatrix);
 
     void CleanupRegion(btDynamicsWorld* dynamicsWorld);
     virtual ~Region();

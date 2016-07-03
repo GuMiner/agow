@@ -224,16 +224,8 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_TERRAIN;
     }
 
-    // Load cubes for testing with some physics.
+    // Load the mode for the test cube.
     testCubes.modelId = modelManager.LoadModel("models/cube");
-    for (int i = 0; i < 20; i++)
-    {
-        for (int j = 0; j < 20; j++)
-        {
-            testCubes.rigidBodies.push_back(physics.GetDynamicBody(BasicPhysics::SMALL_CUBE, btVector3((float)20 * i, (float)(20 * j), (float)(600.0f)), 20.0f));
-            physics.DynamicsWorld->addRigidBody(testCubes.rigidBodies[testCubes.rigidBodies.size() - 1]);
-        }
-    }
 
     // Now that *all* the models have loaded, prepare for rendering models by initializing OpenGL and sending the model data to OpenGL
     Logger::Log("Sending model VAO to OpenGL...");
@@ -315,7 +307,7 @@ void agow::Update(float currentGameTime)
 
     // Update useful statistics that are fancier than the standard GUI
     statistics.UpdateRunTime(currentGameTime);
-    statistics.UpdateViewPos(viewer.GetViewPosition(), viewer.GetViewOrientation().asMatrix());
+    statistics.UpdateViewPos(viewer.GetViewPosition(), viewer.GetViewOrientation());
 }
 
 void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
@@ -332,8 +324,7 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     scenery.Render(viewMatrix, projectionMatrix);
 
     // Render our ground.
-    vec::mat4 identityMatrix = vec::mat4::identity();
-    region.RenderRegion(projectionMatrix, identityMatrix);
+    region.RenderRegion(projectionMatrix);
 
     // Render all the moving objects
     for (unsigned int i = 0; i < testCubes.rigidBodies.size(); i++)

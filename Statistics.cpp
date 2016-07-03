@@ -62,7 +62,7 @@ void Statistics::UpdatePlayerDetails(std::string& playerName)
     // TODO
 }
 
-void Statistics::UpdateViewPos(const vec::vec3& position, const vec::mat4& viewMatrix)
+void Statistics::UpdateViewPos(const vec::vec3& position, const vec::quaternion& viewOrientation)
 {
     std::stringstream textStream;
     textStream.precision(2);
@@ -80,9 +80,7 @@ void Statistics::UpdateViewPos(const vec::vec3& position, const vec::mat4& viewM
     fontManager->UpdateSentence(zPosition.sentenceId, textStream.str(), textPixelHeight, zPosition.color);
 
     textStream.str("");
-    textStream << " " << viewMatrix[0][0] << "," << viewMatrix[0][1] << "," << viewMatrix[0][2]
-        << "|" << viewMatrix[1][0] << "," << viewMatrix[1][1] << "," << viewMatrix[1][2]
-        << "|" << viewMatrix[2][0] << "," << viewMatrix[2][1] << "," << viewMatrix[2][2];
+    textStream << " " << viewOrientation.x << "," << viewOrientation.y << "," << viewOrientation.z << ", " << viewOrientation.w << ".";
     fontManager->UpdateSentence(playerName.sentenceId, textStream.str(), textPixelHeight, playerName.color);
 
     

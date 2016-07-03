@@ -1,4 +1,5 @@
 #include "Region.h"
+#include "Math\MatrixOps.h"
 
 Region::Region(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileSize, int subdivisions, int renderDistance)
     : terrain(shaderManager, terrainRootFolder, maxTileSize, tileSize), subdivisions(subdivisions), renderDistance(renderDistance)
@@ -17,7 +18,7 @@ void Region::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorl
     // TODO this is definitely going to be dynamic.
     if (testTile == nullptr)
     {
-        terrain.LoadTerrainTile(42, 7, &testTile);
+        terrain.LoadTerrainTile(21, 10, &testTile);
 
         // TODO config file.
         const int heightmapSize = 1000;
@@ -28,7 +29,7 @@ void Region::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorl
         // Position the heightfield so that it's not repositioned incorrectly.
         btTransform pos;
         pos.setIdentity();
-        pos.setOrigin(btVector3(0, 0, 450.0f - 2.0f));
+        pos.setOrigin(btVector3((testTile->x + 0.5f) * terrain.GetTileSize(), (testTile->y + 0.5f) * terrain.GetTileSize(), 450.0f - 2.0f));
 
         btDefaultMotionState *motionState = new btDefaultMotionState(pos);
         btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, heighfield);
@@ -42,8 +43,9 @@ void Region::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorl
     }
 }
 
-void Region::RenderRegion(const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix)
+void Region::RenderRegion(const vec::mat4& projectionMatrix)
 {
+    vec::mat4 mvMatrix = MatrixOps::Translate(testTile->x * terrain.GetTileSize(), testTile->y * terrain.GetTileSize(), 0);
     terrain.RenderTile(testTile->x, testTile->y, projectionMatrix, mvMatrix);
 }
 
@@ -57,5 +59,4 @@ void Region::CleanupRegion(btDynamicsWorld* dynamicsWorld)
 
 Region::~Region()
 {
-
 }

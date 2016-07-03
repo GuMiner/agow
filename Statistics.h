@@ -17,7 +17,7 @@ class Statistics
         bool Initialize(FontManager* fontManager);
 
         void UpdateRunTime(float currentTime);
-        void UpdateViewPos(const vec::vec3& position, const vec::mat4& viewMatrix);
+        void UpdateViewPos(const vec::vec3& position, const vec::quaternion& viewOrientation);
         void UpdatePlayerDetails(std::string& playerName);
 
         void RenderStats(vec::mat4& perspectiveMatrix);

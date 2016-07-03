@@ -31,5 +31,5 @@ void main(void)
     vs_out.vertexId = gl_VertexID;
     
     // Move the terrain cells appropriately.
-    gl_Position = vertices[gl_VertexID] + vec4(2 * terrainCellHalfSize * float(x - textureSize / 2), 2 * terrainCellHalfSize * float(y - textureSize / 2), 0.0, 0.0);
+    gl_Position = vertices[gl_VertexID] + vec4(2 * terrainCellHalfSize * float(x), 2 * terrainCellHalfSize * float(y), 0.0, 0.0);
 }

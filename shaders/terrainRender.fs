@@ -14,8 +14,8 @@ out vec4 color;
 void main(void)
 {
     // Taken from our test tile, gives a good gradient to test tesselation with.
-    const float min = 0.302;
-    const float max = 0.420;
+    const float min = 0.155;
+    const float max = 0.173;
     
     if (true) // fract(fs_in.vertexId) < 0.2)
     {

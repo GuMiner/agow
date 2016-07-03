@@ -4,8 +4,9 @@
 
 Viewer::Viewer()
 {
-    viewPosition = vec::vec3(0, 0, 10);
-    viewOrientation = vec::quaternion(0, 0, 0, 1);
+    viewPosition = vec::vec3(21500, 10500, 150);
+    viewOrientation = vec::quaternion(0.70f, -0.11f, -0.11f, 0.70f);
+    viewOrientation.normalize();
 
     lastMousePos = sf::Vector2i(-1, -1);
 }
