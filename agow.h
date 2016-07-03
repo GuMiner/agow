@@ -16,6 +16,7 @@
 #include "BasicPhysics.h"
 #include "Scenery.h"
 #include "Statistics.h"
+#include "Terrain.h"
 #include "Viewer.h"
 
 // Handles startup and the base graphics rendering loop.
@@ -39,6 +40,7 @@ class agow
     Scenery scenery;
 
     // TEST DATA
+    Terrain terrain; // This is eventually going into a Region (todo) to manage dynamic loading.
     PhysicalModel ground;
     PhysicalModelSet testCubes;
     

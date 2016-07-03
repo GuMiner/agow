@@ -40,8 +40,9 @@ PhysicsOps agow::PhysicsOp;
 
 agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
-      imageManager(), modelManager(&imageManager), 
+      shaderManager(), imageManager(), modelManager(&imageManager), 
       scenery(&imageManager),
+      terrain(&shaderManager, "ContourTiler/rasters", 100, 1000, 1000), // All pulled from the Contour tiler.
       viewer()
 {
 }
@@ -215,6 +216,12 @@ Constants::Status agow::LoadAssets()
     if (!statistics.Initialize(&fontManager))
     {
         return Constants::Status::BAD_STATS;
+    }
+
+    Logger::Log("Terrain basics loading...");
+    if (!terrain.LoadBasics())
+    {
+        return Constants::Status::BAD_TERRAIN;
     }
 
     // Load a cube for testing with some physics.

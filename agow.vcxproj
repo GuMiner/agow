@@ -110,6 +110,7 @@
     <ClInclude Include="Math\VecOps.h" />
     <ClInclude Include="Scenery.h" />
     <ClInclude Include="Statistics.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Utils\Constants.h" />
     <ClInclude Include="Utils\ConversionUtils.h" />
     <ClInclude Include="Utils\ImageUtils.h" />
@@ -138,6 +139,7 @@
     <ClCompile Include="Math\VecOps.cpp" />
     <ClCompile Include="Scenery.cpp" />
     <ClCompile Include="Statistics.cpp" />
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Utils\Constants.cpp" />
     <ClCompile Include="Utils\ConversionUtils.cpp" />
     <ClCompile Include="Utils\ImageUtils.cpp" />

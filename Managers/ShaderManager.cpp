@@ -8,6 +8,20 @@ ShaderManager::ShaderManager()
 {
 }
 
+bool ShaderManager::ReadShader(const char *rootName, const char *extension, std::string* readShader)
+{
+    std::stringstream filenameStream;
+    filenameStream << "shaders/" << rootName << extension;
+
+    if (!StringUtils::LoadStringFromFile(filenameStream.str().c_str(), *readShader))
+    {
+        Logger::LogError("Could not load ", extension, " shader: ", *readShader, "!");
+        return false;
+    }
+
+    return true;
+}
+
 // Creates and compiles a new shader of the specified type; returns true on success.
 bool ShaderManager::CreateShader(GLenum shaderType, const char *shaderSource, GLuint *shaderId)
 {
@@ -25,9 +39,9 @@ bool ShaderManager::CreateShader(GLenum shaderType, const char *shaderSource, GL
         char *shaderLog = new char[logLength];
         glGetShaderInfoLog(shader, logLength, &logLength, &shaderLog[0]);
         logStream << "GLSL compilation error: " << shaderLog << ".";
+        
         Logger::LogError(logStream.str().c_str());
         delete[] shaderLog;
-
         return false;
     }
 
@@ -35,160 +49,131 @@ bool ShaderManager::CreateShader(GLenum shaderType, const char *shaderSource, GL
     return true;
 }
 
-// Creates a shader program and adds it to the list of programs that will be deleted at the end of program operation
-bool ShaderManager::CreateShaderProgram(const char *rootName, GLuint *programId)
+// Creates a new shader program, regardless of the number of shader stages. Stages are added in order of specification in the vector.
+bool ShaderManager::CreateProgram(std::vector<GLuint> shaders, GLuint *program)
 {
-    GLuint program;
-    GLuint vertexShader;
-    GLuint fragmentShader;
-
-    std::string vsShader, fsShader;
-    std::stringstream logStream;
-    std::stringstream vsFilenameStream, fsFilenameStream;
-    vsFilenameStream << "shaders/" << rootName << ".vs";
-    fsFilenameStream << "shaders/" << rootName << ".fs";
-
-    if (!StringUtils::LoadStringFromFile(vsFilenameStream.str().c_str(), vsShader))
-    {
-        logStream << "Could not load vertex shader: " << vsShader << "!";
-        Logger::LogError(logStream.str().c_str());
-        return false;
-    }
-
-    if (!StringUtils::LoadStringFromFile(fsFilenameStream.str().c_str(), fsShader))
-    {
-        logStream << "Could not load fragment shader: " << fsShader << "!";
-        Logger::LogError(logStream.str().c_str());
-        return false;
-    }
-
-    bool result = CreateShader(GL_VERTEX_SHADER, vsShader.c_str(), &vertexShader);
-    if (!result)
-    {
-        return false;
-    }
-
-    result = CreateShader(GL_FRAGMENT_SHADER, fsShader.c_str(), &fragmentShader);
-    if (!result)
-    {
-        return false;
-    }
-
     // Create the program
     GLint compileStatus;
-    program = glCreateProgram();
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-    glLinkProgram(program);
-    glGetProgramiv(program, GL_LINK_STATUS, &compileStatus);
+    *program = glCreateProgram();
+    for (unsigned int i = 0; i < shaders.size(); i++)
+    {
+        glAttachShader(*program, shaders[i]);
+    }
+
+    glLinkProgram(*program);
+    glGetProgramiv(*program, GL_LINK_STATUS, &compileStatus);
     if (!compileStatus)
     {
         GLint logLength;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+        glGetProgramiv(*program, GL_INFO_LOG_LENGTH, &logLength);
 
-        std::stringstream logStream;
         char* buffer = new char[logLength];
-        glGetProgramInfoLog(program, logLength, &logLength, buffer);
-        logStream << "GLSL program compilation error: " << buffer;
-        Logger::LogError(logStream.str().c_str());
+        glGetProgramInfoLog(*program, logLength, &logLength, buffer);
+        Logger::LogError("GLSL program compilation error: ", buffer);
         delete[] buffer;
 
         return false;
     }
 
     // These are auto-deleted when the program is deleted
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    for (unsigned int i = 0; i < shaders.size(); i++)
+    {
+        glDeleteShader(shaders[i]);
+    }
 
-    *programId = program;
-    shaderPrograms.push_back(program);
     return true;
 }
 
-// TODO break this apart into smaller functions.
+// Creates a basic vertex-fragment shader program and adds it to the list of programs that will be deleted at the end of program operation
+bool ShaderManager::CreateShaderProgram(const char *rootName, GLuint *programId)
+{
+    std::string vsShader, fsShader;
+    if (!ReadShader(rootName, ".vs", &vsShader) || !ReadShader(rootName, ".fs", &fsShader))
+    {
+        return false;
+    }
+    
+    GLuint vertexShader, fragmentShader;
+    if (!CreateShader(GL_VERTEX_SHADER, vsShader.c_str(), &vertexShader) || !CreateShader(GL_FRAGMENT_SHADER, fsShader.c_str(), &fragmentShader))
+    {
+        return false;
+    }
+
+    std::vector<GLuint> shaders;
+    shaders.push_back(vertexShader);
+    shaders.push_back(fragmentShader);
+    
+    if (!CreateProgram(shaders, programId))
+    {
+        return false;
+    }
+
+    shaderPrograms.push_back(*programId);
+    return true;
+}
+
+// Creates a vertex-geomtry-shader program.
 bool ShaderManager::CreateShaderProgramWithGeometryShader(const char *rootName, GLuint *programId)
 {
-    GLuint program;
-    GLuint vertexShader;
-    GLuint geometryShader;
-    GLuint fragmentShader;
-
-    std::string vsShader, fsShader, gsShader;
-    std::stringstream logStream;
-    std::stringstream vsFilenameStream, fsFilenameStream, gsFilenameStream;
-    vsFilenameStream << "shaders/" << rootName << ".vs";
-    gsFilenameStream << "shaders/" << rootName << ".gs";
-    fsFilenameStream << "shaders/" << rootName << ".fs";
-
-    if (!StringUtils::LoadStringFromFile(vsFilenameStream.str().c_str(), vsShader))
-    {
-        logStream << "Could not load vertex shader: " << vsShader << "!";
-        Logger::LogError(logStream.str().c_str());
-        return false;
-    }
-
-    if (!StringUtils::LoadStringFromFile(gsFilenameStream.str().c_str(), gsShader))
-    {
-        logStream << "Could not load geometry shader: " << gsShader << "!";
-        Logger::LogError(logStream.str().c_str());
-        return false;
-    }
-
-    if (!StringUtils::LoadStringFromFile(fsFilenameStream.str().c_str(), fsShader))
-    {
-        logStream << "Could not load fragment shader: " << fsShader << "!";
-        Logger::LogError(logStream.str().c_str());
-        return false;
-    }
-
-    bool result = CreateShader(GL_VERTEX_SHADER, vsShader.c_str(), &vertexShader);
-    if (!result)
+    std::string vsShader, gsShader, fsShader;
+    if (!ReadShader(rootName, ".vs", &vsShader) || !ReadShader(rootName, ".gs", &gsShader) || !ReadShader(rootName, ".fs", &fsShader))
     {
         return false;
     }
 
-    result = CreateShader(GL_GEOMETRY_SHADER, gsShader.c_str(), &geometryShader);
-    if (!result)
+    GLuint vertexShader, geometryShader, fragmentShader;
+    if (!CreateShader(GL_VERTEX_SHADER, vsShader.c_str(), &vertexShader)
+        || !CreateShader(GL_GEOMETRY_SHADER, gsShader.c_str(), &geometryShader)
+        || !CreateShader(GL_FRAGMENT_SHADER, fsShader.c_str(), &fragmentShader))
     {
         return false;
     }
 
-    result = CreateShader(GL_FRAGMENT_SHADER, fsShader.c_str(), &fragmentShader);
-    if (!result)
+    std::vector<GLuint> shaders;
+    shaders.push_back(vertexShader);
+    shaders.push_back(geometryShader);
+    shaders.push_back(fragmentShader);
+
+    if (!CreateProgram(shaders, programId))
     {
         return false;
     }
 
-    // Create the program
-    GLint compileStatus;
-    program = glCreateProgram();
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, geometryShader);
-    glAttachShader(program, fragmentShader);
-    glLinkProgram(program);
-    glGetProgramiv(program, GL_LINK_STATUS, &compileStatus);
-    if (!compileStatus)
+    shaderPrograms.push_back(*programId);
+    return true;
+}
+
+// Creates a shader program with vertex-tesselation_control-tesselation_evaluation-fragment stage sequence.
+bool ShaderManager::CreateShaderProgramWithTesselation(const char *rootName, GLuint *programId)
+{
+    std::string vsShader, tcShader, teShader, fsShader;
+    if (!ReadShader(rootName, ".vs", &vsShader) || !ReadShader(rootName, ".tc", &tcShader) 
+        || !ReadShader(rootName, ".te", &teShader) || !ReadShader(rootName, ".fs", &fsShader))
     {
-        GLint logLength;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
-
-        std::stringstream logStream;
-        char* buffer = new char[logLength];
-        glGetProgramInfoLog(program, logLength, &logLength, buffer);
-        logStream << "GLSL program compilation error: " << buffer;
-        Logger::LogError(logStream.str().c_str());
-        delete[] buffer;
-
         return false;
     }
 
-    // These are auto-deleted when the program is deleted
-    glDeleteShader(vertexShader);
-    glDeleteShader(geometryShader);
-    glDeleteShader(fragmentShader);
+    GLuint vertexShader, tesselationControlShader, tesselationEvaluationShader, fragmentShader;
+    if (!CreateShader(GL_VERTEX_SHADER, vsShader.c_str(), &vertexShader)
+        || !CreateShader(GL_TESS_CONTROL_SHADER, tcShader.c_str(), &tesselationControlShader)
+        || !CreateShader(GL_TESS_EVALUATION_SHADER, teShader.c_str(), &tesselationEvaluationShader)
+        || !CreateShader(GL_FRAGMENT_SHADER, fsShader.c_str(), &fragmentShader))
+    {
+        return false;
+    }
 
-    *programId = program;
-    shaderPrograms.push_back(program);
+    std::vector<GLuint> shaders;
+    shaders.push_back(vertexShader);
+    shaders.push_back(tesselationControlShader);
+    shaders.push_back(tesselationEvaluationShader);
+    shaders.push_back(fragmentShader);
+
+    if (!CreateProgram(shaders, programId))
+    {
+        return false;
+    }
+
+    shaderPrograms.push_back(*programId);
     return true;
 }
 

@@ -69,6 +69,7 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="BasicPhysics.cpp" />
+    <ClCompile Include="Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -149,6 +150,7 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="BasicPhysics.h" />
+    <ClInclude Include="Terrain.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Managers">
