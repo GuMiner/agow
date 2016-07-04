@@ -148,12 +148,14 @@
   <ItemGroup>
     <ClCompile Include="ImageUtils.cpp" />
     <ClCompile Include="MapEditor.cpp" />
+    <ClCompile Include="PaletteWindow.cpp" />
     <ClCompile Include="stb_implementations.cpp" />
     <ClCompile Include="SummaryView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImageUtils.h" />
     <ClInclude Include="MapEditor.h" />
+    <ClInclude Include="PaletteWindow.h" />
     <ClInclude Include="SummaryView.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

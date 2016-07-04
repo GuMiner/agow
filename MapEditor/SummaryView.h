@@ -4,7 +4,6 @@
 #include <SFML\System.hpp>
 #include <SFML\Graphics.hpp>
 
-
 class SummaryView
 {
     int size;
@@ -27,7 +26,7 @@ class SummaryView
     void CreateNewSummaryImage(const char* summaryFilename, unsigned char** summaryImage);
     void UpdateSummaryImage(const char* summaryFilename, unsigned char* existingImage, const char* partialsFilename);
     void LoadOrUpdateSummaryView();
-
+    
     void HandleEvents(sf::RenderWindow& window);
     void Render(sf::RenderWindow& window);
 
@@ -35,7 +34,21 @@ class SummaryView
     std::thread* executionThread;
     void ThreadStart();
 
+    sf::RectangleShape selectedTileRectangle;
+    int selectedTile;
+    void UpdateSelectedTileRectangle();
 public:
+    enum Direction
+    {
+        LEFT,
+        RIGHT,
+        UP,
+        DOWN
+    };
+
+    void MoveSelectedTile(Direction direction);
+    void LoadSelectedTile(unsigned char** rawData);
+
     SummaryView(int size, int tileCount, int reductionFactor);
     void Start();
     bool IsTileValid(int x, int y) const;

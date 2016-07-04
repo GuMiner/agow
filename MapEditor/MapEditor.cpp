@@ -14,7 +14,7 @@
 #endif
 
 MapEditor::MapEditor()
-    : size(900), tileCount(70), tileSize(1000), summaryView(700, tileCount, tileSize / (700 / tileCount))
+    : size(900), tileCount(70), tileSize(1000), summaryView(700, tileCount, tileSize / (700 / tileCount)), paletteWindow(200), rawTileData(nullptr)
 {
 }
 
@@ -22,6 +22,16 @@ void MapEditor::LoadGraphics()
 {
     // The summary view performs a bunch of graphics loading.
     summaryView.Start();
+
+    currentTileTexture.create(tileSize, tileSize);
+    currentTileTexture.setRepeated(false);
+    currentTileTexture.setSmooth(false);
+
+    currentTile.setTextureRect(sf::IntRect(0, size, size, -size));
+    currentTile.setTexture(currentTileTexture);
+    UpdateCurrentTileTexture();
+
+    paletteWindow.Start();
 }
 
 void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
@@ -34,12 +44,35 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
         {
             alive = false;
         }
+        else if (event.type == sf::Event::KeyPressed)
+        {
+            bool tileChanged = false;
+            switch (event.key.code)
+            {
+            case sf::Keyboard::Left:  summaryView.MoveSelectedTile(SummaryView::Direction::LEFT);  tileChanged = true; break;
+            case sf::Keyboard::Right: summaryView.MoveSelectedTile(SummaryView::Direction::RIGHT); tileChanged = true; break;
+            case sf::Keyboard::Up:    summaryView.MoveSelectedTile(SummaryView::Direction::UP);    tileChanged = true; break;
+            case sf::Keyboard::Down:  summaryView.MoveSelectedTile(SummaryView::Direction::DOWN);  tileChanged = true; break;
+            default: break;
+            }
+
+            if (tileChanged)
+            {
+                UpdateCurrentTileTexture();
+            }
+        }
     }
+}
+
+void MapEditor::UpdateCurrentTileTexture()
+{
+    summaryView.LoadSelectedTile(&rawTileData);
+    currentTileTexture.update(rawTileData);
 }
 
 void MapEditor::Render(sf::RenderWindow& window)
 {
-    // TODO
+    window.draw(currentTile);
 }
 
 void MapEditor::Run()
@@ -65,7 +98,10 @@ void MapEditor::Run()
         window.display();
     }
 
+    // TODO save out the currently-open tile and delete the data.
     summaryView.Stop();
+
+    paletteWindow.Stop();
 }
 
 int main()

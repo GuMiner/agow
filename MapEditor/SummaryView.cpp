@@ -10,7 +10,7 @@
 #include "SummaryView.h"
 
 SummaryView::SummaryView(int size, int tileCount, int reductionFactor)
-    : isAlive(true), tileCount(tileCount), size(size), reductionFactor(reductionFactor), summaryRootPath("../ContourTiler/rasters/summary/")
+    : isAlive(true), tileCount(tileCount), size(size), reductionFactor(reductionFactor), summaryRootPath("../ContourTiler/rasters/summary/"), selectedTile(0)
 {
 
 }
@@ -135,7 +135,7 @@ void SummaryView::UpdateSummaryImage(const char* summaryFilename, unsigned char*
     }
 
     // Erase separately to avoid modifying the iterator.
-    for (int i = 0; i < itemsToRemove.size(); i++)
+    for (unsigned int i = 0; i < itemsToRemove.size(); i++)
     {
         missingTiles.erase(itemsToRemove[i]);
     }
@@ -197,24 +197,11 @@ void SummaryView::LoadOrUpdateSummaryView()
     summaryTexture.setRepeated(false);
     summaryTexture.setSmooth(false);
 
-    summarySprite.scale(sf::Vector2f(1.0f, -1.0f));
+    summarySprite.setTextureRect(sf::IntRect(0, height, width, -height));
     summarySprite.setTexture(summaryTexture);
+    summaryTexture.update(summaryImage);
 
-    // Copy over to the image
-    sf::Uint8* pixels = new sf::Uint8[size * size * 4]; // * 4 because pixels have 4 components (RGBA)
-    for (int i = 0; i < size; i++)
-    {
-        for (int j = 0; j < size; j++)
-        {
-            pixels[(i + j * size) * 4] = summaryImage[(i + j * size) * 4];
-            pixels[(i + j * size) * 4 + 1] = summaryImage[(i + j * size) * 4 + 1];
-            pixels[(i + j * size) * 4 + 2] = summaryImage[(i + j * size) * 4 + 2];
-            pixels[(i + j * size) * 4 + 3] = summaryImage[(i + j * size) * 4 + 3];
-        }
-    }
-
-    summaryTexture.update(pixels);
-    delete[] pixels;
+    // TODO shouldn't leave the summary image dangling here.
 }
 
 int SummaryView::GetTileId(int x, int y) const
@@ -226,6 +213,52 @@ void SummaryView::GetPositionFromId(int pos, int* x, int* y) const
 {
     *x = pos % tileCount;
     *y = pos / tileCount;
+}
+
+void SummaryView::MoveSelectedTile(Direction direction)
+{
+    int x, y;
+    GetPositionFromId(selectedTile, &x, &y);
+
+    switch (direction)
+    {
+    case UP: ++y; break;
+    case DOWN: --y; break;
+    case LEFT: --x; break;
+    case RIGHT: ++x; break;
+    }
+
+    if (IsTileValid(x, y))
+    {
+        selectedTile = GetTileId(x, y);
+        UpdateSelectedTileRectangle();
+    }
+}
+
+void SummaryView::LoadSelectedTile(unsigned char** rawData)
+{
+    if (*rawData != nullptr)
+    {
+        ImageUtils::FreeImage(*rawData);
+        *rawData = nullptr;
+    }
+
+    int x, y;
+    GetPositionFromId(selectedTile, &x, &y);
+
+    std::stringstream imageTile;
+    imageTile << "../ContourTiler/rasters/" << y << "/" << x << ".png";
+
+    int width, height;
+    ImageUtils::LoadImage(imageTile.str().c_str(), &width, &height, rawData);
+}
+
+void SummaryView::UpdateSelectedTileRectangle()
+{
+    int motionScale = size / tileCount;
+    int x, y;
+    GetPositionFromId(selectedTile, &x, &y);
+    selectedTileRectangle.setPosition(sf::Vector2f((float)(x * motionScale), (float)(size - (y + 1) * motionScale)));
 }
 
 bool SummaryView::IsTileValid(int x, int y) const
@@ -249,11 +282,17 @@ void SummaryView::HandleEvents(sf::RenderWindow& window)
 void SummaryView::Render(sf::RenderWindow& window)
 {
     window.draw(summarySprite);
+    window.draw(selectedTileRectangle);
 }
 
 void SummaryView::ThreadStart()
 {
     LoadOrUpdateSummaryView();
+    selectedTileRectangle = sf::RectangleShape(sf::Vector2f(size / tileCount, size / tileCount));
+    selectedTileRectangle.setFillColor(sf::Color(0, 0, 0, 0));
+    selectedTileRectangle.setOutlineThickness(1.0f);
+    selectedTileRectangle.setOutlineColor(sf::Color::Green);
+    UpdateSelectedTileRectangle();
 
     // 24 depth bits, 8 stencil bits, 8x AA, major version 4.
     sf::ContextSettings contextSettings = sf::ContextSettings(24, 8, 8, 4, 0);

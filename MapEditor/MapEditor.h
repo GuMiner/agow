@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML\System.hpp>
 #include <SFML\Graphics.hpp>
+#include "PaletteWindow.h"
 #include "SummaryView.h"
 
 // Allows for large-scale editing of the map tiles generated from CountourTiler
@@ -20,6 +21,12 @@ class MapEditor
     int tileSize;
 
     SummaryView summaryView;
+    PaletteWindow paletteWindow;
+
+    unsigned char* rawTileData;
+    sf::Sprite currentTile;
+    sf::Texture currentTileTexture;
+    void UpdateCurrentTileTexture();
 
 public:
     MapEditor();

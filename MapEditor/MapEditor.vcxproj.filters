@@ -5,10 +5,12 @@
     <ClCompile Include="SummaryView.cpp" />
     <ClCompile Include="ImageUtils.cpp" />
     <ClCompile Include="stb_implementations.cpp" />
+    <ClCompile Include="PaletteWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MapEditor.h" />
     <ClInclude Include="SummaryView.h" />
     <ClInclude Include="ImageUtils.h" />
+    <ClInclude Include="PaletteWindow.h" />
   </ItemGroup>
 </Project>
