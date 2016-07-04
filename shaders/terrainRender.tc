@@ -5,13 +5,11 @@ layout (vertices = 4) out;
 in VS_OUT
 {
     vec2 tc;
-    float vertexId;
 } tcs_in[];
 
 out TCS_OUT
 {
     vec2 tc;
-    float vertexId;
 } tcs_out[];
 
 void main(void)
@@ -24,13 +22,12 @@ void main(void)
         gl_TessLevelOuter[1] = 1;
         gl_TessLevelOuter[2] = 1;
         gl_TessLevelOuter[3] = 1;
-        gl_TessLevelInner[0] = 0;
-        gl_TessLevelInner[1] = 0;
+        gl_TessLevelInner[0] = 1;
+        gl_TessLevelInner[1] = 1;
     }
     
     // Pass-through our position and texture coordinate
     gl_out[invocationId].gl_Position = gl_in[invocationId].gl_Position;
     tcs_out[invocationId].tc = tcs_in[invocationId].tc;
-    tcs_out[invocationId].vertexId = tcs_in[invocationId].vertexId;
 }
 

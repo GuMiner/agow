@@ -3,7 +3,6 @@
 out VS_OUT
 {
     vec2 tc;
-    float vertexId;
 } vs_out;
 
 void main(void)
@@ -26,9 +25,6 @@ void main(void)
     
     // Figure out the texture coordinate by taking the position on the height texture and then the position in the cell.
     vs_out.tc = (offset + (vertices[gl_VertexID].xy + vec2(terrainCellHalfSize)) / (2 * terrainCellHalfSize)) / float(textureSize);
-    
-    // Used for wireframe effects.
-    vs_out.vertexId = gl_VertexID;
     
     // Move the terrain cells appropriately.
     gl_Position = vertices[gl_VertexID] + vec4(2 * terrainCellHalfSize * float(x), 2 * terrainCellHalfSize * float(y), 0.0, 0.0);

@@ -9,15 +9,13 @@ uniform mat4 mvMatrix;
 in TCS_OUT
 {
     vec2 tc;
-    float vertexId;
 } tes_in[];
 
-out TES_OUT
+flat out TES_OUT
 {
-    vec2 tc;
-    float vertexId;
+    smooth vec2 tc;
+    flat float scaleFactor;
 } tes_out;
-
 
 void main(void)
 {
@@ -29,11 +27,7 @@ void main(void)
     vec2 tc1 = mix(tes_in[0].tc, tes_in[1].tc, gl_TessCoord.x);
     vec2 tc2 = mix(tes_in[2].tc, tes_in[3].tc, gl_TessCoord.x);
     vec2 tc = mix(tc2, tc1, gl_TessCoord.y);
-    
-    float vid1 = mix(tes_in[0].vertexId, tes_in[1].vertexId, gl_TessCoord.x);
-    float vid2 = mix(tes_in[2].vertexId, tes_in[3].vertexId, gl_TessCoord.y);
-    float vid = mix(vid1, vid2, gl_TessCoord.x);
-    
+        
     // Get an average position using the same logic as above.
     vec4 pos1 = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);
     vec4 pos2 = mix(gl_in[2].gl_Position, gl_in[3].gl_Position, gl_TessCoord.x);
@@ -41,10 +35,18 @@ void main(void)
     
     // Note that as the terrain texture only contains height, so 'r' is the only valid (0-1) component.
     pos.z += texture(terrainTexture, tc).r * depth;
-    
-    gl_Position = projMatrix * mvMatrix * pos;
+        
+    gl_Position = projMatrix * mvMatrix * pos;    
     tes_out.tc = tc;
-    tes_out.vertexId = vid;
+    
+    float t1 = texture(terrainTexture, tes_in[0].tc).r * depth;
+    float t2 = texture(terrainTexture, tes_in[1].tc).r * depth;
+    float t3 = texture(terrainTexture, tes_in[2].tc).r * depth;
+    float t4 = texture(terrainTexture, tes_in[3].tc).r * depth;
+    float maxH = max(t1, max(t2, max(t3, t4)));
+    float minH = min(t1, min(t2, min(t3, t4)));
+    
+    tes_out.scaleFactor = cos(atan(maxH - minH));
 }
 
 
