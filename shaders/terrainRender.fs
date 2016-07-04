@@ -20,7 +20,7 @@ void main(void)
     float height = texture(terrainTexture, fs_in.tc).r;
     if (int(height * 10000) % 10 == 0)
     {
-        color = vec4(0.2f, 0.8f, 0.2f, 1.0f);
+        color = vec4(0.4f, 0.45f, 0.4f, 1.0f);
     }
     else
     {

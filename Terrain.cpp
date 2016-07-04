@@ -136,7 +136,7 @@ Terrain::~Terrain()
     for (auto iter = terrainTiles.begin(); iter != terrainTiles.end(); iter++)
     {
         glDeleteTextures(1, &iter->second->heightmapTextureId);
-        stbi_image_free(iter->second->rawImage);
+        ImageUtils::FreeRawImage(iter->second->rawImage);
         delete[] iter->second->heightmap;
         delete iter->second;
     }
