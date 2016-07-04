@@ -108,9 +108,9 @@ void SummaryView::UpdateSummaryImage(const char* summaryFilename, unsigned char*
         std::cout << "Unable to open the partials file for reading from." << std::endl;
     }
 
-    int size;
-    partialsFile.read((char*)&size, sizeof(int));
-    for (int i = 0; i < size; i++)
+    int existingItemSize;
+    partialsFile.read((char*)&existingItemSize, sizeof(int));
+    for (int i = 0; i < existingItemSize; i++)
     {
         int missingTile;
         partialsFile.read((char*)&missingTile, sizeof(int));
@@ -144,7 +144,7 @@ void SummaryView::UpdateSummaryImage(const char* summaryFilename, unsigned char*
     if (updatedSummaryImage)
     {
         const int RGBA = 4;
-        if (!stbi_write_png(summaryFilename, size, size, RGBA, existingImage, size * 4 * sizeof(unsigned char)))
+        if (!stbi_write_png(summaryFilename, size, size, RGBA, &existingImage[0], size * 4 * sizeof(unsigned char)))
         {
             std::cout << "Failed to write the summary file: " << stbi_failure_reason() << std::endl;
         }
