@@ -1,9 +1,18 @@
 #include <iostream>
+#include <sstream>
 #include "PaletteWindow.h"
 
 PaletteWindow::PaletteWindow(int size)
-    : isAlive(true), size(size), selectedTool(Tool::SQUARE_BRUSH), toolRadius(10.0f), selectedTerrain(TerrainType::TREES)
+    : isAlive(true), size(size), selectedTool(Tool::SQUARE_BRUSH), toolRadius(10), selectedTerrain(TerrainType::TREES),
+      terrainSize(40.f), terrainOffset(10.0f), terrainXOffset(20.0f), toolSize(15.0f), toolOffset(5.0f), toolXOffset(10.0f)
 {
+}
+
+std::string PaletteWindow::GetToolSizeText() const
+{
+    std::stringstream toolSizeStream;
+    toolSizeStream << "Tool Radius: " << toolRadius << std::endl;
+    return toolSizeStream.str();
 }
 
 void PaletteWindow::LoadGraphics()
@@ -13,21 +22,38 @@ void PaletteWindow::LoadGraphics()
         std::cout << "Font loading unsuccessful!" << std::endl;
     }
 
-    float size = 40.0f;
-    float offset = 10.0f;
     for (int i = 0; i < (int)TerrainType::COUNT; i++)
     {
-        terrainRectangles[(TerrainType)i] = sf::RectangleShape(sf::Vector2f(size, size));
+        terrainRectangles[(TerrainType)i] = sf::RectangleShape(sf::Vector2f(terrainSize, terrainSize));
         terrainRectangles[(TerrainType)i].setFillColor(GetTerrainColor((TerrainType)i));
-        terrainRectangles[(TerrainType)i].setPosition(sf::Vector2f(20.f, offset + i * (size + offset)));
+        terrainRectangles[(TerrainType)i].setPosition(sf::Vector2f(terrainXOffset, terrainOffset + i * (terrainSize + terrainOffset)));
+        terrainRectangles[(TerrainType)i].setOutlineColor(sf::Color::Cyan);
 
-        terrainText[(TerrainType)i] = sf::Text(GetTerrainName((TerrainType)i), typeFont, 20);
+        terrainText[(TerrainType)i] = sf::Text(GetTerrainName((TerrainType)i), typeFont, 18);
         terrainText[(TerrainType)i].setColor(GetTerrainColor((TerrainType)i));
-        terrainText[(TerrainType)i].setPosition(sf::Vector2f(20.0f + size + offset, offset + i * (size + offset)));
+        terrainText[(TerrainType)i].setPosition(sf::Vector2f(terrainXOffset + terrainSize + terrainOffset, terrainOffset + i * (terrainSize + terrainOffset)));
     }
 
-    terrainRectangles[selectedTerrain].setOutlineColor(sf::Color::Cyan);
     terrainRectangles[selectedTerrain].setOutlineThickness(1.0f);
+
+    for (int i = 0; i < (int)Tool::COUNT_TOOL; i++)
+    {
+        toolRectangles[(Tool)i] = sf::RectangleShape(sf::Vector2f(toolSize, toolSize));
+        toolRectangles[(Tool)i].setFillColor(sf::Color::Yellow);
+        toolRectangles[(Tool)i].setPosition(sf::Vector2f(toolXOffset,
+            toolOffset + i * (toolOffset + toolSize) + (int)TerrainType::COUNT * (terrainSize + terrainOffset)));
+        toolRectangles[(Tool)i].setOutlineColor(sf::Color::Cyan);
+
+        toolText[(Tool)i] = sf::Text(GetToolName((Tool)i), typeFont, 15);
+        toolText[(Tool)i].setColor(sf::Color::Green);
+        toolText[(Tool)i].setPosition(toolRectangles[(Tool)i].getPosition() + sf::Vector2f(toolSize + toolOffset, 0.0f));
+    }
+
+    toolRectangles[selectedTool].setOutlineThickness(1.0f);
+
+    toolSizeText = sf::Text(GetToolSizeText(), typeFont, 16);
+    toolSizeText.setColor(sf::Color::White);
+    toolSizeText.setPosition(toolRectangles[(Tool)(Tool::COUNT_TOOL - 1)].getPosition() + sf::Vector2f(0.0f, toolSize + toolOffset));
 }
 
 void PaletteWindow::HandleEvents(sf::RenderWindow& window)
@@ -40,15 +66,70 @@ void PaletteWindow::HandleEvents(sf::RenderWindow& window)
         {
             // Ignore -- we only close if the main map editor closes.
         }
-        else if (event.type == sf::Event::MouseButtonReleased)
+        else if (event.type == sf::Event::MouseButtonPressed)
         {
-            // Selecting a new terrain item.
+            // Selecting something, figure out which.
+            bool swappedTerrain = false;
+            for (int i = 0; i < (int)TerrainType::COUNT; i++)
+            {
+                if (terrainRectangles[(TerrainType)i].getGlobalBounds().contains(sf::Vector2f(event.mouseButton.x, event.mouseButton.y)))
+                {
+                    std::cout << "Switching to terrain type " << GetTerrainName((TerrainType)i) << std::endl;
+                    terrainRectangles[selectedTerrain].setOutlineThickness(0);
+                    terrainRectangles[(TerrainType)i].setOutlineThickness(1.0f);
+
+                    selectedTerrain = (TerrainType)i;
+                    swappedTerrain = true;
+                    break;
+                }
+            }
+
+            if (!swappedTerrain)
+            {
+                // Determine if we instead swapped tools.
+                for (int i = 0; i < (int)Tool::COUNT_TOOL; i++)
+                {
+                    if (toolRectangles[(Tool)i].getGlobalBounds().contains(sf::Vector2f((float)event.mouseButton.x, (float)event.mouseButton.y)))
+                    {
+                        std::cout << "Switching to tool " << GetToolName((Tool)i) << std::endl;
+
+                        toolRectangles[selectedTool].setOutlineThickness(0);
+                        toolRectangles[(Tool)i].setOutlineThickness(1.0f);
+
+                        selectedTool = (Tool)i;
+                        break;
+                    }
+                }
+            }
+        }
+        else if (event.type == sf::Event::KeyPressed)
+        {
+            switch (event.key.code)
+            {
+            case sf::Keyboard::Add:
+                toolRadius++;
+                toolSizeText.setString(GetToolSizeText());
+                break;
+            case sf::Keyboard::Subtract:
+                toolRadius--;
+                if (toolRadius < 1)
+                {
+                    toolRadius = 1;
+                }
+                
+                toolSizeText.setString(GetToolSizeText());
+                break;
+            default:
+                break;
+            }
         }
     }
 }
 
 void PaletteWindow::Render(sf::RenderWindow& window)
 {
+    window.clear();
+
     for (auto iter = terrainRectangles.begin(); iter != terrainRectangles.end(); iter++)
     {
         window.draw(iter->second);
@@ -58,9 +139,21 @@ void PaletteWindow::Render(sf::RenderWindow& window)
     {
         window.draw(iter->second);
     }
+
+    for (auto iter = toolRectangles.begin(); iter != toolRectangles.end(); iter++)
+    {
+        window.draw(iter->second);
+    }
+
+    for (auto iter = toolText.begin(); iter != toolText.end(); iter++)
+    {
+        window.draw(iter->second);
+    }
+
+    window.draw(toolSizeText);
 }
 
-sf::Color PaletteWindow::GetTerrainColor(PaletteWindow::TerrainType type) const
+sf::Color PaletteWindow::GetTerrainColor(TerrainType type)
 {
     switch (type)
     {
@@ -78,7 +171,36 @@ sf::Color PaletteWindow::GetTerrainColor(PaletteWindow::TerrainType type) const
     }
 }
 
-std::string PaletteWindow::GetTerrainName(TerrainType type) const
+unsigned char PaletteWindow::GetTerrainId(TerrainType type)
+{
+    switch (type)
+    {
+    case SNOW_PEAK: return 0;
+    case ROCKS: return 25;
+    case TREES: return 50;
+    case DIRTLAND: return 75;
+    case GRASSLAND: return 100;
+    case ROADS: return 125;
+    case CITY: return 150;
+    case SAND: return 175;
+    case RIVER: return 200;
+    case LAKE: return 225;
+    default: return 255;
+    }
+}
+
+std::string PaletteWindow::GetToolName(Tool type)
+{
+    switch (type)
+    {
+    case ERASE: return "Eraser";
+    case SQUARE_BRUSH: return "Sqr Brush";
+    case CIRCLE_BRUSH: return "Cir Brush";
+    default: "Unknown Tool!";
+    }
+}
+
+std::string PaletteWindow::GetTerrainName(TerrainType type)
 {
     switch (type)
     {
@@ -101,7 +223,7 @@ PaletteWindow::Tool PaletteWindow::GetSelectedTool() const
     return selectedTool;
 }
 
-float PaletteWindow::GetToolRadius() const
+int PaletteWindow::GetToolRadius() const
 {
     return toolRadius;
 }

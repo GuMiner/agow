@@ -27,19 +27,34 @@ public:
     {
         ERASE,
         SQUARE_BRUSH,
-        CIRCLE_BRUSH
+        CIRCLE_BRUSH,
+        COUNT_TOOL
     };
 
 private:
     Tool selectedTool;
-    float toolRadius; // In actual-image pixels.
+    int toolRadius; // In actual-image pixels.
+    std::string GetToolSizeText() const;
 
     TerrainType selectedTerrain;
 
     sf::Font typeFont;
+
+    float terrainSize;
+    float terrainOffset;
+    float terrainXOffset;
+    
     std::map<TerrainType, sf::Text> terrainText;
     std::map<TerrainType, sf::RectangleShape> terrainRectangles;
 
+    float toolSize;
+    float toolOffset;
+    float toolXOffset;
+    sf::Text toolSizeText;
+    std::map<Tool, sf::Text> toolText;
+    std::map<Tool, sf::RectangleShape> toolRectangles;
+
+    // Display size
     int size;
 
     void HandleEvents(sf::RenderWindow& window);
@@ -55,10 +70,13 @@ public:
     PaletteWindow(int size);
     void Start();
     
-    sf::Color GetTerrainColor(TerrainType type) const;
-    std::string GetTerrainName(TerrainType type) const;
+    static sf::Color GetTerrainColor(TerrainType type);
+    static std::string GetTerrainName(TerrainType type);
+    static std::string GetToolName(Tool type);
+    static unsigned char GetTerrainId(TerrainType type);
+
     Tool GetSelectedTool() const;
-    float GetToolRadius() const;
+    int GetToolRadius() const;
     TerrainType GetTerrainType() const;
 
     void Stop();

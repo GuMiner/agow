@@ -3,30 +3,17 @@
 #include <thread>
 #include <SFML\System.hpp>
 #include <SFML\Graphics.hpp>
+#include "ImageSummarizer.h"
+#include "TileIdentifier.h"
 
 class SummaryView
 {
     int size;
-    int tileCount;
-
-    // Amount we reduce the main images by (when generating a summary) given our screen size.
-    int reductionFactor;
-
-    std::string summaryRootPath;
-
-    int GetTileId(int x, int y) const;
-    void GetPositionFromId(int pos, int* x, int* y) const;
-
-    std::set<int> missingTiles;
-    void SavePartialsFile(const char* partialsFilename);
-
-    sf::Sprite summarySprite;
-    sf::Texture summaryTexture;
-    bool TryLoadTile(int x, int y, unsigned char* summaryImage);
-    void CreateNewSummaryImage(const char* summaryFilename, unsigned char** summaryImage);
-    void UpdateSummaryImage(const char* summaryFilename, unsigned char* existingImage, const char* partialsFilename);
-    void LoadOrUpdateSummaryView();
     
+    TileIdentifier tileId;
+    ImageSummarizer topographicSummarizer;
+    ImageSummarizer overlaySummarizer;
+
     void HandleEvents(sf::RenderWindow& window);
     void Render(sf::RenderWindow& window);
 
@@ -37,6 +24,7 @@ class SummaryView
     sf::RectangleShape selectedTileRectangle;
     int selectedTile;
     void UpdateSelectedTileRectangle();
+
 public:
     enum Direction
     {
@@ -51,7 +39,6 @@ public:
 
     SummaryView(int size, int tileCount, int reductionFactor);
     void Start();
-    bool IsTileValid(int x, int y) const;
     void Stop();
 };
 

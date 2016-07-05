@@ -10,215 +10,17 @@
 #include "SummaryView.h"
 
 SummaryView::SummaryView(int size, int tileCount, int reductionFactor)
-    : isAlive(true), tileCount(tileCount), size(size), reductionFactor(reductionFactor), summaryRootPath("../ContourTiler/rasters/summary/"), selectedTile(0)
+    : isAlive(true), size(size), tileId(tileCount),
+      topographicSummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "summary.png"),
+      overlaySummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "overlay.png")
 {
 
-}
-
-bool SummaryView::TryLoadTile(int i, int j, unsigned char* summaryImage)
-{
-    std::stringstream imageTile;
-    imageTile << "../ContourTiler/rasters/" << j << "/" << i << ".png";
-
-    unsigned char* tileData;
-    int width, height;
-    if (!ImageUtils::LoadImage(imageTile.str().c_str(), &width, &height, &tileData))
-    {
-        std::cout << ">> Missing tile " << i << ", " << j << std::endl;
-        return false;
-    }
-    else
-    {
-        float* convertedData = new float[width * height];
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                convertedData[x + y * width] =
-                    ((float)((unsigned short)tileData[(x + y * width) * 4] +
-                        (((unsigned short)tileData[(x + y * width) * 4 + 1]) << 8))) / (float)std::numeric_limits<unsigned short>::max();
-            }
-        }
-
-        int subdivisions = width / reductionFactor;
-        float* outputData = new float[subdivisions * subdivisions];
-        if (!stbir_resize_float(convertedData, width, height, width * sizeof(float), outputData, subdivisions, subdivisions, subdivisions * sizeof(float), 1))
-        {
-            std::cout << "Failed to resize image: " << i << ", " << j << std::endl;
-            return false;
-        }
-        else
-        {
-            // Copy the resized image over.
-            for (int x = 0; x < subdivisions; x++)
-            {
-                for (int y = 0; y < subdivisions; y++)
-                {
-                    unsigned short averageValue = (unsigned short)(outputData[x + y * subdivisions] * (float)std::numeric_limits<unsigned short>::max());
-
-                    int xReal = i * subdivisions + x;
-                    int yReal = j * subdivisions + y;
-                    summaryImage[(xReal + yReal * size) * 4] = (unsigned char)(averageValue / 256);
-                    summaryImage[(xReal + yReal * size) * 4 + 1] = (unsigned char)(averageValue / 256);
-                    summaryImage[(xReal + yReal * size) * 4 + 2] = (unsigned char)(averageValue / 256);
-                    summaryImage[(xReal + yReal * size) * 4 + 3] = 255;
-                }
-            }
-
-            std::cout << "Summarized image " << i << ", " << j << std::endl;
-        }
-
-        delete[] outputData;
-        delete[] convertedData;
-        ImageUtils::FreeImage(tileData);
-    }
-
-    return true;
-}
-
-void SummaryView::CreateNewSummaryImage(const char* summaryFilename, unsigned char** summaryImage)
-{
-    *summaryImage = new unsigned char[size * size * 4];
-    for (int i = 0; i < tileCount; i++)
-    {
-        for (int j = 0; j < tileCount; j++)
-        {
-            // Iterate through all the possible tiles, assigning them to the image (after downscaling) or the missing tile area.
-            if (!TryLoadTile(i, j, *summaryImage))
-            {
-                missingTiles.insert(GetTileId(i, j));
-            }
-        }
-    }
-
-    // Save our summary image.
-    const int RGBA = 4;
-    if (!stbi_write_png(summaryFilename, size, size, RGBA, (*summaryImage), size * 4 * sizeof(unsigned char)))
-    {
-        std::cout << "Failed to write the summary file: " << stbi_failure_reason() << std::endl;
-    }
-}
-
-void SummaryView::UpdateSummaryImage(const char* summaryFilename, unsigned char* existingImage, const char* partialsFilename)
-{
-    // Read in the partials file.
-    std::ifstream partialsFile(partialsFilename, std::ios::in | std::ios::binary);
-    if (!partialsFile)
-    {
-        std::cout << "Unable to open the partials file for reading from." << std::endl;
-    }
-
-    int existingItemSize;
-    partialsFile.read((char*)&existingItemSize, sizeof(int));
-    for (int i = 0; i < existingItemSize; i++)
-    {
-        int missingTile;
-        partialsFile.read((char*)&missingTile, sizeof(int));
-        
-        missingTiles.insert(missingTile);
-    }
-
-    partialsFile.close();
-
-    // For anything that's missing a tile, attempt a reload.
-    bool updatedSummaryImage = false;
-    std::vector<int> itemsToRemove;
-    for (auto iter = missingTiles.begin(); iter != missingTiles.end(); iter++)
-    {
-        int x, y;
-        GetPositionFromId(*iter, &x, &y);
-        if (TryLoadTile(x, y, existingImage))
-        {
-            updatedSummaryImage = true;
-            itemsToRemove.push_back(*iter);
-        }
-    }
-
-    // Erase separately to avoid modifying the iterator.
-    for (unsigned int i = 0; i < itemsToRemove.size(); i++)
-    {
-        missingTiles.erase(itemsToRemove[i]);
-    }
-
-    // Overwrite the image.
-    if (updatedSummaryImage)
-    {
-        const int RGBA = 4;
-        if (!stbi_write_png(summaryFilename, size, size, RGBA, &existingImage[0], size * 4 * sizeof(unsigned char)))
-        {
-            std::cout << "Failed to write the summary file: " << stbi_failure_reason() << std::endl;
-        }
-    }
-}
-
-void SummaryView::SavePartialsFile(const char* partialsFilename)
-{
-    std::ofstream partialsFile(partialsFilename, std::ios::out | std::ios::binary);
-    if (!partialsFile)
-    {
-        std::cout << "Unable to open the partials file for writing to." << std::endl;
-    }
-
-    int size = (int)missingTiles.size();
-    partialsFile.write((char*)&size, sizeof(int));
-
-    for (auto iter = missingTiles.begin(); iter != missingTiles.end(); iter++)
-    {
-        int id = *iter;
-        partialsFile.write((char*)&id, sizeof(int));
-    }
-
-    partialsFile.close();
-}
-
-void SummaryView::LoadOrUpdateSummaryView()
-{
-    std::stringstream partialsFile;
-    std::stringstream summaryPath;
-    summaryPath << summaryRootPath << "summary.png";
-    partialsFile << summaryRootPath << "missingImages.txt";
-
-    // This code enables area editing while tile rendering is redone or in-progress.
-    unsigned char* summaryImage;
-    int width, height;
-    if (!ImageUtils::LoadImage(summaryPath.str().c_str(), &width, &height, &summaryImage))
-    {
-        CreateNewSummaryImage(summaryPath.str().c_str(), &summaryImage);
-    }
-    else
-    {
-        UpdateSummaryImage(summaryPath.str().c_str(), summaryImage, partialsFile.str().c_str());
-    }
-
-    SavePartialsFile(partialsFile.str().c_str());
-    
-    // Send the summary image out, but flipped.
-    summaryTexture.create(size, size);
-    summaryTexture.setRepeated(false);
-    summaryTexture.setSmooth(false);
-
-    summarySprite.setTextureRect(sf::IntRect(0, height, width, -height));
-    summarySprite.setTexture(summaryTexture);
-    summaryTexture.update(summaryImage);
-
-    // TODO shouldn't leave the summary image dangling here.
-}
-
-int SummaryView::GetTileId(int x, int y) const
-{
-    return x + tileCount * y;
-}
-
-void SummaryView::GetPositionFromId(int pos, int* x, int* y) const
-{
-    *x = pos % tileCount;
-    *y = pos / tileCount;
 }
 
 void SummaryView::MoveSelectedTile(Direction direction)
 {
     int x, y;
-    GetPositionFromId(selectedTile, &x, &y);
+    tileId.GetPositionFromId(selectedTile, &x, &y);
 
     switch (direction)
     {
@@ -228,9 +30,9 @@ void SummaryView::MoveSelectedTile(Direction direction)
     case RIGHT: ++x; break;
     }
 
-    if (IsTileValid(x, y))
+    if (topographicSummarizer.IsTileValid(x, y))
     {
-        selectedTile = GetTileId(x, y);
+        selectedTile = tileId.GetTileId(x, y);
         UpdateSelectedTileRectangle();
     }
 }
@@ -239,12 +41,15 @@ void SummaryView::LoadSelectedTile(unsigned char** rawData)
 {
     if (*rawData != nullptr)
     {
+        // TODO call into the overlay summarizer to update the tile appropriately.
+        // We could also do topographic, but we (for now) don't support elevation changes with this program.
+
         ImageUtils::FreeImage(*rawData);
         *rawData = nullptr;
     }
 
     int x, y;
-    GetPositionFromId(selectedTile, &x, &y);
+    tileId.GetPositionFromId(selectedTile, &x, &y);
 
     std::stringstream imageTile;
     imageTile << "../ContourTiler/rasters/" << y << "/" << x << ".png";
@@ -255,15 +60,10 @@ void SummaryView::LoadSelectedTile(unsigned char** rawData)
 
 void SummaryView::UpdateSelectedTileRectangle()
 {
-    int motionScale = size / tileCount;
+    int motionScale = size / tileId.GetTileCount();
     int x, y;
-    GetPositionFromId(selectedTile, &x, &y);
+    tileId.GetPositionFromId(selectedTile, &x, &y);
     selectedTileRectangle.setPosition(sf::Vector2f((float)(x * motionScale), (float)(size - (y + 1) * motionScale)));
-}
-
-bool SummaryView::IsTileValid(int x, int y) const
-{
-    return (x >= 0 && y >= 0 && x < tileCount && y < tileCount && missingTiles.find(GetTileId(x, y)) == missingTiles.end());
 }
 
 void SummaryView::HandleEvents(sf::RenderWindow& window)
@@ -281,14 +81,28 @@ void SummaryView::HandleEvents(sf::RenderWindow& window)
 
 void SummaryView::Render(sf::RenderWindow& window)
 {
-    window.draw(summarySprite);
+    window.draw(topographicSummarizer.GetSummarizedSprite());
     window.draw(selectedTileRectangle);
 }
 
 void SummaryView::ThreadStart()
 {
-    LoadOrUpdateSummaryView();
-    selectedTileRectangle = sf::RectangleShape(sf::Vector2f(size / tileCount, size / tileCount));
+    topographicSummarizer.Initialize(
+        [](unsigned char r, unsigned char g, unsigned char b, unsigned char a) -> float
+        {
+            return ((float)((unsigned short)r + (((unsigned short)g) << 8))) / (float)std::numeric_limits<unsigned short>::max();
+        },
+        [](float value, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a) -> void
+        {
+            unsigned short averageValue = (unsigned short)(value * (float)std::numeric_limits<unsigned short>::max());
+            unsigned char actualValue = (unsigned char)(averageValue / 256);
+            *r = actualValue;
+            *g = actualValue;
+            *b = actualValue;
+            *a = 255;
+        });
+
+    selectedTileRectangle = sf::RectangleShape(sf::Vector2f(size / tileId.GetTileCount(), size / tileId.GetTileCount()));
     selectedTileRectangle.setFillColor(sf::Color(0, 0, 0, 0));
     selectedTileRectangle.setOutlineThickness(1.0f);
     selectedTileRectangle.setOutlineColor(sf::Color::Green);

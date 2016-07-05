@@ -6,11 +6,15 @@
     <ClCompile Include="ImageUtils.cpp" />
     <ClCompile Include="stb_implementations.cpp" />
     <ClCompile Include="PaletteWindow.cpp" />
+    <ClCompile Include="ImageSummarizer.cpp" />
+    <ClCompile Include="TileIdentifier.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MapEditor.h" />
     <ClInclude Include="SummaryView.h" />
     <ClInclude Include="ImageUtils.h" />
     <ClInclude Include="PaletteWindow.h" />
+    <ClInclude Include="ImageSummarizer.h" />
+    <ClInclude Include="TileIdentifier.h" />
   </ItemGroup>
 </Project>
