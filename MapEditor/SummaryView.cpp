@@ -7,6 +7,7 @@
 #include <stb/stb_image_resize.h>
 #include <stb/stb_image_write.h>
 #include "ImageUtils.h"
+#include "PaletteWindow.h"
 #include "SummaryView.h"
 
 SummaryView::SummaryView(int size, int tileCount, int reductionFactor)
@@ -58,6 +59,15 @@ void SummaryView::LoadSelectedTile(unsigned char** rawData)
     ImageUtils::LoadImage(imageTile.str().c_str(), &width, &height, rawData);
 }
 
+// We know that only the topographic data is what really matters. We do need to indicate a reload to both topographic and overlay layers though.
+void SummaryView::UpdateSelectedTile(unsigned char* newData)
+{
+    int x, y;
+    tileId.GetPositionFromId(selectedTile, &x, &y);
+    topographicSummarizer.UpdateSummaryForTile(newData, x, y, true);
+    overlaySummarizer.UpdateSummaryForTile(newData, x, y, false);
+}
+
 void SummaryView::UpdateSelectedTileRectangle()
 {
     int motionScale = size / tileId.GetTileCount();
@@ -82,6 +92,7 @@ void SummaryView::HandleEvents(sf::RenderWindow& window)
 void SummaryView::Render(sf::RenderWindow& window)
 {
     window.draw(topographicSummarizer.GetSummarizedSprite());
+    window.draw(overlaySummarizer.GetSummarizedSprite());
     window.draw(selectedTileRectangle);
 }
 
@@ -100,6 +111,23 @@ void SummaryView::ThreadStart()
             *g = actualValue;
             *b = actualValue;
             *a = 255;
+        });
+
+    overlaySummarizer.Initialize(
+        [](unsigned char r, unsigned char g, unsigned char b, unsigned char a) -> float
+        {
+            return (float)b;
+        },
+        [](float value, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a) -> void
+        {
+            // This will probably look odd but it's the best I can do.
+            unsigned char averageValue = (unsigned char)value;
+            PaletteWindow::TerrainType type = PaletteWindow::GetNearestTerrainType(averageValue);
+            sf::Color color = PaletteWindow::GetTerrainColor(type);
+            *r = color.r;
+            *g = color.g;
+            *b = color.b;
+            *a = 150;
         });
 
     selectedTileRectangle = sf::RectangleShape(sf::Vector2f(size / tileId.GetTileCount(), size / tileId.GetTileCount()));

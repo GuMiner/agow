@@ -4,6 +4,20 @@
 #include "PaletteWindow.h"
 #include "SummaryView.h"
 
+struct DisplaySettings
+{
+    bool rescale;
+    bool showOverlay;
+    bool showContours;
+
+    DisplaySettings()
+    {
+        rescale = false;
+        showOverlay = true;
+        showContours = false;
+    }
+};
+
 // Allows for large-scale editing of the map tiles generated from CountourTiler
 class MapEditor
 {
@@ -22,10 +36,18 @@ class MapEditor
 
     SummaryView summaryView;
     PaletteWindow paletteWindow;
+    DisplaySettings displaySettings;
+
+    bool mouseDown;
+
+    // Updates the current tile with the given rawTileData. Performs appropriate conversions.
+    void UpdateCurrentTile();
 
     unsigned char* rawTileData;
     sf::Sprite currentTile;
     sf::Texture currentTileTexture;
+
+    // Replaces the current on-screen tile.
     void UpdateCurrentTileTexture();
 
 public:

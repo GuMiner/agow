@@ -13,6 +13,7 @@ class ImageSummarizer
 {
     int summarySize;
     int reductionFactor;
+    int tileImageSize;
     std::string summaryRootPath;
     std::string summaryFilename;
 
@@ -43,6 +44,9 @@ public:
 
     bool IsTileValid(int x, int y) const;
     sf::Sprite& GetSummarizedSprite();
-    void UpdateSummaryForTile(int x, int y);
+
+    // Updates the data for the specified tile, which also updates the summary.
+    // If saveEnabled is false, this just reloads the specified tile from memory.
+    void UpdateSummaryForTile(unsigned char* newData, int x, int y, bool saveEnabled);
 };
 

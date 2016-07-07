@@ -74,6 +74,7 @@ public:
     static std::string GetTerrainName(TerrainType type);
     static std::string GetToolName(Tool type);
     static unsigned char GetTerrainId(TerrainType type);
+    static TerrainType GetNearestTerrainType(unsigned char value);
 
     Tool GetSelectedTool() const;
     int GetToolRadius() const;

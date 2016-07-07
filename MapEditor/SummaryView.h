@@ -36,6 +36,7 @@ public:
 
     void MoveSelectedTile(Direction direction);
     void LoadSelectedTile(unsigned char** rawData);
+    void UpdateSelectedTile(unsigned char* newData);
 
     SummaryView(int size, int tileCount, int reductionFactor);
     void Start();

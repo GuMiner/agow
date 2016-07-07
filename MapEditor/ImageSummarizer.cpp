@@ -8,7 +8,8 @@
 #include "ImageSummarizer.h"
 
 ImageSummarizer::ImageSummarizer(int summarySize, int tileCount, int reductionFactor, std::string summaryRootPath, std::string summaryFilename)
-    : summaryRootPath(summaryRootPath), summaryFilename(summaryFilename), reductionFactor(reductionFactor), summarySize(summarySize), tileId(tileCount)
+    : summarySize(summarySize), tileId(tileCount), reductionFactor(reductionFactor), tileImageSize((summarySize / tileCount) * reductionFactor),
+      summaryRootPath(summaryRootPath), summaryFilename(summaryFilename)
 {
 }
 
@@ -53,7 +54,7 @@ bool ImageSummarizer::TryLoadTile(int i, int j, unsigned char* summaryImage)
             for (int y = 0; y < height; y++)
             {
                 convertedData[x + y * width] = 
-                    downscaler(tileData[x + y * width + 4], tileData[x + y * width + 4] + 1, tileData[x + y * width + 4] + 2, tileData[x + y * width + 4] + 3);
+                    downscaler(tileData[(x + y * width) * 4], tileData[(x + y * width) * 4 + 1], tileData[(x + y * width) * 4 + 2], tileData[(x + y * width) * 4 + 3]);
             }
         }
 
@@ -196,6 +197,7 @@ void ImageSummarizer::Initialize(downscaleFunction downscaler, displayConverterF
         UpdateSummaryImage(summaryPath.str().c_str(), summaryImage, partialsFile.str().c_str());
     }
 
+    // FYI this isn't fully correct. I'm less than a day to fully rendering though, so I'll just remove the partials handling code then.
     SavePartialsFile(partialsFile.str().c_str());
 
     // Send the summary image out, but flipped.
@@ -222,8 +224,37 @@ sf::Sprite& ImageSummarizer::GetSummarizedSprite()
     return summarySprite;
 }
 
-void ImageSummarizer::UpdateSummaryForTile(int x, int y)
+// Updates the data for the specified tile, which also updates the summary.
+// If saveEnabled is false, this just reloads the specified tile from memory.
+void ImageSummarizer::UpdateSummaryForTile(unsigned char* newData, int x, int y, bool saveEnabled)
 {
-    // This consists of loading the summary, updating the tile in the summary, and saving it out, while updating the sprite.
-    // TODO
+    // If enabled, save our updated tile.
+    if (saveEnabled)
+    {
+        std::stringstream imageTile;
+        imageTile << "../ContourTiler/rasters/" << y << "/" << x << ".png";
+
+        const int RGBA = 4;
+        if (!stbi_write_png(imageTile.str().c_str(), tileImageSize, tileImageSize, RGBA, newData, tileImageSize * 4 * sizeof(unsigned char)))
+        {
+            std::cout << "Failed to write the summary file: " << stbi_failure_reason() << std::endl;
+        }
+    }
+
+    std::stringstream summaryPath;
+    summaryPath << summaryRootPath << summaryFilename;
+    
+    // This code enables area editing while tile rendering is redone or in-progress.
+    unsigned char* summaryImage;
+    int width, height;
+    if (ImageUtils::LoadImage(summaryPath.str().c_str(), &width, &height, &summaryImage) && TryLoadTile(x, y, summaryImage))
+    {
+        std::cout << "Updating summary image for tile " << x << ", " << y << std::endl;
+        // Save the updated summary image (as it may be modified).
+        WriteSummaryImage(summaryPath.str().c_str(), summaryImage);
+        
+        // Update the sprite with our summary updates.
+        summaryTexture.update(summaryImage);
+        ImageUtils::FreeImage(summaryImage);
+    }
 }

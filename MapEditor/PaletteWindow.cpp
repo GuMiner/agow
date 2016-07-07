@@ -189,6 +189,57 @@ unsigned char PaletteWindow::GetTerrainId(TerrainType type)
     }
 }
 
+PaletteWindow::TerrainType PaletteWindow::GetNearestTerrainType(unsigned char value)
+{
+    if (value < GetTerrainId(LAKE))
+    {
+        if (value < GetTerrainId(RIVER))
+        {
+            if (value < GetTerrainId(SAND))
+            {
+                if (value < GetTerrainId(CITY))
+                {
+                    if (value < GetTerrainId(ROADS))
+                    {
+                        if (value < GetTerrainId(GRASSLAND))
+                        {
+                            if (value < GetTerrainId(DIRTLAND))
+                            {
+                                if (value < GetTerrainId(TREES))
+                                {
+                                    if (value < GetTerrainId(ROCKS))
+                                    {
+                                        return SNOW_PEAK;
+                                    }
+
+                                    return ROCKS;
+                                }
+
+                                return TREES;
+                            }
+
+                            return DIRTLAND;
+                        }
+
+                        return GRASSLAND;
+                    }
+
+                    return ROADS;
+                }
+
+                return CITY;
+            }
+
+            return SAND;
+        }
+
+        return RIVER;
+    }
+
+    return LAKE;
+}
+
+
 std::string PaletteWindow::GetToolName(Tool type)
 {
     switch (type)
