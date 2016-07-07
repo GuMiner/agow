@@ -76,6 +76,8 @@ class MapEditor
     // Redraws the entire current tile.
     void RedrawCurrentTile();
     void RedrawSelectedArea(int xMin, int xMax, int yMin, int yMax);
+
+    bool saveOnMove;
     void SaveTile();
 
 public:

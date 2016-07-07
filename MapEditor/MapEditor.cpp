@@ -16,7 +16,7 @@
 
 MapEditor::MapEditor()
     : size(900), tileCount(70), tileSize(1000), summaryView(700, tileCount, tileSize / (700 / tileCount)), paletteWindow(200), currentTile(),
-      mouseDown(false), displaySettings(), brushes((float)paletteWindow.GetToolRadius()), convertedRawData(new sf::Uint8[tileSize * tileSize * 4])
+      mouseDown(false), displaySettings(), brushes((float)paletteWindow.GetToolRadius()), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]), saveOnMove(true)
 {
 }
 
@@ -30,7 +30,9 @@ void MapEditor::LoadGraphics()
     currentTile.tileTexture.setRepeated(false);
     currentTile.tileTexture.setSmooth(false);
 
-    currentTile.tileSprite.setTextureRect(sf::IntRect(0, size, size, -size));
+    currentTile.tileSprite.setTextureRect(sf::IntRect(0, tileSize, tileSize, -tileSize));
+    currentTile.tileSprite.setPosition(sf::Vector2f(0, 0));// -(float)(tileSize - size), -(float)(tileSize - size)));
+    currentTile.tileSprite.setScale(sf::Vector2f((float)size / (float)tileSize, (float)size / (float)tileSize));
     currentTile.tileSprite.setTexture(currentTile.tileTexture);
     
     summaryView.LoadSelectedTile(&currentTile.rawTileData);
@@ -54,13 +56,14 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
             bool tileChanged = false;
             switch (event.key.code)
             {
-            case sf::Keyboard::Left:  SaveTile(); summaryView.MoveSelectedTile(SummaryView::Direction::LEFT);  summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
-            case sf::Keyboard::Right: SaveTile(); summaryView.MoveSelectedTile(SummaryView::Direction::RIGHT); summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
-            case sf::Keyboard::Up:    SaveTile(); summaryView.MoveSelectedTile(SummaryView::Direction::UP);    summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
-            case sf::Keyboard::Down:  SaveTile(); summaryView.MoveSelectedTile(SummaryView::Direction::DOWN);  summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
+            case sf::Keyboard::Left:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::LEFT);  summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
+            case sf::Keyboard::Right: if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::RIGHT); summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
+            case sf::Keyboard::Up:    if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::UP);    summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
+            case sf::Keyboard::Down:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::DOWN);  summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
             case sf::Keyboard::R: displaySettings.rescale = !displaySettings.rescale;           std::cout << "Rescale: " << displaySettings.rescale << std::endl;       tileChanged = true; break;
             case sf::Keyboard::C: displaySettings.showContours = !displaySettings.showContours; std::cout << "Contours: " << displaySettings.showContours << std::endl; tileChanged = true; break;
             case sf::Keyboard::O: displaySettings.showOverlay = !displaySettings.showOverlay;   std::cout << "Overlay: " << displaySettings.showOverlay << std::endl;   tileChanged = true; break;
+            case sf::Keyboard::S: saveOnMove = !saveOnMove; std::cout << "WARNING: Save on move: " << saveOnMove << std::endl; break;
             default: break;
             }
 
@@ -95,7 +98,9 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
 void MapEditor::Draw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY)
 {
     // Upscale to the image.
-    mouseY = (tileSize - mouseY) - (tileSize - size);
+    mouseX = (int)((float)mouseX * (float)tileSize / (float)size);
+    mouseY = (int)((float)mouseY * (float)tileSize / (float)size);
+    mouseY = (tileSize - mouseY);
 
     int minX = std::max(mouseX - (int)radius, 0);
     int minY = std::max(mouseY - (int)radius, 0);
