@@ -12,9 +12,35 @@ struct DisplaySettings
 
     DisplaySettings()
     {
-        rescale = false;
+        rescale = true;
         showOverlay = true;
-        showContours = false;
+        showContours = true;
+    }
+};
+
+struct Brushes
+{
+    sf::RectangleShape squareBrush;
+    sf::CircleShape circleBrush;
+
+    Brushes(float startingRadius)
+        : squareBrush(sf::Vector2f(startingRadius * 2.0f, startingRadius * 2.0f)), circleBrush(startingRadius, 32)
+    {
+    }
+};
+
+struct CurrentTile
+{
+    unsigned short minHeight;
+    unsigned short maxHeight;
+
+    unsigned char* rawTileData;
+    sf::Sprite tileSprite;
+    sf::Texture tileTexture;
+
+    CurrentTile()
+        : rawTileData(nullptr)
+    {
     }
 };
 
@@ -37,18 +63,20 @@ class MapEditor
     SummaryView summaryView;
     PaletteWindow paletteWindow;
     DisplaySettings displaySettings;
+    Brushes brushes;
 
     bool mouseDown;
+    sf::Uint8* convertedRawData;
 
-    // Updates the current tile with the given rawTileData. Performs appropriate conversions.
-    void UpdateCurrentTile();
+    // Applies the drawing at the current mouse position, overwriting any current overlay.
+    void Draw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY);
 
-    unsigned char* rawTileData;
-    sf::Sprite currentTile;
-    sf::Texture currentTileTexture;
+    CurrentTile currentTile;
 
-    // Replaces the current on-screen tile.
-    void UpdateCurrentTileTexture();
+    // Redraws the entire current tile.
+    void RedrawCurrentTile();
+    void RedrawSelectedArea(int xMin, int xMax, int yMin, int yMax);
+    void SaveTile();
 
 public:
     MapEditor();

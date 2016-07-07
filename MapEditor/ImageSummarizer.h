@@ -26,7 +26,7 @@ class ImageSummarizer
     displayConverterFunction displayConverter;
     
     // Loads a tile into the provided summary image, using the appropriate converter functions.
-    bool TryLoadTile(int x, int y, unsigned char* summaryImage);
+    bool TryLoadTile(bool verbose, int x, int y, unsigned char* summaryImage);
 
     // Writes out the full summary image.
     void WriteSummaryImage(const char* filename, unsigned char* summaryImage);

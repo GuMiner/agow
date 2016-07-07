@@ -72,7 +72,7 @@ void PaletteWindow::HandleEvents(sf::RenderWindow& window)
             bool swappedTerrain = false;
             for (int i = 0; i < (int)TerrainType::COUNT; i++)
             {
-                if (terrainRectangles[(TerrainType)i].getGlobalBounds().contains(sf::Vector2f(event.mouseButton.x, event.mouseButton.y)))
+                if (terrainRectangles[(TerrainType)i].getGlobalBounds().contains(sf::Vector2f((float)event.mouseButton.x, (float)event.mouseButton.y)))
                 {
                     std::cout << "Switching to terrain type " << GetTerrainName((TerrainType)i) << std::endl;
                     terrainRectangles[selectedTerrain].setOutlineThickness(0);

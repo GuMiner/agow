@@ -42,7 +42,6 @@ void SummaryView::LoadSelectedTile(unsigned char** rawData)
 {
     if (*rawData != nullptr)
     {
-        // TODO call into the overlay summarizer to update the tile appropriately.
         // We could also do topographic, but we (for now) don't support elevation changes with this program.
 
         ImageUtils::FreeImage(*rawData);
@@ -130,7 +129,7 @@ void SummaryView::ThreadStart()
             *a = 150;
         });
 
-    selectedTileRectangle = sf::RectangleShape(sf::Vector2f(size / tileId.GetTileCount(), size / tileId.GetTileCount()));
+    selectedTileRectangle = sf::RectangleShape(sf::Vector2f((float)(size / tileId.GetTileCount()), (float)(size / tileId.GetTileCount())));
     selectedTileRectangle.setFillColor(sf::Color(0, 0, 0, 0));
     selectedTileRectangle.setOutlineThickness(1.0f);
     selectedTileRectangle.setOutlineColor(sf::Color::Green);

@@ -33,7 +33,7 @@ void ImageSummarizer::SavePartialsFile(const char* partialsFilename)
     partialsFile.close();
 }
 
-bool ImageSummarizer::TryLoadTile(int i, int j, unsigned char* summaryImage)
+bool ImageSummarizer::TryLoadTile(bool verbose, int i, int j, unsigned char* summaryImage)
 {
     std::stringstream imageTile;
     imageTile << "../ContourTiler/rasters/" << j << "/" << i << ".png";
@@ -82,7 +82,10 @@ bool ImageSummarizer::TryLoadTile(int i, int j, unsigned char* summaryImage)
                 }
             }
 
-            std::cout << "Summarized image " << i << ", " << j << std::endl;
+            if (verbose)
+            {
+                std::cout << "Summarized image " << i << ", " << j << std::endl;
+            }
         }
 
         delete[] outputData;
@@ -110,7 +113,7 @@ void ImageSummarizer::CreateNewSummaryImage(const char* summaryFilename, unsigne
         for (int j = 0; j < tileId.GetTileCount(); j++)
         {
             // Iterate through all the possible tiles, assigning them to the image (after downscaling) or the missing tile area.
-            if (!TryLoadTile(i, j, *summaryImage))
+            if (!TryLoadTile(true, i, j, *summaryImage))
             {
                 missingTiles.insert(tileId.GetTileId(i, j));
             }
@@ -148,7 +151,7 @@ void ImageSummarizer::UpdateSummaryImage(const char* summaryFilename, unsigned c
     {
         int x, y;
         tileId.GetPositionFromId(*iter, &x, &y);
-        if (TryLoadTile(x, y, existingImage))
+        if (TryLoadTile(false, x, y, existingImage))
         {
             updatedSummaryImage = true;
             itemsToRemove.push_back(*iter);
@@ -247,9 +250,10 @@ void ImageSummarizer::UpdateSummaryForTile(unsigned char* newData, int x, int y,
     // This code enables area editing while tile rendering is redone or in-progress.
     unsigned char* summaryImage;
     int width, height;
-    if (ImageUtils::LoadImage(summaryPath.str().c_str(), &width, &height, &summaryImage) && TryLoadTile(x, y, summaryImage))
+    if (ImageUtils::LoadImage(summaryPath.str().c_str(), &width, &height, &summaryImage) && TryLoadTile(false, x, y, summaryImage))
     {
         std::cout << "Updating summary image for tile " << x << ", " << y << std::endl;
+        
         // Save the updated summary image (as it may be modified).
         WriteSummaryImage(summaryPath.str().c_str(), summaryImage);
         

@@ -27,7 +27,7 @@
 ContourTiler::ContourTiler()
     : lineStripLoader(), quadExclusions(), size(1000), regionSize(70), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]), coverBuffer(new bool[size * size]),
       leftOffset((decimal)0.64), topOffset((decimal)0.14), effectiveSize((decimal)0.08), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false), isZoomMode(true),
-      rerender(false), viewOptions(), hideExclusionShape(false), isBulkProcessing(false), regionX(6), regionY(26)
+      rerender(false), viewOptions(), hideExclusionShape(false), isBulkProcessing(false), regionX(35), regionY(65)
 { }
 
 ContourTiler::~ContourTiler()
