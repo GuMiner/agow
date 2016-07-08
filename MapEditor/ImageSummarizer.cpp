@@ -13,26 +13,6 @@ ImageSummarizer::ImageSummarizer(int summarySize, int tileCount, int reductionFa
 {
 }
 
-void ImageSummarizer::SavePartialsFile(const char* partialsFilename)
-{
-    std::ofstream partialsFile(partialsFilename, std::ios::out | std::ios::binary);
-    if (!partialsFile)
-    {
-        std::cout << "Unable to open the partials file for writing to." << std::endl;
-    }
-
-    int size = (int)missingTiles.size();
-    partialsFile.write((char*)&size, sizeof(int));
-
-    for (auto iter = missingTiles.begin(); iter != missingTiles.end(); iter++)
-    {
-        int id = *iter;
-        partialsFile.write((char*)&id, sizeof(int));
-    }
-
-    partialsFile.close();
-}
-
 bool ImageSummarizer::TryLoadTile(bool verbose, int i, int j, unsigned char* summaryImage)
 {
     std::stringstream imageTile;
@@ -115,7 +95,7 @@ void ImageSummarizer::CreateNewSummaryImage(const char* summaryFilename, unsigne
             // Iterate through all the possible tiles, assigning them to the image (after downscaling) or the missing tile area.
             if (!TryLoadTile(true, i, j, *summaryImage))
             {
-                missingTiles.insert(tileId.GetTileId(i, j));
+                std::cout << "WARNING: Missing tile " << i << ", " << j << std::endl;
             }
         }
     }
@@ -123,57 +103,9 @@ void ImageSummarizer::CreateNewSummaryImage(const char* summaryFilename, unsigne
     WriteSummaryImage(summaryFilename, *summaryImage);
 }
 
-void ImageSummarizer::UpdateSummaryImage(const char* summaryFilename, unsigned char* existingImage, const char* partialsFilename)
-{
-    // Read in the partials file.
-    std::ifstream partialsFile(partialsFilename, std::ios::in | std::ios::binary);
-    if (!partialsFile)
-    {
-        std::cout << "Unable to open the partials file for reading from." << std::endl;
-    }
-
-    int existingItemSize;
-    partialsFile.read((char*)&existingItemSize, sizeof(int));
-    for (int i = 0; i < existingItemSize; i++)
-    {
-        int missingTile;
-        partialsFile.read((char*)&missingTile, sizeof(int));
-
-        missingTiles.insert(missingTile);
-    }
-
-    partialsFile.close();
-
-    // For anything that's missing a tile, attempt a reload.
-    bool updatedSummaryImage = false;
-    std::vector<int> itemsToRemove;
-    for (auto iter = missingTiles.begin(); iter != missingTiles.end(); iter++)
-    {
-        int x, y;
-        tileId.GetPositionFromId(*iter, &x, &y);
-        if (TryLoadTile(false, x, y, existingImage))
-        {
-            updatedSummaryImage = true;
-            itemsToRemove.push_back(*iter);
-        }
-    }
-
-    // Erase separately to avoid modifying the iterator.
-    for (unsigned int i = 0; i < itemsToRemove.size(); i++)
-    {
-        missingTiles.erase(itemsToRemove[i]);
-    }
-
-    // Overwrite the image.
-    if (updatedSummaryImage)
-    {
-        WriteSummaryImage(summaryFilename, existingImage);
-    }
-}
-
 bool ImageSummarizer::IsTileValid(int x, int y) const
 {
-    return (x >= 0 && y >= 0 && x < tileId.GetTileCount() && y < tileId.GetTileCount() && missingTiles.find(tileId.GetTileId(x, y)) == missingTiles.end());
+    return (x >= 0 && y >= 0 && x < tileId.GetTileCount() && y < tileId.GetTileCount());
 }
 
 void ImageSummarizer::Initialize(downscaleFunction downscaler, displayConverterFunction converter)
@@ -181,10 +113,8 @@ void ImageSummarizer::Initialize(downscaleFunction downscaler, displayConverterF
     this->downscaler = downscaler;
     this->displayConverter = converter;
 
-    std::stringstream partialsFile;
     std::stringstream summaryPath;
     summaryPath << summaryRootPath << summaryFilename;
-    partialsFile << summaryRootPath << "missingImages.txt";
 
     // This code enables area editing while tile rendering is redone or in-progress.
     unsigned char* summaryImage;
@@ -195,13 +125,6 @@ void ImageSummarizer::Initialize(downscaleFunction downscaler, displayConverterF
         CreateNewSummaryImage(summaryPath.str().c_str(), &summaryImage);
         createdNewImage = true;
     }
-    else
-    {
-        UpdateSummaryImage(summaryPath.str().c_str(), summaryImage, partialsFile.str().c_str());
-    }
-
-    // FYI this isn't fully correct. I'm less than a day to fully rendering though, so I'll just remove the partials handling code then.
-    SavePartialsFile(partialsFile.str().c_str());
 
     // Send the summary image out, but flipped.
     summaryTexture.create(summarySize, summarySize);

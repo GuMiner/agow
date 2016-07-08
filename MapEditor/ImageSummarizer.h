@@ -18,10 +18,7 @@ class ImageSummarizer
     std::string summaryFilename;
 
     TileIdentifier tileId;
-
-    std::set<int> missingTiles;
-    void SavePartialsFile(const char* partialsFilename);
-
+    
     downscaleFunction downscaler;
     displayConverterFunction displayConverter;
     
@@ -36,7 +33,6 @@ class ImageSummarizer
     sf::Texture summaryTexture;
 
     void CreateNewSummaryImage(const char* summaryFilename, unsigned char** summaryImage);
-    void UpdateSummaryImage(const char* summaryFilename, unsigned char* existingImage, const char* partialsFilename);
 
 public:
     ImageSummarizer(int summarySize, int tileCount, int reductionFactor, std::string summaryRootPath, std::string summaryFilename);

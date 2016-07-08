@@ -27,7 +27,7 @@
 ContourTiler::ContourTiler()
     : lineStripLoader(), quadExclusions(), size(1000), regionSize(70), rasterizer(&lineStripLoader, &quadExclusions, size), minElevation(0), maxElevation(1), rasterizationBuffer(new double[size * size]), linesBuffer(new double[size * size]), coverBuffer(new bool[size * size]),
       leftOffset((decimal)0.64), topOffset((decimal)0.14), effectiveSize((decimal)0.08), mouseStart(-1, -1), mousePos(-1, -1), isRendering(false), isZoomMode(true),
-      rerender(false), viewOptions(), hideExclusionShape(false), isBulkProcessing(false), regionX(35), regionY(65)
+      rerender(false), viewOptions(), hideExclusionShape(false), isBulkProcessing(false), regionX(1), regionY(0)
 { }
 
 ContourTiler::~ContourTiler()
@@ -411,16 +411,19 @@ void ContourTiler::Render(sf::RenderWindow& window, sf::Time elapsedTime)
                 std::cout << "Wrote the file " << regionX << ", " << regionY << std::endl;
                 delete[] data;
 
-                // Move to the next region.
+                // Move to the next region. This is kinda odd as I'm regenerating 1,0, 2,0, 2, 1 and 3,1 after accidentally overwriting them.
                 regionX++;
-                if (regionX == regionSize)
+                if (regionX == 3 && regionY == 0)
                 {
-                    regionX = 0;
+                    regionX = 2;
                     regionY++;
                 }
 
-                // Continue;
-                if (regionY != regionSize)
+                if (regionY == 1 && regionX == 4)
+                {
+                    isBulkProcessing = false;
+                }
+                else if (regionY != regionSize) // Continue;
                 {
                     ZoomToRegion(regionX, regionY);
                 }
