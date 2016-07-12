@@ -9,7 +9,7 @@ struct DisplaySettings
     bool rescale;
     bool showOverlay;
     bool showContours;
-
+    
     DisplaySettings()
     {
         rescale = true;
@@ -38,8 +38,25 @@ struct CurrentTile
     sf::Sprite tileSprite;
     sf::Texture tileTexture;
 
+    unsigned char* left;
+    unsigned char* up;
+    unsigned char* right;
+    unsigned char* down;
+
+    sf::Sprite leftSprite;
+    sf::Texture leftTexture;
+    
+    sf::Sprite topSprite;
+    sf::Texture topTexture;
+
+    sf::Sprite rightSprite;
+    sf::Texture rightTexture;
+
+    sf::Sprite bottomSprite;
+    sf::Texture bottomTexture;
+
     CurrentTile()
-        : rawTileData(nullptr)
+        : rawTileData(nullptr), left(nullptr), up(nullptr), right(nullptr), down(nullptr)
     {
     }
 };
@@ -53,6 +70,9 @@ class MapEditor
 
     // Total display size of the window.
     int size;
+
+    // Offset to show four corners to align drawing.
+    int offset;
 
     // Max tiles in x-y direction.
     int tileCount;
@@ -72,6 +92,7 @@ class MapEditor
     void Draw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY);
 
     CurrentTile currentTile;
+    void CreateSpriteTexturePair(sf::Sprite& sprite, sf::Texture& texture, sf::Vector2f spritePos, sf::IntRect textureRect);
 
     // Redraws the entire current tile.
     void RedrawCurrentTile();

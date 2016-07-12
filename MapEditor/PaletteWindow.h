@@ -34,6 +34,7 @@ public:
 private:
     Tool selectedTool;
     int toolRadius; // In actual-image pixels.
+    bool allowOverwrite;
     std::string GetToolSizeText() const;
 
     TerrainType selectedTerrain;
@@ -69,6 +70,8 @@ private:
 public:
     PaletteWindow(int size);
     void Start();
+
+    void HandleKeyEvent(sf::Event& event);
     
     static sf::Color GetTerrainColor(TerrainType type);
     static std::string GetTerrainName(TerrainType type);
@@ -79,6 +82,7 @@ public:
     Tool GetSelectedTool() const;
     int GetToolRadius() const;
     TerrainType GetTerrainType() const;
+    bool IsOverwriteAllowed() const;
 
     void Stop();
 };

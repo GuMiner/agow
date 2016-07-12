@@ -4,7 +4,7 @@
 
 PaletteWindow::PaletteWindow(int size)
     : isAlive(true), size(size), selectedTool(Tool::SQUARE_BRUSH), toolRadius(10), selectedTerrain(TerrainType::TREES),
-      terrainSize(40.f), terrainOffset(10.0f), terrainXOffset(20.0f), toolSize(15.0f), toolOffset(5.0f), toolXOffset(10.0f)
+      terrainSize(40.f), terrainOffset(10.0f), terrainXOffset(20.0f), toolSize(15.0f), toolOffset(5.0f), toolXOffset(10.0f), allowOverwrite(false)
 {
 }
 
@@ -56,6 +56,17 @@ void PaletteWindow::LoadGraphics()
     toolSizeText.setPosition(toolRectangles[(Tool)(Tool::COUNT_TOOL - 1)].getPosition() + sf::Vector2f(0.0f, toolSize + toolOffset));
 }
 
+void PaletteWindow::HandleKeyEvent(sf::Event& event)
+{
+    switch (event.key.code)
+    {
+    case sf::Keyboard::Add: toolRadius++; toolSizeText.setString(GetToolSizeText()); break;
+    case sf::Keyboard::Subtract: toolRadius--; if (toolRadius < 1) { toolRadius = 1; } toolSizeText.setString(GetToolSizeText()); break;
+    case sf::Keyboard::W: allowOverwrite = !allowOverwrite; std::cout << "Overwrite status: " << allowOverwrite << std::endl; break;
+    default: break;
+    }
+}
+
 void PaletteWindow::HandleEvents(sf::RenderWindow& window)
 {
     // Handle all events.
@@ -104,24 +115,7 @@ void PaletteWindow::HandleEvents(sf::RenderWindow& window)
         }
         else if (event.type == sf::Event::KeyPressed)
         {
-            switch (event.key.code)
-            {
-            case sf::Keyboard::Add:
-                toolRadius++;
-                toolSizeText.setString(GetToolSizeText());
-                break;
-            case sf::Keyboard::Subtract:
-                toolRadius--;
-                if (toolRadius < 1)
-                {
-                    toolRadius = 1;
-                }
-                
-                toolSizeText.setString(GetToolSizeText());
-                break;
-            default:
-                break;
-            }
+            HandleKeyEvent(event);
         }
     }
 }
@@ -239,7 +233,6 @@ PaletteWindow::TerrainType PaletteWindow::GetNearestTerrainType(unsigned char va
     return LAKE;
 }
 
-
 std::string PaletteWindow::GetToolName(Tool type)
 {
     switch (type)
@@ -282,6 +275,11 @@ int PaletteWindow::GetToolRadius() const
 PaletteWindow::TerrainType PaletteWindow::GetTerrainType() const
 {
     return selectedTerrain;
+}
+
+bool PaletteWindow::IsOverwriteAllowed() const
+{
+    return allowOverwrite;
 }
 
 void PaletteWindow::ThreadStart()

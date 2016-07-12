@@ -16,8 +16,20 @@
 
 MapEditor::MapEditor()
     : size(900), tileCount(70), tileSize(1000), summaryView(700, tileCount, tileSize / (700 / tileCount)), paletteWindow(200), currentTile(),
-      mouseDown(false), displaySettings(), brushes((float)paletteWindow.GetToolRadius()), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]), saveOnMove(true)
+      mouseDown(false), displaySettings(), brushes((float)paletteWindow.GetToolRadius()), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]), offset(0), saveOnMove(true)
 {
+}
+
+void MapEditor::CreateSpriteTexturePair(sf::Sprite& sprite, sf::Texture& texture, sf::Vector2f spritePos, sf::IntRect textureRect)
+{
+    texture.create(tileSize, tileSize);
+    texture.setRepeated(false);
+    texture.setSmooth(false);
+
+    sprite.setTextureRect(textureRect);
+    sprite.setPosition(spritePos);
+    sprite.setScale(sf::Vector2f((float)(size - 2 * offset) / (float)tileSize, (float)(size - 2 * offset) / (float)tileSize));
+    sprite.setTexture(texture);
 }
 
 void MapEditor::LoadGraphics()
@@ -26,16 +38,13 @@ void MapEditor::LoadGraphics()
     summaryView.Start();
     paletteWindow.Start();
 
-    currentTile.tileTexture.create(tileSize, tileSize);
-    currentTile.tileTexture.setRepeated(false);
-    currentTile.tileTexture.setSmooth(false);
+    CreateSpriteTexturePair(currentTile.tileSprite, currentTile.tileTexture, sf::Vector2f(offset, offset), sf::IntRect(0, tileSize, tileSize, -tileSize));
+    // CreateSpriteTexturePair(currentTile.leftSprite, currentTile.leftTexture, sf::Vector2f(0, offset),                   sf::IntRect(tileSize - offset, 0, tileSize, -tileSize));
+    // CreateSpriteTexturePair(currentTile.topSprite, currentTile.topTexture, sf::Vector2f(offset, 0),                     sf::IntRect(0, tileSize - offset, tileSize, -tileSize));
+    // CreateSpriteTexturePair(currentTile.rightSprite, currentTile.rightTexture, sf::Vector2f(tileSize - offset, offset), sf::IntRect(tileSize - offset, 0, tileSize, -tileSize));
+    // CreateSpriteTexturePair(currentTile.bottomSprite, currentTile.bottomTexture, sf::Vector2f(offset, tileSize - offset), sf::IntRect(0, tileSize - offset, tileSize, -tileSize));
 
-    currentTile.tileSprite.setTextureRect(sf::IntRect(0, tileSize, tileSize, -tileSize));
-    currentTile.tileSprite.setPosition(sf::Vector2f(0, 0));// -(float)(tileSize - size), -(float)(tileSize - size)));
-    currentTile.tileSprite.setScale(sf::Vector2f((float)size / (float)tileSize, (float)size / (float)tileSize));
-    currentTile.tileSprite.setTexture(currentTile.tileTexture);
-    
-    summaryView.LoadSelectedTile(&currentTile.rawTileData);
+    summaryView.LoadSelectedTile(&currentTile.rawTileData);// , &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);
     RedrawCurrentTile();
 }
 
@@ -54,22 +63,28 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
         else if (event.type == sf::Event::KeyPressed)
         {
             bool tileChanged = false;
+            bool handled = true;
             switch (event.key.code)
             {
             case sf::Keyboard::Left:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::LEFT);  summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
             case sf::Keyboard::Right: if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::RIGHT); summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
             case sf::Keyboard::Up:    if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::UP);    summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
             case sf::Keyboard::Down:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::DOWN);  summaryView.LoadSelectedTile(&currentTile.rawTileData);  tileChanged = true; break;
-            case sf::Keyboard::R: displaySettings.rescale = !displaySettings.rescale;           std::cout << "Rescale: " << displaySettings.rescale << std::endl;       tileChanged = true; break;
-            case sf::Keyboard::C: displaySettings.showContours = !displaySettings.showContours; std::cout << "Contours: " << displaySettings.showContours << std::endl; tileChanged = true; break;
-            case sf::Keyboard::O: displaySettings.showOverlay = !displaySettings.showOverlay;   std::cout << "Overlay: " << displaySettings.showOverlay << std::endl;   tileChanged = true; break;
+            case sf::Keyboard::R: displaySettings.rescale = !displaySettings.rescale;               std::cout << "Rescale: " << displaySettings.rescale << std::endl;          tileChanged = true; break;
+            case sf::Keyboard::C: displaySettings.showContours = !displaySettings.showContours;     std::cout << "Contours: " << displaySettings.showContours << std::endl;    tileChanged = true; break;
+            case sf::Keyboard::O: displaySettings.showOverlay = !displaySettings.showOverlay;       std::cout << "Overlay: " << displaySettings.showOverlay << std::endl;      tileChanged = true; break;
             case sf::Keyboard::S: saveOnMove = !saveOnMove; std::cout << "WARNING: Save on move: " << saveOnMove << std::endl; break;
-            default: break;
+            default: handled = false; break;
             }
 
             if (tileChanged)
             {
                 RedrawCurrentTile();
+            }
+
+            if (!handled)
+            {
+                paletteWindow.HandleKeyEvent(event);
             }
         }
         else if (event.type == sf::Event::MouseButtonPressed)
@@ -116,11 +131,18 @@ void MapEditor::Draw(PaletteWindow::Tool tool, float radius, unsigned char terra
     {
         for (int y = minY; y <= maxY; y++)
         {
-            if (tool == PaletteWindow::SQUARE_BRUSH || 
+            int tileId = (x + y * tileSize) * 4 + 2;
+
+            bool isInBrushArea = tool == PaletteWindow::SQUARE_BRUSH ||
                 tool == PaletteWindow::ERASE ||
-                (tool == PaletteWindow::CIRCLE_BRUSH && (pow((float)x - (float)mouseX, 2) + pow((float)y - (float)mouseY, 2) < pow(radius, 2))))
+                (tool == PaletteWindow::CIRCLE_BRUSH && (pow((float)x - (float)mouseX, 2) + pow((float)y - (float)mouseY, 2) < pow(radius, 2)));
+
+            // We allow overwriting lakes (the default).
+            bool isOverwriteAllowed = paletteWindow.IsOverwriteAllowed() || paletteWindow.GetNearestTerrainType(currentTile.rawTileData[tileId]) == PaletteWindow::TerrainType::LAKE;
+
+            if (isInBrushArea && isOverwriteAllowed)
             {
-                currentTile.rawTileData[(x + y * tileSize) * 4 + 2] = terrainId;
+                currentTile.rawTileData[tileId] = terrainId;
             }
         }
     }
