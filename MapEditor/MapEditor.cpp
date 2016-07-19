@@ -15,8 +15,8 @@
 #endif
 
 MapEditor::MapEditor()
-    : size(900), tileCount(70), tileSize(1000), summaryView(700, tileCount, tileSize / (700 / tileCount)), paletteWindow(200), currentTile(),
-      mouseDown(false), displaySettings(), brushes((float)paletteWindow.GetToolRadius()), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]), offset(15), saveOnMove(true)
+    : size(950), tileCount(70), tileSize(1000), summaryView(700, tileCount, tileSize / (700 / tileCount)), paletteWindow(200), currentTile(), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]),
+      mouseDown(false), displaySettings(), brushes((float)paletteWindow.GetToolRadius()), offset(15), saveOnMove(true)
 {
 }
 
@@ -40,9 +40,9 @@ void MapEditor::LoadGraphics()
 
     CreateSpriteTexturePair(currentTile.centerSprite, currentTile.centerTexture, sf::Vector2f(offset, offset),             sf::IntRect(0, tileSize, tileSize, -tileSize));
     CreateSpriteTexturePair(currentTile.leftSprite, currentTile.leftTexture,     sf::Vector2f(-size + offset*3, offset), sf::IntRect(0, tileSize, tileSize, -tileSize));
-    CreateSpriteTexturePair(currentTile.topSprite, currentTile.topTexture,       sf::Vector2f(offset, -size + offset*3), sf::IntRect(0, tileSize, tileSize, -tileSize));
+    CreateSpriteTexturePair(currentTile.upSprite, currentTile.upTexture,       sf::Vector2f(offset, -size + offset*3), sf::IntRect(0, tileSize, tileSize, -tileSize));
     CreateSpriteTexturePair(currentTile.rightSprite, currentTile.rightTexture,   sf::Vector2f(size - offset, offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
-    CreateSpriteTexturePair(currentTile.bottomSprite, currentTile.bottomTexture, sf::Vector2f(offset, size - offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
+    CreateSpriteTexturePair(currentTile.downSprite, currentTile.downTexture, sf::Vector2f(offset, size - offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
 
     summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);
     RedrawCurrentTiles();
@@ -113,8 +113,8 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
 void MapEditor::Draw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY)
 {
     // Upscale to the image.
-    mouseX = (int)((float)mouseX * (float)tileSize / (float)size);
-    mouseY = (int)((float)mouseY * (float)tileSize / (float)size);
+    mouseX = (int)(((float)mouseX - offset) * (float)tileSize / (float)(size - offset * 2));
+    mouseY = (int)(((float)mouseY - offset) * (float)tileSize / (float)(size - offset * 2));
     mouseY = (tileSize - mouseY);
 
     int minX = std::max(mouseX - (int)radius, 0);
@@ -147,6 +147,7 @@ void MapEditor::Draw(PaletteWindow::Tool tool, float radius, unsigned char terra
         }
     }
 
+    // This only works if the center is drawn *last* when we redraw the main tile!
     RedrawSelectedArea(currentTile.center, currentTile.centerTexture, minX, maxX, minY, maxY);
 }
 
@@ -160,11 +161,11 @@ void MapEditor::RedrawCurrentTiles()
     // Determine the limits of the current tile.
     UpdateMinMaxHeights();
 
-    RedrawSelectedArea(currentTile.center, currentTile.centerTexture, 0, tileSize - 1, 0, tileSize - 1);
     RedrawSelectedArea(currentTile.left, currentTile.leftTexture, 0, tileSize - 1, 0, tileSize - 1);
     RedrawSelectedArea(currentTile.right, currentTile.rightTexture, 0, tileSize - 1, 0, tileSize - 1);
-    RedrawSelectedArea(currentTile.up, currentTile.topTexture, 0, tileSize - 1, 0, tileSize - 1);
-    RedrawSelectedArea(currentTile.down, currentTile.bottomTexture, 0, tileSize - 1, 0, tileSize - 1);
+    RedrawSelectedArea(currentTile.up, currentTile.upTexture, 0, tileSize - 1, 0, tileSize - 1);
+    RedrawSelectedArea(currentTile.down, currentTile.downTexture, 0, tileSize - 1, 0, tileSize - 1);
+    RedrawSelectedArea(currentTile.center, currentTile.centerTexture, 0, tileSize - 1, 0, tileSize - 1);
 }
 
 void MapEditor::UpdateMinMaxHeights()
@@ -286,8 +287,8 @@ void MapEditor::Render(sf::RenderWindow& window)
     window.draw(currentTile.centerSprite);
     window.draw(currentTile.leftSprite);
     window.draw(currentTile.rightSprite);
-    window.draw(currentTile.topSprite);
-    window.draw(currentTile.bottomSprite);
+    window.draw(currentTile.upSprite);
+    window.draw(currentTile.downSprite);
 
     // Render our appropriate brush.
     sf::Color toolColor = PaletteWindow::GetTerrainColor(paletteWindow.GetTerrainType());

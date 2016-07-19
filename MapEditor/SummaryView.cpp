@@ -11,7 +11,7 @@
 #include "SummaryView.h"
 
 SummaryView::SummaryView(int size, int tileCount, int reductionFactor)
-    : isAlive(true), size(size), tileId(tileCount),
+    : isAlive(false), size(size), tileId(tileCount), selectedTile(0),
       topographicSummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "summary.png"),
       overlaySummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "overlay.png")
 {
@@ -38,14 +38,14 @@ void SummaryView::MoveSelectedTile(Direction direction)
     }
 }
 
-void SummaryView::LoadSelectedTile(unsigned char** rawData, int offsetX, int offsetY)
+void SummaryView::LoadSelectedTile(unsigned char** data, int offsetX, int offsetY)
 {
-    if (*rawData != nullptr)
+    if (*data != nullptr)
     {
         // We could also do topographic, but we (for now) don't support elevation changes with this program.
 
-        ImageUtils::FreeImage(*rawData);
-        *rawData = nullptr;
+        ImageUtils::FreeImage(*data);
+        *data = nullptr;
     }
 
     int x, y;
@@ -64,15 +64,15 @@ void SummaryView::LoadSelectedTile(unsigned char** rawData, int offsetX, int off
     imageTile << "../ContourTiler/rasters/" << y << "/" << x << ".png";
 
     int width, height;
-    ImageUtils::LoadImage(imageTile.str().c_str(), &width, &height, rawData);
+    ImageUtils::LoadImage(imageTile.str().c_str(), &width, &height, data);
 }
 
-void SummaryView::LoadSelectedTile(unsigned char** rawData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData)
+void SummaryView::LoadSelectedTile(unsigned char** centerData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData)
 {
-    LoadSelectedTile(rawData, 0, 0);
-    LoadSelectedTile(leftData, -1, 0);
-    LoadSelectedTile(rightData, 1, 0);
-    LoadSelectedTile(topData, 0, 1);
+    LoadSelectedTile(centerData,   0,   0);
+    LoadSelectedTile(leftData,  -1,  0);
+    LoadSelectedTile(rightData,  1,  0);
+    LoadSelectedTile(topData,    0,  1);
     LoadSelectedTile(bottomData, 0, -1);
 }
 
@@ -144,7 +144,7 @@ void SummaryView::ThreadStart()
             *r = color.r;
             *g = color.g;
             *b = color.b;
-            *a = 150;
+            *a = 110;
         });
 
     selectedTileRectangle = sf::RectangleShape(sf::Vector2f((float)(size / tileId.GetTileCount()), (float)(size / tileId.GetTileCount())));
@@ -161,6 +161,7 @@ void SummaryView::ThreadStart()
     window.setFramerateLimit(60);
 
     // Start the main loop
+    isAlive = true;
     while (isAlive)
     {
         HandleEvents(window);
@@ -174,6 +175,10 @@ void SummaryView::ThreadStart()
 void SummaryView::Start()
 {
     executionThread = new std::thread(&SummaryView::ThreadStart, this);
+    while (!isAlive)
+    {
+        sf::sleep(sf::milliseconds(50));
+    }
 }
 
 void SummaryView::Stop()

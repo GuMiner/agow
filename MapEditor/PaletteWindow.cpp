@@ -3,7 +3,7 @@
 #include "PaletteWindow.h"
 
 PaletteWindow::PaletteWindow(int size)
-    : isAlive(true), size(size), selectedTool(Tool::SQUARE_BRUSH), toolRadius(10), selectedTerrain(TerrainType::TREES),
+    : isAlive(false), size(size), selectedTool(Tool::SQUARE_BRUSH), toolRadius(10), selectedTerrain(TerrainType::TREES),
       terrainSize(40.f), terrainOffset(10.0f), terrainXOffset(20.0f), toolSize(15.0f), toolOffset(5.0f), toolXOffset(10.0f), allowOverwrite(false)
 {
 }
@@ -294,6 +294,7 @@ void PaletteWindow::ThreadStart()
     window.setFramerateLimit(60);
 
     // Start the main loop
+    isAlive = true;
     while (isAlive)
     {
         HandleEvents(window);
@@ -307,6 +308,10 @@ void PaletteWindow::ThreadStart()
 void PaletteWindow::Start()
 {
     executionThread = new std::thread(&PaletteWindow::ThreadStart, this);
+    while (!isAlive)
+    {
+        sf::sleep(sf::milliseconds(10));
+    }
 }
 
 void PaletteWindow::Stop()

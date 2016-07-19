@@ -46,17 +46,17 @@ struct CurrentTile
     sf::Sprite leftSprite;
     sf::Texture leftTexture;
     
-    sf::Sprite topSprite;
-    sf::Texture topTexture;
-
     sf::Sprite rightSprite;
     sf::Texture rightTexture;
 
-    sf::Sprite bottomSprite;
-    sf::Texture bottomTexture;
+    sf::Sprite upSprite;
+    sf::Texture upTexture;
+    
+    sf::Sprite downSprite;
+    sf::Texture downTexture;
 
     CurrentTile()
-        : center(), left(), up(), right(), down()
+        : center(), left(), right(), up(), down()
     {
     }
 };
