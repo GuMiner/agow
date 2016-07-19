@@ -29,25 +29,16 @@ struct Brushes
     }
 };
 
-struct TileData
+struct CurrentTile
 {
-    unsigned char* data;
     unsigned short minHeight;
     unsigned short maxHeight;
 
-    TileData()
-        : data(nullptr)
-    {
-    }
-};
-
-struct CurrentTile
-{
-    TileData center;
-    TileData left;
-    TileData right;
-    TileData up;
-    TileData down;
+    unsigned char* center;
+    unsigned char* left;
+    unsigned char* right;
+    unsigned char* up;
+    unsigned char* down;
     
     sf::Sprite centerSprite;
     sf::Texture centerTexture;
@@ -105,8 +96,8 @@ class MapEditor
 
     // Redraws the entire current tile.
     void RedrawCurrentTiles();
-    void UpdateMinMaxHeights(unsigned char* data, unsigned short* minHeight, unsigned short* maxHeight);
-    void RedrawSelectedArea(TileData tileData, sf::Texture& texture, int xMin, int xMax, int yMin, int yMax);
+    void UpdateMinMaxHeights();
+    void RedrawSelectedArea(unsigned char* data, sf::Texture& texture, int xMin, int xMax, int yMin, int yMax);
 
     bool saveOnMove;
     void SaveTile();

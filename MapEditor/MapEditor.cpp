@@ -44,7 +44,7 @@ void MapEditor::LoadGraphics()
     CreateSpriteTexturePair(currentTile.rightSprite, currentTile.rightTexture,   sf::Vector2f(size - offset, offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
     CreateSpriteTexturePair(currentTile.bottomSprite, currentTile.bottomTexture, sf::Vector2f(offset, size - offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
 
-    summaryView.LoadSelectedTile(&currentTile.center.data, &currentTile.left.data, &currentTile.right.data, &currentTile.up.data, &currentTile.down.data);
+    summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);
     RedrawCurrentTiles();
 }
 
@@ -66,10 +66,10 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
             bool handled = true;
             switch (event.key.code)
             {
-            case sf::Keyboard::Left:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::LEFT);  summaryView.LoadSelectedTile(&currentTile.center.data, &currentTile.left.data, &currentTile.right.data, &currentTile.up.data, &currentTile.down.data);  tileChanged = true; break;
-            case sf::Keyboard::Right: if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::RIGHT); summaryView.LoadSelectedTile(&currentTile.center.data, &currentTile.left.data, &currentTile.right.data, &currentTile.up.data, &currentTile.down.data);  tileChanged = true; break;
-            case sf::Keyboard::Up:    if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::UP);    summaryView.LoadSelectedTile(&currentTile.center.data, &currentTile.left.data, &currentTile.right.data, &currentTile.up.data, &currentTile.down.data);  tileChanged = true; break;
-            case sf::Keyboard::Down:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::DOWN);  summaryView.LoadSelectedTile(&currentTile.center.data, &currentTile.left.data, &currentTile.right.data, &currentTile.up.data, &currentTile.down.data);  tileChanged = true; break;
+            case sf::Keyboard::Left:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::LEFT);  summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
+            case sf::Keyboard::Right: if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::RIGHT); summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
+            case sf::Keyboard::Up:    if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::UP);    summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
+            case sf::Keyboard::Down:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::DOWN);  summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
             case sf::Keyboard::R: displaySettings.rescale = !displaySettings.rescale;               std::cout << "Rescale: " << displaySettings.rescale << std::endl;          tileChanged = true; break;
             case sf::Keyboard::C: displaySettings.showContours = !displaySettings.showContours;     std::cout << "Contours: " << displaySettings.showContours << std::endl;    tileChanged = true; break;
             case sf::Keyboard::O: displaySettings.showOverlay = !displaySettings.showOverlay;       std::cout << "Overlay: " << displaySettings.showOverlay << std::endl;      tileChanged = true; break;
@@ -138,11 +138,11 @@ void MapEditor::Draw(PaletteWindow::Tool tool, float radius, unsigned char terra
                 (tool == PaletteWindow::CIRCLE_BRUSH && (pow((float)x - (float)mouseX, 2) + pow((float)y - (float)mouseY, 2) < pow(radius, 2)));
 
             // We allow overwriting lakes (the default).
-            bool isOverwriteAllowed = paletteWindow.IsOverwriteAllowed() || paletteWindow.GetNearestTerrainType(currentTile.center.data[tileId]) == PaletteWindow::TerrainType::LAKE;
+            bool isOverwriteAllowed = paletteWindow.IsOverwriteAllowed() || paletteWindow.GetNearestTerrainType(currentTile.center[tileId]) == PaletteWindow::TerrainType::LAKE;
 
             if (isInBrushArea && isOverwriteAllowed)
             {
-                currentTile.center.data[tileId] = terrainId;
+                currentTile.center[tileId] = terrainId;
             }
         }
     }
@@ -152,51 +152,84 @@ void MapEditor::Draw(PaletteWindow::Tool tool, float radius, unsigned char terra
 
 void MapEditor::RedrawCurrentTiles()
 {
-    if (currentTile.center.data == nullptr || currentTile.left.data == nullptr || currentTile.right.data == nullptr || currentTile.up.data == nullptr || currentTile.down.data == nullptr)
+    if (currentTile.center == nullptr || currentTile.left == nullptr || currentTile.right == nullptr || currentTile.up == nullptr || currentTile.down == nullptr)
     {
         return;
     }
     
     // Determine the limits of the current tile.
-    UpdateMinMaxHeights(currentTile.center.data, &currentTile.center.minHeight, &currentTile.center.maxHeight);
+    UpdateMinMaxHeights();
+
     RedrawSelectedArea(currentTile.center, currentTile.centerTexture, 0, tileSize - 1, 0, tileSize - 1);
-
-    UpdateMinMaxHeights(currentTile.left.data, &currentTile.left.minHeight, &currentTile.left.maxHeight);
     RedrawSelectedArea(currentTile.left, currentTile.leftTexture, 0, tileSize - 1, 0, tileSize - 1);
-
-    UpdateMinMaxHeights(currentTile.right.data, &currentTile.right.minHeight, &currentTile.right.maxHeight);
     RedrawSelectedArea(currentTile.right, currentTile.rightTexture, 0, tileSize - 1, 0, tileSize - 1);
-
-    UpdateMinMaxHeights(currentTile.up.data, &currentTile.up.minHeight, &currentTile.up.maxHeight);
     RedrawSelectedArea(currentTile.up, currentTile.topTexture, 0, tileSize - 1, 0, tileSize - 1);
-
-    UpdateMinMaxHeights(currentTile.down.data, &currentTile.down.minHeight, &currentTile.down.maxHeight);
     RedrawSelectedArea(currentTile.down, currentTile.bottomTexture, 0, tileSize - 1, 0, tileSize - 1);
 }
 
-void MapEditor::UpdateMinMaxHeights(unsigned char* data, unsigned short* minHeight, unsigned short* maxHeight)
+void MapEditor::UpdateMinMaxHeights()
 {
-    *minHeight = std::numeric_limits<unsigned short>::max();
-    *maxHeight = 0;
+    currentTile.minHeight = std::numeric_limits<unsigned short>::max();
+    currentTile.maxHeight = 0;
     for (int x = 0; x < tileSize; x++)
     {
         for (int y = 0; y < tileSize; y++)
         {
             int pos = (x + y * tileSize) * 4;
-            unsigned short height = (unsigned short)data[pos] + (((unsigned short)data[pos + 1]) << 8);
-            if (height > *maxHeight)
+            unsigned short height = (unsigned short)currentTile.center[pos] + (((unsigned short)currentTile.center[pos + 1]) << 8);
+            if (height > currentTile.maxHeight)
             {
-                *maxHeight = height;
+                currentTile.maxHeight = height;
             }
-            if (height < *minHeight)
+            if (height < currentTile.minHeight)
             {
-                *minHeight = height;
+                currentTile.minHeight = height;
+            }
+
+            height = (unsigned short)currentTile.left[pos] + (((unsigned short)currentTile.left[pos + 1]) << 8);
+            if (height > currentTile.maxHeight)
+            {
+                currentTile.maxHeight = height;
+            }
+            if (height < currentTile.minHeight)
+            {
+                currentTile.minHeight = height;
+            }
+
+            height = (unsigned short)currentTile.right[pos] + (((unsigned short)currentTile.right[pos + 1]) << 8);
+            if (height > currentTile.maxHeight)
+            {
+                currentTile.maxHeight = height;
+            }
+            if (height < currentTile.minHeight)
+            {
+                currentTile.minHeight = height;
+            }
+
+            height = (unsigned short)currentTile.up[pos] + (((unsigned short)currentTile.up[pos + 1]) << 8);
+            if (height > currentTile.maxHeight)
+            {
+                currentTile.maxHeight = height;
+            }
+            if (height < currentTile.minHeight)
+            {
+                currentTile.minHeight = height;
+            }
+
+            height = (unsigned short)currentTile.down[pos] + (((unsigned short)currentTile.down[pos + 1]) << 8);
+            if (height > currentTile.maxHeight)
+            {
+                currentTile.maxHeight = height;
+            }
+            if (height < currentTile.minHeight)
+            {
+                currentTile.minHeight = height;
             }
         }
     }
 }
 
-void MapEditor::RedrawSelectedArea(TileData tileData, sf::Texture& texture, int minX, int maxX, int minY, int maxY)
+void MapEditor::RedrawSelectedArea(unsigned char* tileData, sf::Texture& texture, int minX, int maxX, int minY, int maxY)
 {
     // Merge in the raw data with our settings.
     for (int x = minX; x <= maxX; x++)
@@ -206,10 +239,10 @@ void MapEditor::RedrawSelectedArea(TileData tileData, sf::Texture& texture, int 
             // Rescale if requested.
             int pos = (x + y * tileSize) * 4;
             unsigned char rawValue;
-            unsigned short height = (unsigned short)tileData.data[pos] + (((unsigned short)tileData.data[pos + 1]) << 8);
+            unsigned short height = (unsigned short)tileData[pos] + (((unsigned short)tileData[pos + 1]) << 8);
             if (displaySettings.rescale)
             {
-                rawValue = (unsigned char)((float)(height - tileData.minHeight) / (float)(tileData.maxHeight - tileData.minHeight) * 255);
+                rawValue = (unsigned char)((float)(height - currentTile.minHeight) / (float)(currentTile.maxHeight - currentTile.minHeight) * 255);
             }
             else
             {
@@ -217,7 +250,7 @@ void MapEditor::RedrawSelectedArea(TileData tileData, sf::Texture& texture, int 
             }
 
             // Add contour lines if requested.
-            bool contourLineHere = (displaySettings.showContours && (tileData.data[pos] == 1 || tileData.data[pos] == 0));
+            bool contourLineHere = (displaySettings.showContours && (tileData[pos] == 1 || tileData[pos] == 0));
 
             convertedRawData[pos] = contourLineHere ? 255 : rawValue;
             convertedRawData[pos + 1] = contourLineHere ? 255 : rawValue;
@@ -229,7 +262,7 @@ void MapEditor::RedrawSelectedArea(TileData tileData, sf::Texture& texture, int 
             {
                 // empirically determined
                 float overlayScale = 0.20f;
-                sf::Color overlayColor = PaletteWindow::GetTerrainColor(PaletteWindow::GetNearestTerrainType(tileData.data[pos + 2]));
+                sf::Color overlayColor = PaletteWindow::GetTerrainColor(PaletteWindow::GetNearestTerrainType(tileData[pos + 2]));
                 convertedRawData[pos] = (unsigned short)((float)overlayColor.r * overlayScale) + (unsigned short)convertedRawData[pos] > 255 ? 255 : (unsigned char)((float)overlayColor.r * overlayScale) + convertedRawData[pos];
                 convertedRawData[pos + 1] = (unsigned short)((float)overlayColor.g * overlayScale) + (unsigned short)convertedRawData[pos + 1] > 255 ? 255 : (unsigned char)((float)overlayColor.g * overlayScale) + convertedRawData[pos + 1];
                 convertedRawData[pos + 2] = (unsigned short)((float)overlayColor.b * overlayScale) + (unsigned short)convertedRawData[pos + 2] > 255 ? 255 : (unsigned char)((float)overlayColor.b * overlayScale) + convertedRawData[pos + 2];
@@ -242,9 +275,9 @@ void MapEditor::RedrawSelectedArea(TileData tileData, sf::Texture& texture, int 
 
 void MapEditor::SaveTile()
 {
-    if (currentTile.center.data != nullptr)
+    if (currentTile.center != nullptr)
     {
-        summaryView.UpdateSelectedTile(currentTile.center.data);
+        summaryView.UpdateSelectedTile(currentTile.center);
     }
 }
 
