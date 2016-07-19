@@ -29,19 +29,28 @@ struct Brushes
     }
 };
 
-struct CurrentTile
+struct TileData
 {
+    unsigned char* data;
     unsigned short minHeight;
     unsigned short maxHeight;
 
-    unsigned char* rawTileData;
-    sf::Sprite tileSprite;
-    sf::Texture tileTexture;
+    TileData()
+        : data(nullptr)
+    {
+    }
+};
 
-    unsigned char* left;
-    unsigned char* up;
-    unsigned char* right;
-    unsigned char* down;
+struct CurrentTile
+{
+    TileData center;
+    TileData left;
+    TileData right;
+    TileData up;
+    TileData down;
+    
+    sf::Sprite centerSprite;
+    sf::Texture centerTexture;
 
     sf::Sprite leftSprite;
     sf::Texture leftTexture;
@@ -56,7 +65,7 @@ struct CurrentTile
     sf::Texture bottomTexture;
 
     CurrentTile()
-        : rawTileData(nullptr), left(nullptr), up(nullptr), right(nullptr), down(nullptr)
+        : center(), left(), up(), right(), down()
     {
     }
 };
@@ -95,8 +104,9 @@ class MapEditor
     void CreateSpriteTexturePair(sf::Sprite& sprite, sf::Texture& texture, sf::Vector2f spritePos, sf::IntRect textureRect);
 
     // Redraws the entire current tile.
-    void RedrawCurrentTile();
-    void RedrawSelectedArea(int xMin, int xMax, int yMin, int yMax);
+    void RedrawCurrentTiles();
+    void UpdateMinMaxHeights(unsigned char* data, unsigned short* minHeight, unsigned short* maxHeight);
+    void RedrawSelectedArea(TileData tileData, sf::Texture& texture, int xMin, int xMax, int yMin, int yMax);
 
     bool saveOnMove;
     void SaveTile();

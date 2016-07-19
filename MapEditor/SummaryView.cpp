@@ -38,7 +38,7 @@ void SummaryView::MoveSelectedTile(Direction direction)
     }
 }
 
-void SummaryView::LoadSelectedTile(unsigned char** rawData)
+void SummaryView::LoadSelectedTile(unsigned char** rawData, int offsetX, int offsetY)
 {
     if (*rawData != nullptr)
     {
@@ -51,11 +51,29 @@ void SummaryView::LoadSelectedTile(unsigned char** rawData)
     int x, y;
     tileId.GetPositionFromId(selectedTile, &x, &y);
 
+    x += offsetX;
+    y += offsetY;
+
+    // Ensure we read a valid image.
+    x = std::max(0, x);
+    y = std::max(0, y);
+    x = std::min(x, tileId.GetTileCount() - 1);
+    y = std::min(y, tileId.GetTileCount() - 1);
+
     std::stringstream imageTile;
     imageTile << "../ContourTiler/rasters/" << y << "/" << x << ".png";
 
     int width, height;
     ImageUtils::LoadImage(imageTile.str().c_str(), &width, &height, rawData);
+}
+
+void SummaryView::LoadSelectedTile(unsigned char** rawData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData)
+{
+    LoadSelectedTile(rawData, 0, 0);
+    LoadSelectedTile(leftData, -1, 0);
+    LoadSelectedTile(rightData, 1, 0);
+    LoadSelectedTile(topData, 0, 1);
+    LoadSelectedTile(bottomData, 0, -1);
 }
 
 // We know that only the topographic data is what really matters. We do need to indicate a reload to both topographic and overlay layers though.

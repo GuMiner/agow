@@ -25,6 +25,8 @@ class SummaryView
     int selectedTile;
     void UpdateSelectedTileRectangle();
 
+    void SummaryView::LoadSelectedTile(unsigned char** rawData, int offsetX, int offsetY);
+
 public:
     enum Direction
     {
@@ -35,7 +37,7 @@ public:
     };
 
     void MoveSelectedTile(Direction direction);
-    void LoadSelectedTile(unsigned char** rawData);
+    void LoadSelectedTile(unsigned char** rawData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData);
     void UpdateSelectedTile(unsigned char* newData);
 
     SummaryView(int size, int tileCount, int reductionFactor);
