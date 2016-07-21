@@ -149,10 +149,12 @@
     <ClCompile Include="ErrorLogger.cpp" />
     <ClCompile Include="GeodatabaseAnalyzer.cpp" />
     <ClCompile Include="GeometryTiler.cpp" />
+    <ClCompile Include="StreetDbAnalyzer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="GeodatabaseAnalyzer.h" />
+    <ClInclude Include="StreetDbAnalyzer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

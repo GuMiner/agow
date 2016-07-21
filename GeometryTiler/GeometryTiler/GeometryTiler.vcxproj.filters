@@ -7,9 +7,11 @@
     <ClCompile Include="GeometryTiler.cpp" />
     <ClCompile Include="GeodatabaseAnalyzer.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
+    <ClCompile Include="StreetDbAnalyzer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeodatabaseAnalyzer.h" />
     <ClInclude Include="ErrorLogger.h" />
+    <ClInclude Include="StreetDbAnalyzer.h" />
   </ItemGroup>
 </Project>

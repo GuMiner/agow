@@ -5,6 +5,7 @@
 
 #include <FileGDBAPI.h>
 #include "GeodatabaseAnalyzer.h"
+#include "StreetDbAnalyzer.h"
 
 #ifndef _DEBUG
     #pragma comment(lib, "lib/FileGDBAPI.lib")
@@ -21,16 +22,24 @@ int main(int argc, const char* argv[])
     std::wstring databasePath =
         L"C:\\Users\\Gustave\\Desktop\\KingCounty_GDB_topo_contour005_complete - Copy\\KingCounty_GDB_topo_contour005_complete.gdb";
     std::wstring primaryDataset =
-        L"<\\CONTOUR005_LINE";
+        L"\\CONTOUR005_LINE";
     
-    // Min x, y, elevation = 0.
-    // This is roughly an equivalent downscaling using the boundaries of king county + highest mountain + most negative elevation.
-    double maxX = 100000;
-    double maxY = 100000;
-    double maxElevation = 3000;
-
+    std::wstring transportationDbPath = 
+        L"C:\\Users\\Gustave\\Desktop\\transportationGDB\\KingCounty_GDB_transportation.gdb";
+    std::wstring barricadeDataset = 
+        L"\\barricade_point";
+    std::wstring stopsDataset =
+        L"\\stops_offset_all_point";
+    std::wstring streetsDataset =
+        L"\\st_address_line";
+    std::wstring emitterDataset =
+        L"\\emitter_point";
+    std::wstring freewayModifierDataset = 
+        L"\\freeway_speeds_actual_point";
+    
     auto start = std::chrono::high_resolution_clock::now();
 
+    /*
     GeodatabaseAnalyzer* analyzer = new GeodatabaseAnalyzer(databasePath, primaryDataset);
     if (analyzer->IsDbOpened())
     {
@@ -45,6 +54,31 @@ int main(int argc, const char* argv[])
     }
 
     delete analyzer;
+    */
+
+    StreetDbAnalyzer* streetAnalyzer = new StreetDbAnalyzer(transportationDbPath, 
+        barricadeDataset, stopsDataset, streetsDataset, emitterDataset, freewayModifierDataset);
+    streetAnalyzer->SetRescaleFactors(1214976.797, 1583489, 22489.21725, 360015.6455); // Grabbed from the original geometry db.
+
+    if (streetAnalyzer->IsDbOpened())
+    {
+        streetAnalyzer->Analyze();
+        if (streetAnalyzer->LoadTables())
+        {
+            streetAnalyzer->AnalyzeTables();
+            streetAnalyzer->LoadAllRows();
+
+            streetAnalyzer->ProcessBarricadeRows();
+            streetAnalyzer->ProcessStopsRows();
+            streetAnalyzer->ProcessStreetsRows();
+            streetAnalyzer->ProcessEmitterRows();
+            streetAnalyzer->ProcessFreewayModifierRows();
+
+            streetAnalyzer->UnloadTables();
+        }
+    }
+
+    delete streetAnalyzer;
 
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "Total conversion process took "

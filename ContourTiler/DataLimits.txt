@@ -1,0 +1,7 @@
+Adding roads
+07/18/2016
+
+Limits for contours (which were rescaled to 0-69,999 (xy) then 0-65,535 (z):
+X: 1214976.797, 1583489  
+Y: 22489.21725, 360015.6455
+Z: -900, 7960

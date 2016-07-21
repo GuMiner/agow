@@ -36,6 +36,7 @@ bool LineStripLoader::Initialize(std::string lineStripFilename)
     lineStripFile.read((char*)&minERep, sizeof(double));
     lineStripFile.read((char*)&maxERep, sizeof(double));
 
+    std::cout.precision(10);
     std::cout << "Limits reported to be [" << xMinRep << ", " << xMaxRep << "; " << yMinRep << ", " << yMaxRep << "; " << minERep << ", " << maxERep << "]." << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
