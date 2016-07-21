@@ -43,8 +43,9 @@ public:
                      std::wstring emitterDataset,
                      std::wstring freewayModifierDataset);
 
-    // Factors to rescale. Output is rescaled to [0-70,000) for X and Y.
-    void SetRescaleFactors(int xMin, int xMax, int yMin, int yMax);
+    // Factors to rescale. Output is rescaled to 0 to 1 for X and Y.
+    void SetRescaleFactors(double xMin, double xMax, double yMin, double yMax);
+    void RescaleToFractions(double* x, double* y);
 
     bool IsDbOpened() const;
     void Analyze(void) const;
@@ -52,6 +53,8 @@ public:
     void AnalyzeTables() const;
 
     void LoadAllRows();
+
+    void SavePointRow(FileGDBAPI::Row& row, std::ofstream& dataFile);
     void ProcessBarricadeRows();
     void ProcessStopsRows();
     void ProcessStreetsRows();

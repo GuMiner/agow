@@ -58,7 +58,7 @@ int main(int argc, const char* argv[])
 
     StreetDbAnalyzer* streetAnalyzer = new StreetDbAnalyzer(transportationDbPath, 
         barricadeDataset, stopsDataset, streetsDataset, emitterDataset, freewayModifierDataset);
-    streetAnalyzer->SetRescaleFactors(1214976.797, 1583489, 22489.21725, 360015.6455); // Grabbed from the original geometry db.
+    streetAnalyzer->SetRescaleFactors(1214976.797, 1583489.0, 22489.21725, 360015.6455); // Grabbed from the original geometry db.
 
     if (streetAnalyzer->IsDbOpened())
     {

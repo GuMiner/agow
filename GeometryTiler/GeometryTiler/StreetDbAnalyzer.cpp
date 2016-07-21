@@ -32,12 +32,18 @@ StreetDbAnalyzer::StreetDbAnalyzer(std::wstring databasePath,
     dbOpened = true;
 }
 
-void StreetDbAnalyzer::SetRescaleFactors(int xMin, int xMax, int yMin, int yMax)
+void StreetDbAnalyzer::SetRescaleFactors(double xMin, double xMax, double yMin, double yMax)
 {
     this->xMin = xMin;
     this->xMax = xMax;
     this->yMin = yMin;
     this->yMax = yMax;
+}
+
+void StreetDbAnalyzer::RescaleToFractions(double* x, double* y)
+{
+    *x = (*x - xMin) / (xMax - xMin);
+    *y = (*y - yMin) / (yMax - yMin);
 }
 
 bool StreetDbAnalyzer::IsDbOpened(void) const
@@ -234,7 +240,7 @@ void StreetDbAnalyzer::AnalyzeTables() const
     AnalyzeTable("freeway", freewayModifier.table);
 }
 
-bool LoadAllTableRows(Dataset& dataset)
+bool StreetDbAnalyzer::LoadAllTableRows(Dataset& dataset)
 {
     std::wcout << dataset.name << std::endl;
 
@@ -278,6 +284,30 @@ void StreetDbAnalyzer::LoadAllRows()
     }
 }
 
+void StreetDbAnalyzer::SavePointRow(FileGDBAPI::Row& row, std::ofstream& dataFile)
+{
+    // Get the barricade positions.
+    fgdbError result;
+    FileGDBAPI::ShapeBuffer shapeBuffer;
+    if ((result = row.GetGeometry(shapeBuffer)) != S_OK)
+    {
+        ErrorLogger::LogError(L"Error loading the shape buffer!", result);
+        return; // Honestly this could be cleaner but as a single-use script more or less, I don't need full error handling.
+    }
+
+    long type = shapeBuffer.shapeBuffer[0];
+    double x = *reinterpret_cast<double*>(&shapeBuffer.shapeBuffer[sizeof(long)]);
+    double y = *reinterpret_cast<double*>(&shapeBuffer.shapeBuffer[sizeof(long) + sizeof(double)]);
+    RescaleToFractions(&x, &y);
+    if (x < 0 || x > 1 || y < 0 || y > 1)
+    {
+        std::cout << "Not in area: " << x << ", " << y << ", ";
+    }
+
+    dataFile.write((char*)&x, sizeof(double));
+    dataFile.write((char*)&y, sizeof(double));
+}
+
 void StreetDbAnalyzer::ProcessBarricadeRows()
 {
     std::ofstream dataFile("barricade.bin", std::ios::out | std::ios::binary);
@@ -289,16 +319,10 @@ void StreetDbAnalyzer::ProcessBarricadeRows()
 
     std::cout << "Barricade rows..." << std::endl;
     FileGDBAPI::Row row;
+    dataFile.write((char*)&barricade.rowCount, sizeof(int));
     while (barricade.rows.Next(row) == S_OK)
     {
-        // Get the barricade positions.
-        fgdbError result;
-        FileGDBAPI::ShapeBuffer shapeBuffer;
-        if ((result = row.GetGeometry(shapeBuffer)) != S_OK)
-        {
-            ErrorLogger::LogError(L"Error loading the shape buffer!", result);
-            return; // Honestly this could be cleaner but as a single-use script more or less, I don't need to properly cleanup on failures.
-        }
+        SavePointRow(row, dataFile);
     }
 
     dataFile.close();
@@ -316,9 +340,10 @@ void StreetDbAnalyzer::ProcessStopsRows()
 
     std::cout << "Stops rows..." << std::endl;
     FileGDBAPI::Row row;
+    dataFile.write((char*)&stops.rowCount, sizeof(int));
     while (stops.rows.Next(row) == S_OK)
     {
-        // TODO process
+        SavePointRow(row, dataFile);
     }
 
     dataFile.close();
@@ -338,7 +363,7 @@ void StreetDbAnalyzer::ProcessStreetsRows()
     FileGDBAPI::Row row;
     while (streets.rows.Next(row) == S_OK)
     {
-        // TODO process
+        // TODO process, copy from GeodatabaseAnalyzer tomorrow.
     }
 
     dataFile.close();
@@ -356,9 +381,10 @@ void StreetDbAnalyzer::ProcessEmitterRows()
 
     std::cout << "Emitter rows..." << std::endl;
     FileGDBAPI::Row row;
+    dataFile.write((char*)&emitter.rowCount, sizeof(int));
     while (emitter.rows.Next(row) == S_OK)
     {
-        // TODO process
+        SavePointRow(row, dataFile);
     }
 
     dataFile.close();
@@ -376,9 +402,10 @@ void StreetDbAnalyzer::ProcessFreewayModifierRows()
 
     std::cout << "Freeway Modifier rows..." << std::endl;
     FileGDBAPI::Row row;
+    dataFile.write((char*)&freewayModifier.rowCount, sizeof(int));
     while (freewayModifier.rows.Next(row) == S_OK)
     {
-        // TODO process
+        SavePointRow(row, dataFile);
     }
 
     dataFile.close();
