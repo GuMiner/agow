@@ -359,11 +359,158 @@ void StreetDbAnalyzer::ProcessStreetsRows()
         return;
     }
 
+    std::vector<SLineStrip> lineStrips;
+
     std::cout << "Streets rows..." << std::endl;
     FileGDBAPI::Row row;
     while (streets.rows.Next(row) == S_OK)
     {
-        // TODO process, copy from GeodatabaseAnalyzer tomorrow.
+        fgdbError result;
+
+        std::wstring streetType;
+        row.GetString(L"ST_TYPE", streetType);
+        // if ((result = ) != S_OK)
+        // {
+        //     ErrorLogger::LogError(L"Error loading the street type!", result);
+        // }
+
+        FileGDBAPI::ShapeBuffer shapeBuffer;
+        if ((result = row.GetGeometry(shapeBuffer)) != S_OK)
+        {
+            ErrorLogger::LogError(L"Error loading the shape buffer!", result);
+            return; // Honestly this could be cleaner but as a single-use script more or less, I don't need full error handling.
+        }
+
+        // Get the street strips
+        // At this point we know (from our saved table.xml file) that this is a polyline
+        long type = shapeBuffer.shapeBuffer[0];
+        
+        // See the extended_shape_buffer_format.PDF file detailing the polyline shape
+        long numParts = *reinterpret_cast<long*>(&shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double)]);
+        long numPoints = *reinterpret_cast<long*>(&shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double) + sizeof(long)]);
+
+        // There then follows an array 'numParts' long with 'long' indices for parts.
+        // Each part represents the index of the *next* part. For example, if there are two parts with 
+        // data '0' and '2', there is a line from points 0-1 and then a line from 2-onwards.
+        // We don't need that confusion so when we save the data we split parts into their own line segment grouping.
+        byte* partsArray = &shapeBuffer.shapeBuffer[sizeof(long) + 4*sizeof(double) + sizeof(long) + sizeof(long)];
+        byte* pointsArray = partsArray + sizeof(long)*numParts;
+
+        SLineStrip strip;
+        strip.streetType = streetType;
+
+        int currentPartIndex = 1;
+        for (int i = 0; i < numPoints; i++)
+        {
+            SPoint* point = reinterpret_cast<SPoint*>(pointsArray + sizeof(SPoint)*i);
+
+            // If we aren't on the last part and our current index is a new part...
+            if (currentPartIndex != numParts && *reinterpret_cast<long*>((partsArray + sizeof(long)*currentPartIndex)) == i)
+            {
+                // ...save the current strip and start a new one.
+                lineStrips.push_back(strip);
+                strip.points.clear();
+            }
+
+            strip.points.push_back(*point);
+        }
+
+        // Add in the last strip.
+        lineStrips.push_back(strip);
+    }
+
+    // Now combine the data and then write it out to our file.
+    std::map<std::wstring, std::vector<std::vector<SPoint>>> roadLines;
+    for (int i = 0; i < lineStrips.size(); i++)
+    {
+        // Remap out weird and invalid street types to valid types.
+        if (lineStrips[i].streetType.compare(L"VIS") == 0 ||
+            lineStrips[i].streetType.compare(L"VIEW") == 0 ||
+            lineStrips[i].streetType.compare(L"SQ") == 0 ||
+            lineStrips[i].streetType.compare(L"TER") == 0 ||
+            lineStrips[i].streetType.compare(L"CT") == 0 ||
+            lineStrips[i].streetType.compare(L"CIR") == 0 ||
+            lineStrips[i].streetType.compare(L"CTF") == 0 ||
+            lineStrips[i].streetType.compare(L"CRST") == 0 || 
+            lineStrips[i].streetType.compare(L"CRES") == 0 ||
+            lineStrips[i].streetType.compare(L"TRL") == 0 ||
+            lineStrips[i].streetType.compare(L"RNCH") == 0 ||
+            lineStrips[i].streetType.compare(L"TRL") == 0 ||
+            lineStrips[i].streetType.compare(L"ALY") == 0 ||
+            lineStrips[i].streetType.compare(L"KY") == 0 ||
+            lineStrips[i].streetType.compare(L"LOOP") == 0 ||
+            lineStrips[i].streetType.compare(L"11TH") == 0)
+        {
+            lineStrips[i].streetType = L"AVE";
+        }
+        else if (lineStrips[i].streetType.compare(L"STR") == 0 ||
+                 lineStrips[i].streetType.compare(L"PARK") == 0 ||
+                 lineStrips[i].streetType.compare(L"PT") == 0)
+        {
+            lineStrips[i].streetType = L"ST";
+        }
+        else if (lineStrips[i].streetType.compare(L"RD") == 0 ||
+                 lineStrips[i].streetType.compare(L"LN") == 0 ||
+                 lineStrips[i].streetType.compare(L" LN") == 0 ||
+                 lineStrips[i].streetType.compare(L"WALK") == 0)
+        {
+            lineStrips[i].streetType = L"PL";
+        }
+        else if (lineStrips[i].streetType.compare(L"BLVD") == 0 ||
+                 lineStrips[i].streetType.compare(L"DR") == 0 )
+        {
+            lineStrips[i].streetType = L"WAY";
+        }
+        else if (lineStrips[i].streetType.compare(L"HWY") == 0 ||
+                 lineStrips[i].streetType.compare(L"") == 0 ||
+                 lineStrips[i].streetType.compare(L" ") == 0 ||
+                 lineStrips[i].streetType.compare(L"PKWY") == 0 || 
+                 lineStrips[i].streetType.compare(L"BRG") == 0)
+        {
+            lineStrips[i].streetType = L"FWY";
+        }
+
+
+        if (roadLines.find(lineStrips[i].streetType) == roadLines.end())
+        {
+            roadLines[lineStrips[i].streetType] = std::vector<std::vector<SPoint>>();
+        }
+
+        roadLines[lineStrips[i].streetType].push_back(lineStrips[i].points);
+    }
+
+    for (auto iter = roadLines.begin(); iter != roadLines.end(); iter++)
+    {
+        std::wcout << L"  " << iter->first << L":" << iter->second.size() << std::endl;
+    }
+
+    // We have five types -- AVE, ST, PL, WAY, and FWY -- but might as well place them out here.
+    int types = roadLines.size();
+    dataFile.write((char*)&types, sizeof(int));
+    
+    std::vector<std::wstring> mainTypes;
+    mainTypes.push_back(L"AVE");
+    mainTypes.push_back(L"ST");
+    mainTypes.push_back(L"PL");
+    mainTypes.push_back(L"WAY");
+    mainTypes.push_back(L"FWY");
+
+    for (int i = 0; i < mainTypes.size(); i++)
+    {
+        int stripCount = roadLines[mainTypes[i]].size();
+        dataFile.write((char*)&stripCount, sizeof(int));
+        for (int j = 0; j < stripCount; j++)
+        {
+            int lineCount = roadLines[mainTypes[i]][j].size();
+            dataFile.write((char*)&lineCount, sizeof(int));
+            for (int k = 0; k < lineCount; k++)
+            {
+                SPoint point = roadLines[mainTypes[i]][j][k];
+                RescaleToFractions(&point.x, &point.y);
+                dataFile.write((char*)&point.x, sizeof(double));
+                dataFile.write((char*)&point.y, sizeof(double));
+            }
+        }
     }
 
     dataFile.close();

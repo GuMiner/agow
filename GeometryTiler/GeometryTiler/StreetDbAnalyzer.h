@@ -14,6 +14,17 @@ struct Dataset
     }
 };
 
+struct SPoint
+{
+    double x, y;
+};
+
+struct SLineStrip
+{
+    std::wstring streetType;
+    std::vector<SPoint> points;
+};
+
 class StreetDbAnalyzer
 {
     bool dbOpened;
