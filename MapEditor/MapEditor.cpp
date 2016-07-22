@@ -32,6 +32,26 @@ void MapEditor::CreateSpriteTexturePair(sf::Sprite& sprite, sf::Texture& texture
     sprite.setTexture(texture);
 }
 
+void MapEditor::OutputHelp()
+{
+    std::cout << std::endl;
+    std::cout << "Usage instructions:" << std::endl;
+    std::cout << "Arrow keys: Move select tile." << std::endl;
+    std::cout << "R: Enable / Disable height rescaling." << std::endl;
+    std::cout << "C: Enable / Disable contour rendering." << std::endl;
+    std::cout << "O: Enable / Disable type overlay." << std::endl;
+    std::cout << "S: Enable / Disable save-on-move." << std::endl;
+    std::cout << "E: Erase (set back to Lake) the current tile." << std::endl;
+    std::cout << "+: Increase brush size." << std::endl;
+    std::cout << "-: Decrease brush size." << std::endl;
+    std::cout << "W: Enable / Disable overwrite of non-LAKE type overlay." << std::endl;
+    std::cout << "1: Draw roads in the current tile." << std::endl;
+    std::cout << "2: Draw stops in the current tile." << std::endl;
+    std::cout << "3: Draw emitters in the current tile." << std::endl;
+    std::cout << "4: Draw barricades in the current tile." << std::endl;
+    std::cout << std::endl;
+}
+
 void MapEditor::LoadGraphics()
 {
     // The other two views perform a bunch of graphical loading.
@@ -44,7 +64,7 @@ void MapEditor::LoadGraphics()
     CreateSpriteTexturePair(currentTile.rightSprite, currentTile.rightTexture,   sf::Vector2f(size - offset, offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
     CreateSpriteTexturePair(currentTile.downSprite, currentTile.downTexture, sf::Vector2f(offset, size - offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
 
-    summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);
+    summaryView.LoadSelectedTile(saveOnMove, &currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);
     RedrawCurrentTiles();
 }
 
@@ -66,14 +86,17 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
             bool handled = true;
             switch (event.key.code)
             {
-            case sf::Keyboard::Left:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::LEFT);  summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
-            case sf::Keyboard::Right: if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::RIGHT); summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
-            case sf::Keyboard::Up:    if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::UP);    summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
-            case sf::Keyboard::Down:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::DOWN);  summaryView.LoadSelectedTile(&currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
+            case sf::Keyboard::Left:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::LEFT);  summaryView.LoadSelectedTile(saveOnMove, &currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
+            case sf::Keyboard::Right: if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::RIGHT); summaryView.LoadSelectedTile(saveOnMove, &currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
+            case sf::Keyboard::Up:    if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::UP);    summaryView.LoadSelectedTile(saveOnMove, &currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
+            case sf::Keyboard::Down:  if (saveOnMove) { SaveTile(); } summaryView.MoveSelectedTile(SummaryView::Direction::DOWN);  summaryView.LoadSelectedTile(saveOnMove, &currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);  tileChanged = true; break;
             case sf::Keyboard::R: displaySettings.rescale = !displaySettings.rescale;               std::cout << "Rescale: " << displaySettings.rescale << std::endl;          tileChanged = true; break;
             case sf::Keyboard::C: displaySettings.showContours = !displaySettings.showContours;     std::cout << "Contours: " << displaySettings.showContours << std::endl;    tileChanged = true; break;
             case sf::Keyboard::O: displaySettings.showOverlay = !displaySettings.showOverlay;       std::cout << "Overlay: " << displaySettings.showOverlay << std::endl;      tileChanged = true; break;
             case sf::Keyboard::S: saveOnMove = !saveOnMove; std::cout << "WARNING: Save on move: " << saveOnMove << std::endl; break;
+            case sf::Keyboard::E: EraseTile(); break;
+            case sf::Keyboard::Num1: RoadDraw(); break;
+                
             default: handled = false; break;
             }
 
@@ -110,26 +133,87 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
     }
 }
 
-void MapEditor::Draw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY)
+void MapEditor::EraseTile()
 {
-    // Upscale to the image.
-    mouseX = (int)(((float)mouseX - offset) * (float)tileSize / (float)(size - offset * 2));
-    mouseY = (int)(((float)mouseY - offset) * (float)tileSize / (float)(size - offset * 2));
-    mouseY = (tileSize - mouseY);
+    Draw(PaletteWindow::Tool::ERASE, 600, 0, tileSize / 2, tileSize / 2);
+}
 
-    int minX = std::max(mouseX - (int)radius, 0);
-    int minY = std::max(mouseY - (int)radius, 0);
-    int maxX = std::min(mouseX + (int)radius, tileSize - 1);
-    int maxY = std::min(mouseY + (int)radius, tileSize - 1);
+void MapEditor::RoadDraw()
+{
+    // V2 road drawing -- draw lines, but inefficiently (missing corners).
+
+    // All road types
+    int roadsDrawn = 0;
+    for (auto iter = roadFeatures.roads.begin(); iter != roadFeatures.roads.end(); iter++)
+    {
+        // All line strips 
+        for (unsigned int i = 0; i < iter->second.size(); i++)
+        {
+            // All points.
+            int ptCount = iter->second[i].points.size();
+            for (unsigned int j = 0; j < ptCount; j++)
+            {
+                Point pt = iter->second[i].points[j];
+
+                // Rescale from 0 to 1 to 0-tileSize.
+                summaryView.RemapToTile(&pt.x, &pt.y);
+                
+                int x = (int)pt.x;
+                int y = (int)pt.y;
+
+                if (x >= 0 && x < tileSize && y >= 0 && y < tileSize)
+                {
+                    ++roadsDrawn;
+                    
+                    Point priorPoint = j == 0 ? iter->second[i].points[j + 1] : iter->second[i].points[j - 1];
+                    summaryView.RemapToTile(&priorPoint.x, &priorPoint.y);
+                    
+                    // Will make this faster later -- performing graphics && alignment tests now.
+                    int lastX = (int)priorPoint.x;
+                    int lastY = (int)priorPoint.y;
+                    double pos = 0;
+                    int divisor = 100;
+                    for (int i = 0; i < divisor; i++)
+                    {
+                        pos += 1.0 / (double)divisor;
+                        int currentX = (int)(pos * (pt.x - priorPoint.x) + priorPoint.x);
+                        int currentY = (int)(pos * (pt.y - priorPoint.y) + priorPoint.y);
+
+                        if (currentX != lastX || currentY != lastY)
+                        {
+                            lastX = currentX;
+                            lastY = currentY;
+
+                            // This is rather inefficient, but ... graphics tests ... 
+                            Limits unused;
+                            DrawWithoutRescaleOrRedraw(PaletteWindow::Tool::SQUARE_BRUSH, 1,
+                                PaletteWindow::GetTerrainId(PaletteWindow::TerrainType::ROADS), currentX, currentY, &unused);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::cout << "Drew " << roadsDrawn << " roads on the current tile." << std::endl;
+    RedrawSelectedArea(currentTile.center, currentTile.centerTexture, 0, tileSize - 1, 0, tileSize - 1);
+}
+
+void MapEditor::DrawWithoutRescaleOrRedraw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY, Limits* limits)
+{
+    limits->minX = std::max(mouseX - (int)radius, 0);
+    limits->minY = std::max(mouseY - (int)radius, 0);
+    limits->maxX = std::min(mouseX + (int)radius, tileSize - 1);
+    limits->maxY = std::min(mouseY + (int)radius, tileSize - 1);
 
     if (tool == PaletteWindow::ERASE)
     {
         terrainId = 255;
     }
 
-    for (int x = minX; x <= maxX; x++)
+    for (int x = limits->minX; x <= limits->maxX; x++)
     {
-        for (int y = minY; y <= maxY; y++)
+        for (int y = limits->minY; y <= limits->maxY; y++)
         {
             int tileId = (x + y * tileSize) * 4 + 2;
 
@@ -146,9 +230,25 @@ void MapEditor::Draw(PaletteWindow::Tool tool, float radius, unsigned char terra
             }
         }
     }
+}
+
+void MapEditor::DrawWithoutRedraw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY, Limits* limits)
+{
+    // Upscale to the image.
+    mouseX = (int)(((float)mouseX - offset) * (float)tileSize / (float)(size - offset * 2));
+    mouseY = (int)(((float)mouseY - offset) * (float)tileSize / (float)(size - offset * 2));
+    mouseY = (tileSize - mouseY);
+
+    DrawWithoutRescaleOrRedraw(tool, radius, terrainId, mouseX, mouseY, limits);
+}
+
+void MapEditor::Draw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY)
+{
+    Limits redrawLimits;
+    DrawWithoutRedraw(tool, radius, terrainId, mouseX, mouseY, &redrawLimits);
 
     // This only works if the center is drawn *last* when we redraw the main tile!
-    RedrawSelectedArea(currentTile.center, currentTile.centerTexture, minX, maxX, minY, maxY);
+    RedrawSelectedArea(currentTile.center, currentTile.centerTexture, redrawLimits.minX, redrawLimits.maxX, redrawLimits.minY, redrawLimits.maxY);
 }
 
 void MapEditor::RedrawCurrentTiles()
@@ -316,7 +416,15 @@ void MapEditor::Run()
     sf::RenderWindow window(sf::VideoMode(size, size), "Map Editor", style, contextSettings);
     window.setFramerateLimit(60);
 
-    // Setup our graphics elements.
+    // Setup our static elements.
+    OutputHelp();
+    
+    if (!roadFeatures.LoadRoadFeatures())
+    {
+        std::cout << "Error loading road features!" << std::endl;
+        return;
+    }
+
     LoadGraphics();
 
     // Start the main loop

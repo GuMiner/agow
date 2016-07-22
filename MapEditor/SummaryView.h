@@ -36,8 +36,10 @@ public:
         DOWN
     };
 
+    void RemapToTile(double* x, double* y);
+
     void MoveSelectedTile(Direction direction);
-    void LoadSelectedTile(unsigned char** centerData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData);
+    void LoadSelectedTile(bool loadEdges, unsigned char** centerData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData);
     void UpdateSelectedTile(unsigned char* newData);
 
     SummaryView(int size, int tileCount, int reductionFactor);

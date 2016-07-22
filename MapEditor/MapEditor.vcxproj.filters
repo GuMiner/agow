@@ -8,6 +8,7 @@
     <ClCompile Include="PaletteWindow.cpp" />
     <ClCompile Include="ImageSummarizer.cpp" />
     <ClCompile Include="TileIdentifier.cpp" />
+    <ClCompile Include="RoadFeatures.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MapEditor.h" />
@@ -16,5 +17,6 @@
     <ClInclude Include="PaletteWindow.h" />
     <ClInclude Include="ImageSummarizer.h" />
     <ClInclude Include="TileIdentifier.h" />
+    <ClInclude Include="RoadFeatures.h" />
   </ItemGroup>
 </Project>

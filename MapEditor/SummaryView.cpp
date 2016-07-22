@@ -18,6 +18,18 @@ SummaryView::SummaryView(int size, int tileCount, int reductionFactor)
 
 }
 
+void SummaryView::RemapToTile(double* x, double* y)
+{
+    int tileX, tileY;
+    tileId.GetPositionFromId(selectedTile, &tileX, &tileY);
+    
+    (*x) *= ((double)size * tileId.GetTileCount());
+    (*y) *= ((double)size * tileId.GetTileCount());
+
+    (*x) -= (tileX * size);
+    (*y) -= (tileY * size);
+}
+
 void SummaryView::MoveSelectedTile(Direction direction)
 {
     int x, y;
@@ -67,13 +79,18 @@ void SummaryView::LoadSelectedTile(unsigned char** data, int offsetX, int offset
     ImageUtils::LoadImage(imageTile.str().c_str(), &width, &height, data);
 }
 
-void SummaryView::LoadSelectedTile(unsigned char** centerData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData)
+void SummaryView::LoadSelectedTile(bool loadEdges, unsigned char** centerData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData)
 {
     LoadSelectedTile(centerData,   0,   0);
-    LoadSelectedTile(leftData,  -1,  0);
-    LoadSelectedTile(rightData,  1,  0);
-    LoadSelectedTile(topData,    0,  1);
-    LoadSelectedTile(bottomData, 0, -1);
+    
+    // Don't reload the edges if we aren't saving when moving to speed up drawing
+    if (loadEdges)
+    {
+        LoadSelectedTile(leftData, -1, 0);
+        LoadSelectedTile(rightData, 1, 0);
+        LoadSelectedTile(topData, 0, 1);
+        LoadSelectedTile(bottomData, 0, -1);
+    }
 }
 
 // We know that only the topographic data is what really matters. We do need to indicate a reload to both topographic and overlay layers though.

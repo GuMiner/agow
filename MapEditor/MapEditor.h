@@ -2,6 +2,7 @@
 #include <SFML\System.hpp>
 #include <SFML\Graphics.hpp>
 #include "PaletteWindow.h"
+#include "RoadFeatures.h"
 #include "SummaryView.h"
 
 struct DisplaySettings
@@ -61,9 +62,18 @@ struct CurrentTile
     }
 };
 
+struct Limits
+{
+    int minX;
+    int maxX;
+    int minY;
+    int maxY;
+};
+
 // Allows for large-scale editing of the map tiles generated from CountourTiler
 class MapEditor
 {
+    void OutputHelp();
     void LoadGraphics();
     void HandleEvents(sf::RenderWindow& window, bool& alive);
     void Render(sf::RenderWindow& window);
@@ -80,6 +90,7 @@ class MapEditor
     // Size of a tile.
     int tileSize;
 
+    RoadFeatures roadFeatures;
     SummaryView summaryView;
     PaletteWindow paletteWindow;
     DisplaySettings displaySettings;
@@ -89,6 +100,10 @@ class MapEditor
     sf::Uint8* convertedRawData;
 
     // Applies the drawing at the current mouse position, overwriting any current overlay.
+    void RoadDraw();
+    void EraseTile();
+    void DrawWithoutRescaleOrRedraw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY, Limits* limits);
+    void DrawWithoutRedraw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY, Limits* limits);
     void Draw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY);
 
     CurrentTile currentTile;

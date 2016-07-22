@@ -150,6 +150,7 @@
     <ClCompile Include="ImageUtils.cpp" />
     <ClCompile Include="MapEditor.cpp" />
     <ClCompile Include="PaletteWindow.cpp" />
+    <ClCompile Include="RoadFeatures.cpp" />
     <ClCompile Include="stb_implementations.cpp" />
     <ClCompile Include="SummaryView.cpp" />
     <ClCompile Include="TileIdentifier.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="ImageUtils.h" />
     <ClInclude Include="MapEditor.h" />
     <ClInclude Include="PaletteWindow.h" />
+    <ClInclude Include="RoadFeatures.h" />
     <ClInclude Include="SummaryView.h" />
     <ClInclude Include="TileIdentifier.h" />
   </ItemGroup>
