@@ -8,7 +8,7 @@
 #include "ImageSummarizer.h"
 
 ImageSummarizer::ImageSummarizer(int summarySize, int tileCount, int reductionFactor, std::string summaryRootPath, std::string summaryFilename)
-    : summarySize(summarySize), tileId(tileCount), reductionFactor(reductionFactor), tileImageSize((summarySize / tileCount) * reductionFactor),
+    : summarySize(summarySize), tileId(tileCount), reductionFactor(reductionFactor), tileImageSize(1000),
       summaryRootPath(summaryRootPath), summaryFilename(summaryFilename)
 {
 }
@@ -163,7 +163,7 @@ void ImageSummarizer::UpdateSummaryForTile(unsigned char* newData, int x, int y,
         const int RGBA = 4;
         if (!stbi_write_png(imageTile.str().c_str(), tileImageSize, tileImageSize, RGBA, newData, tileImageSize * 4 * sizeof(unsigned char)))
         {
-            std::cout << "Failed to write the summary file: " << stbi_failure_reason() << std::endl;
+            std::cout << "Failed to write the updated tile: " << stbi_failure_reason() << std::endl;
         }
     }
 

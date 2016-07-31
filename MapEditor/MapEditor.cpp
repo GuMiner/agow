@@ -147,7 +147,7 @@ void MapEditor::BarricadeDraw(bool redrawArea)
 {
     int barricadesDrawn = 0;
 
-    for (unsigned int i = 0; i < roadFeatures.stops.size(); i++)
+    for (unsigned int i = 0; i < roadFeatures.barricades.size(); i++)
     {
         Point pt = roadFeatures.stops[i];
         summaryView.RemapToTile(&pt.x, &pt.y);
@@ -331,8 +331,8 @@ void MapEditor::RoadDraw(bool redrawArea)
                         {
                             bool overwriteStatus = paletteWindow.allowOverwrite;
                             paletteWindow.allowOverwrite = false;
-                            DrawWithoutRescaleOrRedraw(PaletteWindow::CIRCLE_BRUSH, roadFeatures.GetRoadDrawsize(iter->first) + 4,
-                                paletteWindow.GetTerrainId(PaletteWindow::TerrainType::ROADS),
+                            DrawWithoutRescaleOrRedraw(PaletteWindow::CIRCLE_BRUSH, roadFeatures.GetRoadDrawsize(iter->first) + 6,
+                                paletteWindow.GetTerrainId(PaletteWindow::TerrainType::GRASSLAND),
                                 currentX, currentY, &unused);
                             paletteWindow.allowOverwrite = overwriteStatus;
                         }
