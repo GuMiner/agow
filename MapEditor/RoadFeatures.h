@@ -35,10 +35,11 @@ public:
 
 private:
     bool LoadPointFeatures(std::string filename, std::vector<Point>& pointStorage);
-
+    
 public:
     RoadFeatures();
 
     bool LoadRoadFeatures();
+    float GetRoadDrawsize(RoadSizes roadSize);
 };
 

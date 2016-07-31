@@ -11,23 +11,22 @@
 #include "SummaryView.h"
 
 SummaryView::SummaryView(int size, int tileCount, int reductionFactor)
-    : isAlive(false), size(size), tileId(tileCount), selectedTile(0),
+    : isAlive(false), size(size), tileId(tileCount), selectedTile(2955),
       topographicSummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "summary.png"),
       overlaySummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "overlay.png")
 {
-
 }
 
 void SummaryView::RemapToTile(double* x, double* y)
 {
     int tileX, tileY;
     tileId.GetPositionFromId(selectedTile, &tileX, &tileY);
-    
-    (*x) *= ((double)size * tileId.GetTileCount());
-    (*y) *= ((double)size * tileId.GetTileCount());
 
-    (*x) -= (tileX * size);
-    (*y) -= (tileY * size);
+    (*x) *= ((double)1000 * tileId.GetTileCount());
+    (*y) *= ((double)1000 * tileId.GetTileCount());
+
+    (*x) -= (tileX * 1000);
+    (*y) -= (tileY * 1000);
 }
 
 void SummaryView::MoveSelectedTile(Direction direction)
@@ -76,12 +75,15 @@ void SummaryView::LoadSelectedTile(unsigned char** data, int offsetX, int offset
     imageTile << "../ContourTiler/rasters/" << y << "/" << x << ".png";
 
     int width, height;
-    ImageUtils::LoadImage(imageTile.str().c_str(), &width, &height, data);
+    if (!ImageUtils::LoadImage(imageTile.str().c_str(), &width, &height, data))
+    {
+        std::cout << "Failed to load " << imageTile.str() << std::endl;
+    }
 }
 
 void SummaryView::LoadSelectedTile(bool loadEdges, unsigned char** centerData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData)
 {
-    LoadSelectedTile(centerData,   0,   0);
+    LoadSelectedTile(centerData, 0, 0);
     
     // Don't reload the edges if we aren't saving when moving to speed up drawing
     if (loadEdges)

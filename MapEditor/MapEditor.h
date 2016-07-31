@@ -95,12 +95,16 @@ class MapEditor
     PaletteWindow paletteWindow;
     DisplaySettings displaySettings;
     Brushes brushes;
-
+    
     bool mouseDown;
     sf::Uint8* convertedRawData;
 
-    // Applies the drawing at the current mouse position, overwriting any current overlay.
-    void RoadDraw();
+    // Applies the drawing at the current mouse position, following the current overwrite settings.
+    void RoadDraw(bool redrawArea);
+    void BarricadeDraw(bool redrawArea);
+    void EmitterDraw(bool redrawArea);
+    void StopDraw(bool redrawArea);
+
     void EraseTile();
     void DrawWithoutRescaleOrRedraw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY, Limits* limits);
     void DrawWithoutRedraw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY, Limits* limits);

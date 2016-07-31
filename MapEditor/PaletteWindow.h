@@ -34,7 +34,6 @@ public:
 private:
     Tool selectedTool;
     int toolRadius; // In actual-image pixels.
-    bool allowOverwrite;
     std::string GetToolSizeText() const;
 
     TerrainType selectedTerrain;
@@ -69,6 +68,10 @@ private:
 
 public:
     PaletteWindow(int size);
+    
+    // TODO should be getter/setter protected.
+    bool allowOverwrite;
+
     void Start();
 
     void HandleKeyEvent(sf::Event& event);
@@ -82,7 +85,6 @@ public:
     Tool GetSelectedTool() const;
     int GetToolRadius() const;
     TerrainType GetTerrainType() const;
-    bool IsOverwriteAllowed() const;
 
     void Stop();
 };

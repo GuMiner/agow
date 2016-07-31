@@ -9,6 +9,7 @@
     <ClCompile Include="ImageSummarizer.cpp" />
     <ClCompile Include="TileIdentifier.cpp" />
     <ClCompile Include="RoadFeatures.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MapEditor.h" />
@@ -18,5 +19,6 @@
     <ClInclude Include="ImageSummarizer.h" />
     <ClInclude Include="TileIdentifier.h" />
     <ClInclude Include="RoadFeatures.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
 </Project>

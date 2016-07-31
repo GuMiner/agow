@@ -91,3 +91,22 @@ bool RoadFeatures::LoadRoadFeatures()
     streetFile.close();
     return true;
 }
+
+float RoadFeatures::GetRoadDrawsize(RoadSizes roadSize)
+{
+    switch (roadSize)
+    {
+    case AVE:
+        return 2.0f;
+    case ST:
+        return 3.0f;
+    case PL:
+        return 4.0f;
+    case WAY:
+        return 5.0f;
+    case FWY:
+        return 6.0f;
+    default:
+        return 0.0f;
+    }
+}

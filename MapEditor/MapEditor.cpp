@@ -3,6 +3,7 @@
 #include <thread>
 #include <stb/stb_image.h>
 #include "MapEditor.h"
+#include "Utils.h"
 
 #ifndef _DEBUG
 #pragma comment(lib, "../lib/sfml-system")
@@ -15,7 +16,7 @@
 #endif
 
 MapEditor::MapEditor()
-    : size(950), tileCount(70), tileSize(1000), summaryView(700, tileCount, tileSize / (700 / tileCount)), paletteWindow(200), currentTile(), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]),
+    : size(950), tileCount(70), tileSize(1000), summaryView(980, tileCount, tileSize / (980 / tileCount)), paletteWindow(200), currentTile(), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]),
       mouseDown(false), displaySettings(), brushes((float)paletteWindow.GetToolRadius()), offset(15), saveOnMove(true)
 {
 }
@@ -49,6 +50,7 @@ void MapEditor::OutputHelp()
     std::cout << "2: Draw stops in the current tile." << std::endl;
     std::cout << "3: Draw emitters in the current tile." << std::endl;
     std::cout << "4: Draw barricades in the current tile." << std::endl;
+    std::cout << "5: Draw all on the current tile, 4-1 in order." << std::endl;
     std::cout << std::endl;
 }
 
@@ -58,11 +60,11 @@ void MapEditor::LoadGraphics()
     summaryView.Start();
     paletteWindow.Start();
 
-    CreateSpriteTexturePair(currentTile.centerSprite, currentTile.centerTexture, sf::Vector2f(offset, offset),             sf::IntRect(0, tileSize, tileSize, -tileSize));
-    CreateSpriteTexturePair(currentTile.leftSprite, currentTile.leftTexture,     sf::Vector2f(-size + offset*3, offset), sf::IntRect(0, tileSize, tileSize, -tileSize));
-    CreateSpriteTexturePair(currentTile.upSprite, currentTile.upTexture,       sf::Vector2f(offset, -size + offset*3), sf::IntRect(0, tileSize, tileSize, -tileSize));
-    CreateSpriteTexturePair(currentTile.rightSprite, currentTile.rightTexture,   sf::Vector2f(size - offset, offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
-    CreateSpriteTexturePair(currentTile.downSprite, currentTile.downTexture, sf::Vector2f(offset, size - offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
+    CreateSpriteTexturePair(currentTile.centerSprite, currentTile.centerTexture, sf::Vector2f((float)offset, (float)offset),             sf::IntRect(0, tileSize, tileSize, -tileSize));
+    CreateSpriteTexturePair(currentTile.leftSprite, currentTile.leftTexture,     sf::Vector2f((float)(-size + offset*3), (float)offset), sf::IntRect(0, tileSize, tileSize, -tileSize));
+    CreateSpriteTexturePair(currentTile.upSprite, currentTile.upTexture,       sf::Vector2f((float)offset, (float)(-size + offset*3)), sf::IntRect(0, tileSize, tileSize, -tileSize));
+    CreateSpriteTexturePair(currentTile.rightSprite, currentTile.rightTexture,   sf::Vector2f((float)(size - offset), (float)offset),  sf::IntRect(0, tileSize, tileSize, -tileSize));
+    CreateSpriteTexturePair(currentTile.downSprite, currentTile.downTexture, sf::Vector2f((float)offset, (float)(size - offset)),  sf::IntRect(0, tileSize, tileSize, -tileSize));
 
     summaryView.LoadSelectedTile(saveOnMove, &currentTile.center, &currentTile.left, &currentTile.right, &currentTile.up, &currentTile.down);
     RedrawCurrentTiles();
@@ -95,8 +97,11 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
             case sf::Keyboard::O: displaySettings.showOverlay = !displaySettings.showOverlay;       std::cout << "Overlay: " << displaySettings.showOverlay << std::endl;      tileChanged = true; break;
             case sf::Keyboard::S: saveOnMove = !saveOnMove; std::cout << "WARNING: Save on move: " << saveOnMove << std::endl; break;
             case sf::Keyboard::E: EraseTile(); break;
-            case sf::Keyboard::Num1: RoadDraw(); break;
-                
+            case sf::Keyboard::Num1: RoadDraw(true); break;
+            case sf::Keyboard::Num2: StopDraw(true); break;
+            case sf::Keyboard::Num3: EmitterDraw(true); break;
+            case sf::Keyboard::Num4: BarricadeDraw(true); break;
+            case sf::Keyboard::Num5: BarricadeDraw(false); EmitterDraw(false); StopDraw(false); RoadDraw(true); break;
             default: handled = false; break;
             }
 
@@ -138,11 +143,153 @@ void MapEditor::EraseTile()
     Draw(PaletteWindow::Tool::ERASE, 600, 0, tileSize / 2, tileSize / 2);
 }
 
-void MapEditor::RoadDraw()
+void MapEditor::BarricadeDraw(bool redrawArea)
 {
-    // V2 road drawing -- draw lines, but inefficiently (missing corners).
+    int barricadesDrawn = 0;
 
-    // All road types
+    for (unsigned int i = 0; i < roadFeatures.stops.size(); i++)
+    {
+        Point pt = roadFeatures.stops[i];
+        summaryView.RemapToTile(&pt.x, &pt.y);
+
+        int x = (int)pt.x;
+        int y = (int)pt.y;
+
+        if (x > 0 && y > 0 && x < tileSize && y < tileSize)
+        {
+            ++barricadesDrawn;
+
+            const int barricadeSize = 10;
+            const unsigned char dirtTerrain = paletteWindow.GetTerrainId(PaletteWindow::DIRTLAND);
+            const unsigned char grassTerrain = paletteWindow.GetTerrainId(PaletteWindow::GRASSLAND);
+            for (int j = x - barricadeSize; j < x + barricadeSize; j++)
+            {
+                for (int k = y - barricadeSize; k < y + barricadeSize; k++)
+                {
+                    if (j > 0 && k > 0 && j < tileSize && k < tileSize)
+                    {
+                        // 10x10 rocks
+                        int tileId = (j + k * tileSize) * 4 + 2;
+                        bool isOverwriteAllowed = paletteWindow.allowOverwrite ||
+                            paletteWindow.GetNearestTerrainType(currentTile.center[tileId]) == PaletteWindow::TerrainType::LAKE;
+                        if (isOverwriteAllowed)
+                        {
+                            currentTile.center[tileId] = paletteWindow.GetTerrainId(PaletteWindow::TerrainType::ROCKS);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::cout << "Drew " << barricadesDrawn << " barricades." << std::endl;
+    if (redrawArea)
+    {
+        RedrawSelectedArea(currentTile.center, currentTile.centerTexture, 0, tileSize - 1, 0, tileSize - 1);
+    }
+}
+
+void MapEditor::EmitterDraw(bool redrawArea)
+{
+    int emittersDrawn = 0;
+
+    for (unsigned int i = 0; i < roadFeatures.emitters.size(); i++)
+    {
+        Point pt = roadFeatures.stops[i];
+        summaryView.RemapToTile(&pt.x, &pt.y);
+
+        int x = (int)pt.x;
+        int y = (int)pt.y;
+
+        if (x > 0 && y > 0 && x < tileSize && y < tileSize)
+        {
+            ++emittersDrawn;
+
+
+            const int emitterSize = 2;
+            const unsigned char dirtTerrain = paletteWindow.GetTerrainId(PaletteWindow::SNOW_PEAK);
+            const unsigned char grassTerrain = paletteWindow.GetTerrainId(PaletteWindow::GRASSLAND);
+            for (int j = x - emitterSize; j < x + emitterSize; j++)
+            {
+                for (int k = y - emitterSize; k < y + emitterSize; k++)
+                {
+                    if (j > 0 && k > 0 && j < tileSize && k < tileSize)
+                    {
+                        // 3x3 snow around 1x1 grass.
+                        unsigned char terrainId = (std::abs(j - x) > 1 || std::abs(k - y) > 1) ? grassTerrain : dirtTerrain;
+
+                        int tileId = (j + k * tileSize) * 4 + 2;
+                        bool isOverwriteAllowed = paletteWindow.allowOverwrite ||
+                            paletteWindow.GetNearestTerrainType(currentTile.center[tileId]) == PaletteWindow::TerrainType::LAKE;
+                        if (isOverwriteAllowed)
+                        {
+                            currentTile.center[tileId] = terrainId;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::cout << "Drew " << emittersDrawn << " emitters." << std::endl;
+    if (redrawArea)
+    {
+        RedrawSelectedArea(currentTile.center, currentTile.centerTexture, 0, tileSize - 1, 0, tileSize - 1);
+    }
+}
+
+void MapEditor::StopDraw(bool redrawArea)
+{
+    int stopsDrawn = 0;
+
+    // TODO refactor to avoid duplication.
+    for (unsigned int i = 0; i < roadFeatures.stops.size(); i++)
+    {
+        Point pt = roadFeatures.stops[i];
+        summaryView.RemapToTile(&pt.x, &pt.y);
+
+        int x = (int)pt.x;
+        int y = (int)pt.y;
+
+        if (x > 0 && y > 0 && x < tileSize && y < tileSize)
+        {
+            ++stopsDrawn;
+            
+            const int stopSize = 2;
+            const unsigned char dirtTerrain = paletteWindow.GetTerrainId(PaletteWindow::DIRTLAND);
+            const unsigned char grassTerrain = paletteWindow.GetTerrainId(PaletteWindow::GRASSLAND);
+            for (int j = x - stopSize; j < x + stopSize; j++)
+            {
+                for (int k = y - stopSize; k < y + stopSize; k++)
+                {
+                    if (j > 0 && k > 0 && j < tileSize && k < tileSize)
+                    {
+                        // 3x3 dirt around 1x1 grass.
+                        unsigned char terrainId = (std::abs(j - x) > 1 || std::abs(k - y) > 1) ? grassTerrain : dirtTerrain;
+
+                        int tileId = (j + k * tileSize) * 4 + 2;
+                        bool isOverwriteAllowed = paletteWindow.allowOverwrite ||
+                            paletteWindow.GetNearestTerrainType(currentTile.center[tileId]) == PaletteWindow::TerrainType::LAKE;
+                        if (isOverwriteAllowed)
+                        {
+                            currentTile.center[tileId] = terrainId;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::cout << "Drew " << stopsDrawn << " stops." << std::endl;
+    if (redrawArea)
+    {
+        RedrawSelectedArea(currentTile.center, currentTile.centerTexture, 0, tileSize - 1, 0, tileSize - 1);
+    }
+}
+
+// TODO move this all elsewhere into its own class or within the road classes.
+void MapEditor::RoadDraw(bool redrawArea)
+{
     int roadsDrawn = 0;
     for (auto iter = roadFeatures.roads.begin(); iter != roadFeatures.roads.end(); iter++)
     {
@@ -151,44 +298,50 @@ void MapEditor::RoadDraw()
         {
             // All points.
             int ptCount = iter->second[i].points.size();
-            for (unsigned int j = 0; j < ptCount; j++)
+            for (int j = 1; j < ptCount; j++)
             {
                 Point pt = iter->second[i].points[j];
+                Point priorPoint = iter->second[i].points[j - 1];
 
                 // Rescale from 0 to 1 to 0-tileSize.
                 summaryView.RemapToTile(&pt.x, &pt.y);
-                
-                int x = (int)pt.x;
-                int y = (int)pt.y;
+                summaryView.RemapToTile(&priorPoint.x, &priorPoint.y);
 
-                if (x >= 0 && x < tileSize && y >= 0 && y < tileSize)
+                if (Utils::LineIntersectsRectangle(
+                    sf::Vector2f((float)pt.x, (float)pt.y), sf::Vector2f((float)priorPoint.x, (float)priorPoint.y), 
+                    sf::Vector2f(0, 0), sf::Vector2f((float)tileSize, (float)tileSize)))
                 {
                     ++roadsDrawn;
+
+                    // Iterate at a per-pixel level by using our road length.
+                    float roadLength = (float)std::sqrt(std::pow(pt.x - priorPoint.x, 2) + std::pow(pt.y - priorPoint.y, 2));
                     
-                    Point priorPoint = j == 0 ? iter->second[i].points[j + 1] : iter->second[i].points[j - 1];
-                    summaryView.RemapToTile(&priorPoint.x, &priorPoint.y);
+                    int roadPoints = std::max(1, (int)roadLength);
                     
-                    // Will make this faster later -- performing graphics && alignment tests now.
-                    int lastX = (int)priorPoint.x;
-                    int lastY = (int)priorPoint.y;
-                    double pos = 0;
-                    int divisor = 100;
-                    for (int i = 0; i < divisor; i++)
+                    // Start halfway in so that roads with a single point have a point drawn in the middle.
+                    float pos = (1.0f / (float)roadPoints) / 2.0f;
+                    for (int k = 0; k < roadPoints; k++)
                     {
-                        pos += 1.0 / (double)divisor;
                         int currentX = (int)(pos * (pt.x - priorPoint.x) + priorPoint.x);
                         int currentY = (int)(pos * (pt.y - priorPoint.y) + priorPoint.y);
 
-                        if (currentX != lastX || currentY != lastY)
+                        // Ignore the freeway modifiers, just add grassland next to the freeway to indicate that it is a freeway.
+                        Limits unused;
+                        if (iter->first == RoadFeatures::FWY)
                         {
-                            lastX = currentX;
-                            lastY = currentY;
-
-                            // This is rather inefficient, but ... graphics tests ... 
-                            Limits unused;
-                            DrawWithoutRescaleOrRedraw(PaletteWindow::Tool::SQUARE_BRUSH, 1,
-                                PaletteWindow::GetTerrainId(PaletteWindow::TerrainType::ROADS), currentX, currentY, &unused);
+                            bool overwriteStatus = paletteWindow.allowOverwrite;
+                            paletteWindow.allowOverwrite = false;
+                            DrawWithoutRescaleOrRedraw(PaletteWindow::CIRCLE_BRUSH, roadFeatures.GetRoadDrawsize(iter->first) + 4,
+                                paletteWindow.GetTerrainId(PaletteWindow::TerrainType::ROADS),
+                                currentX, currentY, &unused);
+                            paletteWindow.allowOverwrite = overwriteStatus;
                         }
+
+                        DrawWithoutRescaleOrRedraw(PaletteWindow::CIRCLE_BRUSH, roadFeatures.GetRoadDrawsize(iter->first),
+                            paletteWindow.GetTerrainId(PaletteWindow::TerrainType::ROADS),
+                            currentX, currentY, &unused);
+
+                        pos += 1.0f / (float)roadPoints;
                     }
                 }
             }
@@ -196,15 +349,18 @@ void MapEditor::RoadDraw()
     }
 
     std::cout << "Drew " << roadsDrawn << " roads on the current tile." << std::endl;
-    RedrawSelectedArea(currentTile.center, currentTile.centerTexture, 0, tileSize - 1, 0, tileSize - 1);
+    if (redrawArea)
+    {
+        RedrawSelectedArea(currentTile.center, currentTile.centerTexture, 0, tileSize - 1, 0, tileSize - 1);
+    }
 }
 
 void MapEditor::DrawWithoutRescaleOrRedraw(PaletteWindow::Tool tool, float radius, unsigned char terrainId, int mouseX, int mouseY, Limits* limits)
 {
-    limits->minX = std::max(mouseX - (int)radius, 0);
-    limits->minY = std::max(mouseY - (int)radius, 0);
-    limits->maxX = std::min(mouseX + (int)radius, tileSize - 1);
-    limits->maxY = std::min(mouseY + (int)radius, tileSize - 1);
+    limits->minX = std::max((int)(mouseX - (radius + 0.5f)), 0);
+    limits->minY = std::max((int)(mouseY - (radius + 0.5f)), 0);
+    limits->maxX = std::min((int)(mouseX + (radius + 0.5f)), tileSize - 1);
+    limits->maxY = std::min((int)(mouseY + (radius + 0.5f)), tileSize - 1);
 
     if (tool == PaletteWindow::ERASE)
     {
@@ -222,7 +378,7 @@ void MapEditor::DrawWithoutRescaleOrRedraw(PaletteWindow::Tool tool, float radiu
                 (tool == PaletteWindow::CIRCLE_BRUSH && (pow((float)x - (float)mouseX, 2) + pow((float)y - (float)mouseY, 2) < pow(radius, 2)));
 
             // We allow overwriting lakes (the default).
-            bool isOverwriteAllowed = paletteWindow.IsOverwriteAllowed() || paletteWindow.GetNearestTerrainType(currentTile.center[tileId]) == PaletteWindow::TerrainType::LAKE;
+            bool isOverwriteAllowed = paletteWindow.allowOverwrite || paletteWindow.GetNearestTerrainType(currentTile.center[tileId]) == PaletteWindow::TerrainType::LAKE;
 
             if (isInBrushArea && isOverwriteAllowed)
             {

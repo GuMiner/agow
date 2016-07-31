@@ -17,7 +17,7 @@ bool ImageUtils::LoadImage(const char* filename, int *width, int *height, unsign
     }
     else
     {
-        // std::cout << "Failed to load image " << filename << ": " << stbi_failure_reason();
+        std::cout << "Failed to load image " << filename << ": " << stbi_failure_reason();
         return false;
     }
 }

@@ -277,11 +277,6 @@ PaletteWindow::TerrainType PaletteWindow::GetTerrainType() const
     return selectedTerrain;
 }
 
-bool PaletteWindow::IsOverwriteAllowed() const
-{
-    return allowOverwrite;
-}
-
 void PaletteWindow::ThreadStart()
 {
     LoadGraphics();
