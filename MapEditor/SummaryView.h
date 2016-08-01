@@ -27,6 +27,8 @@ class SummaryView
 
     void SummaryView::LoadSelectedTile(unsigned char** data, int offsetX, int offsetY);
 
+    sf::RenderWindow* windowSelf;
+
 public:
     enum Direction
     {

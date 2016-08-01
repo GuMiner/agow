@@ -105,7 +105,8 @@ void ImageSummarizer::CreateNewSummaryImage(const char* summaryFilename, unsigne
 
 bool ImageSummarizer::IsTileValid(int x, int y) const
 {
-    return (x >= 0 && y >= 0 && x < tileId.GetTileCount() && y < tileId.GetTileCount());
+    // TODO TODO: Last change of this project before editing -- restricting motion to valid road area.
+    return (x >= 1 && y >= 16 && x <= 60 && y <= 54); // tileId.GetTileCount() && y < tileId.GetTileCount());
 }
 
 void ImageSummarizer::Initialize(downscaleFunction downscaler, displayConverterFunction converter)

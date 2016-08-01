@@ -13,7 +13,8 @@
 SummaryView::SummaryView(int size, int tileCount, int reductionFactor)
     : isAlive(false), size(size), tileId(tileCount), selectedTile(2955),
       topographicSummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "summary.png"),
-      overlaySummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "overlay.png")
+      overlaySummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "overlay.png"),
+      windowSelf(nullptr)
 {
 }
 
@@ -46,6 +47,14 @@ void SummaryView::MoveSelectedTile(Direction direction)
     {
         selectedTile = tileId.GetTileId(x, y);
         UpdateSelectedTileRectangle();
+
+        // TODO this doesn't apply on startup, and should be fixed to not pass around the window pointer.
+        if (windowSelf != nullptr)
+        {
+            std::stringstream titleString;
+            titleString << "Summary (" << x << ", " << y << ")" << std::endl;
+            windowSelf->setTitle(titleString.str());
+        }
     }
 }
 
@@ -178,6 +187,9 @@ void SummaryView::ThreadStart()
     sf::Uint32 style = sf::Style::Titlebar;
     sf::RenderWindow window(sf::VideoMode(size, size), "Summary", style, contextSettings);
     window.setFramerateLimit(60);
+    
+    // TODO
+    windowSelf = &window;
 
     // Start the main loop
     isAlive = true;
