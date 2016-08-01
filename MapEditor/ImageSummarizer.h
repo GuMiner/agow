@@ -11,6 +11,10 @@ typedef std::function<void(float, unsigned char*, unsigned char*, unsigned char*
 
 class ImageSummarizer
 {
+    int offsetX;
+    int offsetY;
+    int visibleSideCount;
+
     int summarySize;
     int reductionFactor;
     int tileImageSize;
@@ -35,7 +39,7 @@ class ImageSummarizer
     void CreateNewSummaryImage(const char* summaryFilename, unsigned char** summaryImage);
 
 public:
-    ImageSummarizer(int summarySize, int tileCount, int reductionFactor, std::string summaryRootPath, std::string summaryFilename);
+    ImageSummarizer(int summarySize, int tileSideCount, int offsetX, int offsetY, int visibleSideCount, int reductionFactor, std::string summaryRootPath, std::string summaryFilename);
     void Initialize(downscaleFunction downscaler, displayConverterFunction converter);
 
     bool IsTileValid(int x, int y) const;

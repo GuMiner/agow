@@ -7,9 +7,9 @@
 #include "ImageUtils.h"
 #include "ImageSummarizer.h"
 
-ImageSummarizer::ImageSummarizer(int summarySize, int tileCount, int reductionFactor, std::string summaryRootPath, std::string summaryFilename)
-    : summarySize(summarySize), tileId(tileCount), reductionFactor(reductionFactor), tileImageSize(1000),
-      summaryRootPath(summaryRootPath), summaryFilename(summaryFilename)
+ImageSummarizer::ImageSummarizer(int summarySize, int tileSideCount, int offsetX, int offsetY, int visibleSideCount, int reductionFactor, std::string summaryRootPath, std::string summaryFilename)
+    : summarySize(summarySize), tileId(tileSideCount), reductionFactor(reductionFactor), tileImageSize(1000),
+      summaryRootPath(summaryRootPath), summaryFilename(summaryFilename), offsetX(offsetX), offsetY(offsetY), visibleSideCount(visibleSideCount)
 {
 }
 
@@ -52,8 +52,8 @@ bool ImageSummarizer::TryLoadTile(bool verbose, int i, int j, unsigned char* sum
             {
                 for (int y = 0; y < subdivisions; y++)
                 {
-                    int xReal = i * subdivisions + x;
-                    int yReal = j * subdivisions + y;
+                    int xReal = (i - offsetX) * subdivisions + x;
+                    int yReal = (j - offsetY) * subdivisions + y;
                     displayConverter(outputData[x + y * subdivisions],
                         &summaryImage[(xReal + yReal * summarySize) * 4],
                         &summaryImage[(xReal + yReal * summarySize) * 4 + 1],
@@ -88,9 +88,9 @@ void ImageSummarizer::WriteSummaryImage(const char* filename, unsigned char* sum
 void ImageSummarizer::CreateNewSummaryImage(const char* summaryFilename, unsigned char** summaryImage)
 {
     *summaryImage = new unsigned char[summarySize * summarySize * 4];
-    for (int i = 0; i < tileId.GetTileCount(); i++)
+    for (int i = offsetX; i < visibleSideCount; i++)
     {
-        for (int j = 0; j < tileId.GetTileCount(); j++)
+        for (int j = offsetY; j < visibleSideCount; j++)
         {
             // Iterate through all the possible tiles, assigning them to the image (after downscaling) or the missing tile area.
             if (!TryLoadTile(true, i, j, *summaryImage))
@@ -105,8 +105,8 @@ void ImageSummarizer::CreateNewSummaryImage(const char* summaryFilename, unsigne
 
 bool ImageSummarizer::IsTileValid(int x, int y) const
 {
-    // TODO TODO: Last change of this project before editing -- restricting motion to valid road area.
-    return (x >= 1 && y >= 16 && x <= 60 && y <= 54); // tileId.GetTileCount() && y < tileId.GetTileCount());
+    // Restricted to the valid road area plus a bit more in the y direction.
+    return (x >= 5 && y >= 16 && x <= 40 && y <= 54);
 }
 
 void ImageSummarizer::Initialize(downscaleFunction downscaler, displayConverterFunction converter)

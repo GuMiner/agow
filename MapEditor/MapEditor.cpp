@@ -15,8 +15,9 @@
 #pragma comment(lib, "../lib/sfml-graphics-d")
 #endif
 
+// For the summary, we're offset by (5, 16) with a view area of 36 squares, reducing our 1000x1000 images by a factor of 37. This doesn't divide nicely, but looks acceptable.
 MapEditor::MapEditor()
-    : size(950), tileCount(70), tileSize(1000), summaryView(980, tileCount, tileSize / (980 / tileCount)), paletteWindow(200), currentTile(), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]),
+    : size(950), tileCount(70), tileSize(1000), summaryView(972, tileCount, 5, 16, 36, 37), paletteWindow(200), currentTile(), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]),
       mouseDown(false), displaySettings(), brushes((float)paletteWindow.GetToolRadius()), offset(15), saveOnMove(true)
 {
 }

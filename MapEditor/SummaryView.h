@@ -8,6 +8,10 @@
 
 class SummaryView
 {
+    int offsetX;
+    int offsetY;
+    int visibleSideCount;
+
     int size;
     
     TileIdentifier tileId;
@@ -44,7 +48,7 @@ public:
     void LoadSelectedTile(bool loadEdges, unsigned char** centerData, unsigned char** leftData, unsigned char** rightData, unsigned char** topData, unsigned char** bottomData);
     void UpdateSelectedTile(unsigned char* newData);
 
-    SummaryView(int size, int tileCount, int reductionFactor);
+    SummaryView(int size, int tileCount, int offsetX, int offsetY, int visibleSideCount, int reductionFactor);
     void Start();
     void Stop();
 };

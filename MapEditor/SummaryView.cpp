@@ -10,11 +10,11 @@
 #include "PaletteWindow.h"
 #include "SummaryView.h"
 
-SummaryView::SummaryView(int size, int tileCount, int reductionFactor)
+SummaryView::SummaryView(int size, int tileCount, int offsetX, int offsetY, int visibleSideCount, int reductionFactor)
     : isAlive(false), size(size), tileId(tileCount), selectedTile(2955),
-      topographicSummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "summary.png"),
-      overlaySummarizer(size, tileCount, reductionFactor, "../ContourTiler/rasters/summary/", "overlay.png"),
-      windowSelf(nullptr)
+      topographicSummarizer(size, tileCount, offsetX, offsetY, visibleSideCount, reductionFactor, "../ContourTiler/rasters/summary/", "summary.png"),
+      overlaySummarizer(size, tileCount, offsetX, offsetY, visibleSideCount, reductionFactor, "../ContourTiler/rasters/summary/", "overlay.png"),
+      windowSelf(nullptr), offsetX(offsetX), offsetY(offsetY), visibleSideCount(visibleSideCount)
 {
 }
 
@@ -115,10 +115,10 @@ void SummaryView::UpdateSelectedTile(unsigned char* newData)
 
 void SummaryView::UpdateSelectedTileRectangle()
 {
-    int motionScale = size / tileId.GetTileCount();
+    int motionScale = size / visibleSideCount;
     int x, y;
     tileId.GetPositionFromId(selectedTile, &x, &y);
-    selectedTileRectangle.setPosition(sf::Vector2f((float)(x * motionScale), (float)(size - (y + 1) * motionScale)));
+    selectedTileRectangle.setPosition(sf::Vector2f((float)((x - offsetX) * motionScale), (float)(size - (y - offsetY + 1) * motionScale)));
 }
 
 void SummaryView::HandleEvents(sf::RenderWindow& window)
