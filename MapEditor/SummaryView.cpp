@@ -167,7 +167,7 @@ void SummaryView::ThreadStart()
         {
             // This will probably look odd but it's the best I can do.
             unsigned char averageValue = (unsigned char)value;
-            PaletteWindow::TerrainType type = PaletteWindow::GetNearestTerrainType(averageValue);
+            PaletteWindow::TerrainType type = PaletteWindow::GetNearestTerrainType(averageValue > 250 ? averageValue : averageValue + 10);
             sf::Color color = PaletteWindow::GetTerrainColor(type);
             *r = color.r;
             *g = color.g;
