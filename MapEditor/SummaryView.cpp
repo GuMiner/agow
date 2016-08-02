@@ -175,7 +175,7 @@ void SummaryView::ThreadStart()
             *a = 110;
         });
 
-    selectedTileRectangle = sf::RectangleShape(sf::Vector2f((float)(size / tileId.GetTileCount()), (float)(size / tileId.GetTileCount())));
+    selectedTileRectangle = sf::RectangleShape(sf::Vector2f((float)(size / visibleSideCount), (float)(size / visibleSideCount)));
     selectedTileRectangle.setFillColor(sf::Color(0, 0, 0, 0));
     selectedTileRectangle.setOutlineThickness(1.0f);
     selectedTileRectangle.setOutlineColor(sf::Color::Green);

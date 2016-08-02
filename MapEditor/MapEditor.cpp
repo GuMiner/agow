@@ -17,7 +17,7 @@
 
 // For the summary, we're offset by (5, 16) with a view area of 36 squares, reducing our 1000x1000 images by a factor of 37. This doesn't divide nicely, but looks acceptable.
 MapEditor::MapEditor()
-    : size(950), tileCount(70), tileSize(1000), summaryView(972, tileCount, 5, 16, 36, 37), paletteWindow(200), currentTile(), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]),
+    : size(950), tileCount(70), tileSize(1000), summaryView(972, tileCount, 5, 17, 36, 37), paletteWindow(200), currentTile(), convertedRawData(new sf::Uint8[tileSize * tileSize * 4]),
       mouseDown(false), displaySettings(), brushes((float)paletteWindow.GetToolRadius()), offset(15), saveOnMove(true)
 {
 }
@@ -42,6 +42,7 @@ void MapEditor::OutputHelp()
     std::cout << "R: Enable / Disable height rescaling." << std::endl;
     std::cout << "C: Enable / Disable contour rendering." << std::endl;
     std::cout << "O: Enable / Disable type overlay." << std::endl;
+    std::cout << "H: Enable / Disable any height rendering." << std::endl;
     std::cout << "S: Enable / Disable save-on-move." << std::endl;
     std::cout << "E: Erase (set back to Lake) the current tile." << std::endl;
     std::cout << "+: Increase brush size." << std::endl;
@@ -96,6 +97,7 @@ void MapEditor::HandleEvents(sf::RenderWindow& window, bool& alive)
             case sf::Keyboard::R: displaySettings.rescale = !displaySettings.rescale;               std::cout << "Rescale: " << displaySettings.rescale << std::endl;          tileChanged = true; break;
             case sf::Keyboard::C: displaySettings.showContours = !displaySettings.showContours;     std::cout << "Contours: " << displaySettings.showContours << std::endl;    tileChanged = true; break;
             case sf::Keyboard::O: displaySettings.showOverlay = !displaySettings.showOverlay;       std::cout << "Overlay: " << displaySettings.showOverlay << std::endl;      tileChanged = true; break;
+            case sf::Keyboard::H: displaySettings.showHeightmap = !displaySettings.showHeightmap;   std::cout << "Heightmap: " << displaySettings.showHeightmap << std::endl;  tileChanged = true; break;
             case sf::Keyboard::S: saveOnMove = !saveOnMove; std::cout << "WARNING: Save on move: " << saveOnMove << std::endl; break;
             case sf::Keyboard::E: EraseTile(); break;
             case sf::Keyboard::Num1: RoadDraw(true); break;
@@ -378,8 +380,9 @@ void MapEditor::DrawWithoutRescaleOrRedraw(PaletteWindow::Tool tool, float radiu
                 tool == PaletteWindow::ERASE ||
                 (tool == PaletteWindow::CIRCLE_BRUSH && (pow((float)x - (float)mouseX, 2) + pow((float)y - (float)mouseY, 2) < pow(radius, 2)));
 
-            // We allow overwriting lakes (the default).
-            bool isOverwriteAllowed = paletteWindow.allowOverwrite || paletteWindow.GetNearestTerrainType(currentTile.center[tileId]) == PaletteWindow::TerrainType::LAKE;
+            // We allow overwriting lakes (the default), and now that road drawing is done, never allow overwriting roads.
+            bool isOverwriteAllowed = (paletteWindow.allowOverwrite || paletteWindow.GetNearestTerrainType(currentTile.center[tileId]) == PaletteWindow::TerrainType::LAKE)
+                && currentTile.center[tileId] != paletteWindow.GetTerrainId(PaletteWindow::TerrainType::ROADS);
 
             if (isInBrushArea && isOverwriteAllowed)
             {
@@ -498,13 +501,20 @@ void MapEditor::RedrawSelectedArea(unsigned char* tileData, sf::Texture& texture
             int pos = (x + y * tileSize) * 4;
             unsigned char rawValue;
             unsigned short height = (unsigned short)tileData[pos] + (((unsigned short)tileData[pos + 1]) << 8);
-            if (displaySettings.rescale)
+            if (displaySettings.showHeightmap)
             {
-                rawValue = (unsigned char)((float)(height - currentTile.minHeight) / (float)(currentTile.maxHeight - currentTile.minHeight) * 255);
+                if (displaySettings.rescale)
+                {
+                    rawValue = (unsigned char)((float)(height - currentTile.minHeight) / (float)(currentTile.maxHeight - currentTile.minHeight) * 255);
+                }
+                else
+                {
+                    rawValue = (unsigned char)(height / 256);
+                }
             }
             else
             {
-                rawValue = (unsigned char)(height / 256);
+                rawValue = 20;
             }
 
             // Add contour lines if requested.

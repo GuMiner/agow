@@ -88,9 +88,9 @@ void ImageSummarizer::WriteSummaryImage(const char* filename, unsigned char* sum
 void ImageSummarizer::CreateNewSummaryImage(const char* summaryFilename, unsigned char** summaryImage)
 {
     *summaryImage = new unsigned char[summarySize * summarySize * 4];
-    for (int i = offsetX; i < visibleSideCount; i++)
+    for (int i = offsetX; i < offsetX + visibleSideCount; i++)
     {
-        for (int j = offsetY; j < visibleSideCount; j++)
+        for (int j = offsetY; j < offsetY + visibleSideCount; j++)
         {
             // Iterate through all the possible tiles, assigning them to the image (after downscaling) or the missing tile area.
             if (!TryLoadTile(true, i, j, *summaryImage))

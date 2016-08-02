@@ -10,12 +10,14 @@ struct DisplaySettings
     bool rescale;
     bool showOverlay;
     bool showContours;
+    bool showHeightmap;
     
     DisplaySettings()
     {
         rescale = true;
         showOverlay = true;
         showContours = true;
+        showHeightmap = true;
     }
 };
 
