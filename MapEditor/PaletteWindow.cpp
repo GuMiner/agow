@@ -165,6 +165,40 @@ sf::Color PaletteWindow::GetTerrainColor(TerrainType type)
     }
 }
 
+float PaletteWindow::GetHue(sf::Color color)
+{
+    float r = (float)color.r / 255;
+    float g = (float)color.g / 255;
+    float b = (float)color.b / 255;
+
+    float min = std::min(std::min(r, g), b);
+    float max = std::max(std::max(r, g), b);
+
+    float delta = max - min;
+
+    float middle = 0.00001f;
+    float hue;
+    if (std::abs(r - max) < middle)
+    {
+        hue = (g - b) / delta;
+    }
+    else if (std::abs(g - max) < middle)
+    {
+        hue = 2 + (b - r) / delta;
+    }
+    else
+    {
+        hue = 4 + (r - g) / delta;
+    }
+
+    if (hue < 1)
+    {
+        hue += 1;
+    }
+
+    return hue;
+}
+
 unsigned char PaletteWindow::GetTerrainId(TerrainType type)
 {
     switch (type)

@@ -77,6 +77,8 @@ public:
     void HandleKeyEvent(sf::Event& event);
     
     static sf::Color GetTerrainColor(TerrainType type);
+    static float GetHue(sf::Color color); // [0 to 1]
+
     static std::string GetTerrainName(TerrainType type);
     static std::string GetToolName(Tool type);
     static unsigned char GetTerrainId(TerrainType type);

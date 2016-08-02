@@ -161,17 +161,23 @@ void SummaryView::ThreadStart()
     overlaySummarizer.Initialize(
         [](unsigned char r, unsigned char g, unsigned char b, unsigned char a) -> float
         {
-            return (float)b;
+            // Get the location color.
+            PaletteWindow::TerrainType type = PaletteWindow::GetNearestTerrainType(b);
+            
+            // This will look odd but should be reasonable.
+            return (float)((float)type / (float)PaletteWindow::TerrainType::COUNT);
         },
         [](float value, unsigned char* r, unsigned char* g, unsigned char* b, unsigned char* a) -> void
         {
-            // This will probably look odd but it's the best I can do.
-            unsigned char averageValue = (unsigned char)value;
-            PaletteWindow::TerrainType type = PaletteWindow::GetNearestTerrainType(averageValue);
-            sf::Color color = PaletteWindow::GetTerrainColor(type);
-            *r = color.r;
-            *g = color.g;
-            *b = color.b;
+            // Restrict hue from 0 to 1.
+            const float pi = 3.1415926f;
+            value = std::max(0.0f, std::min(value, 1.0f));
+            value *= (360.0f * pi / 180.0f);
+
+            // Use sinusoidal hue, see https://en.wikipedia.org/wiki/Talk:HSL_and_HSV/HSV_archive 
+            *r = (unsigned char)((0.5f * (1 - std::cos(value)) * 255.0f));
+            *g = (unsigned char)((0.5f * (1 - std::cos(value + (0.66666f * 2.0f * pi))) * 255.0f));
+            *b = (unsigned char)((0.5f * (1 - std::cos(value + (0.33333f * 2.0f * pi))) * 255.0f));
             *a = 110;
         });
 
