@@ -19,6 +19,9 @@ void RegionManager::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynam
     if (loadedRegions.size() == 0)
     {
         loadedRegions.push_back(Region(21, 10, dynamicsWorld, &terrainManager, 10, 10));
+        loadedRegions.push_back(Region(22, 10, dynamicsWorld, &terrainManager, 10, 10));
+        //loadedRegions.push_back(Region(22, 11, dynamicsWorld, &terrainManager, 10, 10));
+        //loadedRegions.push_back(Region(21, 11, dynamicsWorld, &terrainManager, 10, 10));
     }
 
     // terrain.LoadTerrainTile(21, 10, &testTile);
