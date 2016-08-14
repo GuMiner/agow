@@ -97,12 +97,15 @@
     <ClInclude Include="Data\ImageTexture.h" />
     <ClInclude Include="Data\Model.h" />
     <ClInclude Include="Data\RenderableSentence.h" />
+    <ClInclude Include="Data\TerrainTile.h" />
     <ClInclude Include="Data\TextDataTypes.h" />
     <ClInclude Include="Managers\ConfigManager.h" />
     <ClInclude Include="Managers\FontManager.h" />
     <ClInclude Include="Managers\ImageManager.h" />
     <ClInclude Include="Managers\ModelManager.h" />
+    <ClInclude Include="Managers\RegionManager.h" />
     <ClInclude Include="Managers\ShaderManager.h" />
+    <ClInclude Include="Managers\TerrainManager.h" />
     <ClInclude Include="Math\MathOps.h" />
     <ClInclude Include="Math\MatrixOps.h" />
     <ClInclude Include="Math\PhysicsOps.h" />
@@ -111,7 +114,6 @@
     <ClInclude Include="Region.h" />
     <ClInclude Include="Scenery.h" />
     <ClInclude Include="Statistics.h" />
-    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Utils\Constants.h" />
     <ClInclude Include="Utils\ConversionUtils.h" />
     <ClInclude Include="Utils\ImageUtils.h" />
@@ -132,7 +134,9 @@
     <ClCompile Include="Managers\FontManager.cpp" />
     <ClCompile Include="Managers\ImageManager.cpp" />
     <ClCompile Include="Managers\ModelManager.cpp" />
+    <ClCompile Include="Managers\RegionManager.cpp" />
     <ClCompile Include="Managers\ShaderManager.cpp" />
+    <ClCompile Include="Managers\TerrainManager.cpp" />
     <ClCompile Include="Math\MathOps.cpp" />
     <ClCompile Include="Math\MatrixOps.cpp" />
     <ClCompile Include="Math\PhysicsOps.cpp" />
@@ -141,7 +145,6 @@
     <ClCompile Include="Region.cpp" />
     <ClCompile Include="Scenery.cpp" />
     <ClCompile Include="Statistics.cpp" />
-    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Utils\Constants.cpp" />
     <ClCompile Include="Utils\ConversionUtils.cpp" />
     <ClCompile Include="Utils\ImageUtils.cpp" />

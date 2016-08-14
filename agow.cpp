@@ -41,8 +41,8 @@ PhysicsOps agow::PhysicsOp;
 agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       shaderManager(), imageManager(), modelManager(&imageManager), 
+      regionManager(&shaderManager, "ContourTiler/rasters", 100, 1000, vec::vec2i(5, 17), vec::vec2i(40, 52)), // All pulled from the Contour tiler, TODO move to config
       scenery(&imageManager),
-      region(&shaderManager, "ContourTiler/rasters", 100, 1000, 10, 10), // All pulled from the Contour tiler.
       viewer()
 {
 }
@@ -60,7 +60,7 @@ Constants::Status agow::LoadPhysics()
 void agow::UnloadPhysics()
 {
     // Delete our test data.
-    region.CleanupRegion(physics.DynamicsWorld);
+    regionManager.CleanupPhysics(physics.DynamicsWorld);
 
     for (btRigidBody* rigidBody : testCubes.rigidBodies)
     {
@@ -218,8 +218,8 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_STATS;
     }
 
-    Logger::Log("Terrain basics loading...");
-    if (!region.LoadBasics())
+    Logger::Log("Region graphics loading...");
+    if (!regionManager.InitializeGraphics())
     {
         return Constants::Status::BAD_TERRAIN;
     }
@@ -303,7 +303,7 @@ void agow::Update(float currentGameTime)
         wasPressed = false;
     }
 
-    region.UpdateVisibleRegion(viewer.GetViewPosition(), physics.DynamicsWorld);
+    regionManager.UpdateVisibleRegion(viewer.GetViewPosition(), physics.DynamicsWorld);
 
     // Update useful statistics that are fancier than the standard GUI
     statistics.UpdateRunTime(currentGameTime);
@@ -323,8 +323,8 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     // Render the scenery
     scenery.Render(viewMatrix, projectionMatrix);
 
-    // Render our ground.
-    region.RenderRegion(projectionMatrix);
+    // Render our ground, and any derivative items from that.
+    regionManager.RenderRegions(projectionMatrix);
 
     // Render all the moving objects
     for (unsigned int i = 0; i < testCubes.rigidBodies.size(); i++)
@@ -332,10 +332,6 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
         btRigidBody* body = testCubes.rigidBodies[i];
         vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(body);
         mvMatrix = mvMatrix * MatrixOps::Scale(vec::vec3(1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f));
-        if (BasicPhysics::GetBodyPosition(body).z < -20.0f)
-        {
-            BasicPhysics::Warp(body, vec::vec3(MathOps::Rand() * 800.0f, MathOps::Rand() * 800.0f, 1000.0f), vec::vec3(0.0f));
-        }
 
         modelManager.RenderModel(projectionMatrix, testCubes.modelId, mvMatrix, false);
     }

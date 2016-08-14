@@ -8,13 +8,13 @@
 #include "Managers\FontManager.h"
 #include "Managers\ImageManager.h"
 #include "Managers\ModelManager.h"
+#include "Managers\RegionManager.h"
 #include "Managers\ShaderManager.h"
 #include "Math\MathOps.h"
 #include "Math\PhysicsOps.h"
 #include "Utils\Constants.h"
 
 #include "BasicPhysics.h"
-#include "Region.h"
 #include "Scenery.h"
 #include "Statistics.h"
 #include "Viewer.h"
@@ -31,6 +31,7 @@ class agow
     FontManager fontManager;
     ImageManager imageManager;
     ModelManager modelManager;
+    RegionManager regionManager;
     ShaderManager shaderManager;
 
     // Game data
@@ -40,7 +41,6 @@ class agow
     Scenery scenery;
 
     // TEST DATA
-    Region region;
     PhysicalModelSet testCubes;
     
     // Physics setup.

@@ -69,8 +69,13 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="BasicPhysics.cpp" />
-    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Region.cpp" />
+    <ClCompile Include="Managers\RegionManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\TerrainManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -151,8 +156,16 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="BasicPhysics.h" />
-    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Region.h" />
+    <ClInclude Include="Managers\RegionManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\TerrainManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Data\TerrainTile.h">
+      <Filter>Data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Managers">

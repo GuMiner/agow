@@ -1,21 +1,21 @@
 #include <limits>
 #include <sstream>
 #include <stb\stb_image.h>
-#include "Terrain.h"
+#include "TerrainManager.h"
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
 
-Terrain::Terrain(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileSize)
+TerrainManager::TerrainManager(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileSize)
     : shaderManager(shaderManager), rootFolder(terrainRootFolder), maxTileSideCount(maxTileSize), tileSize(tileSize)
 {
 }
 
-int Terrain::GetTileSize() const
+int TerrainManager::GetTileSize() const
 {
     return tileSize;
 }
 
-bool Terrain::LoadBasics()
+bool TerrainManager::LoadBasics()
 {
     if (!shaderManager->CreateShaderProgramWithTesselation("terrainRender", &terrainRenderProgram))
     {
@@ -30,12 +30,12 @@ bool Terrain::LoadBasics()
     return true;
 }
 
-int Terrain::GetTileId(int x, int y) const
+int TerrainManager::GetTileId(int x, int y) const
 {
     return x + y * maxTileSideCount;
 }
 
-GLuint Terrain::CreateHeightmapTexture(TerrainTile* tile)
+GLuint TerrainManager::CreateHeightmapTexture(TerrainTile* tile)
 {
     GLuint newTextureId;
     glGenTextures(1, &newTextureId);
@@ -52,7 +52,7 @@ GLuint Terrain::CreateHeightmapTexture(TerrainTile* tile)
     return newTextureId;
 }
 
-bool Terrain::LoadTerrainTile(int x, int y, TerrainTile** tile)
+bool TerrainManager::LoadTerrainTile(int x, int y, TerrainTile** tile)
 {
     // Load from cache if we can.
     int terrainId = GetTileId(x, y);
@@ -90,7 +90,6 @@ bool Terrain::LoadTerrainTile(int x, int y, TerrainTile** tile)
         }
     }
 
-    // TODO use the other image components to store useful data.Also save out the modified raw image accordingly.
     newTile->heightmapTextureId = CreateHeightmapTexture(newTile);
 
     // After saving to OpenGL, scale accordingly.
@@ -108,7 +107,7 @@ bool Terrain::LoadTerrainTile(int x, int y, TerrainTile** tile)
     return true;
 }
 
-void Terrain::RenderTile(int x, int y, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix)
+void TerrainManager::RenderTile(int x, int y, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix)
 {
     int tileId = GetTileId(x, y);
     if (terrainTiles.find(tileId) == terrainTiles.end())
@@ -130,7 +129,7 @@ void Terrain::RenderTile(int x, int y, const vec::mat4& projectionMatrix, const 
     glDrawArraysInstanced(GL_PATCHES, 0, 4, tileSize * tileSize);
 }
 
-Terrain::~Terrain()
+TerrainManager::~TerrainManager()
 {
     // Cleanup any allocated terrain tiles.
     for (auto iter = terrainTiles.begin(); iter != terrainTiles.end(); iter++)

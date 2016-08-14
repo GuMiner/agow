@@ -15,6 +15,8 @@ public:
     static float ViewRotateUpFactor;
     static float ViewRotateAroundFactor;
 
+    static int TerrainSize;
+
     PhysicsConfig(const char* configName);
 };
 

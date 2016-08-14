@@ -1,28 +1,27 @@
 #pragma once
 #include <Bullet\btBulletDynamicsCommon.h>
 #include <Bullet\BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
+#include <string>
+#include "Data\TerrainTile.h"
+#include "Managers\TerrainManager.h"
 #include "Math\Vec.h"
-#include "Terrain.h"
 
 // Defines how to display our visible game region.
 class Region
 {
+    // TODO use these actually.
     int subdivisions;
     int renderDistance;
 
-    Terrain terrain;
+    TerrainTile* tile;
+    btRigidBody* heightmap;
 
-    TerrainTile* testTile;
-    btRigidBody* testBody;
+    void CreateHeightmap(btDynamicsWorld* dynamicsWorld);
 
 public:
-    Region(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileSize, int subdivisions, int renderDistance);
-
-    // Loads basic regional settings, such as shaders, that are independent of the current position and physics.
-    bool LoadBasics();
-
-    void UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorld* dynamicsWorld);
-    void RenderRegion(const vec::mat4& projectionMatrix);
+    Region(int x, int y, btDynamicsWorld* dynamicsWorld, TerrainManager* terrainManager, int subdivisions, int renderDistance);
+    
+    void RenderRegion(TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const;
 
     void CleanupRegion(btDynamicsWorld* dynamicsWorld);
     virtual ~Region();

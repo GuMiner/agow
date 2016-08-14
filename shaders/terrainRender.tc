@@ -14,8 +14,7 @@ out TCS_OUT
 
 void main(void)
 {
-    int invocationId = gl_InvocationID;
-    if (invocationId == 0)
+    if (gl_InvocationID == 0)
     {
         // We never have an enormous height difference, so using the simplest tessellation factor works best.
         gl_TessLevelOuter[0] = 1;
@@ -27,7 +26,7 @@ void main(void)
     }
     
     // Pass-through our position and texture coordinate
-    gl_out[invocationId].gl_Position = gl_in[invocationId].gl_Position;
-    tcs_out[invocationId].tc = tcs_in[invocationId].tc;
+    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+    tcs_out[gl_InvocationID].tc = tcs_in[gl_InvocationID].tc;
 }
 

@@ -1,60 +1,53 @@
 #include "Region.h"
+#include "Config\PhysicsConfig.h"
 #include "Math\MatrixOps.h"
 
-Region::Region(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileSize, int subdivisions, int renderDistance)
-    : terrain(shaderManager, terrainRootFolder, maxTileSize, tileSize), subdivisions(subdivisions), renderDistance(renderDistance)
+Region::Region(int x, int y, btDynamicsWorld* dynamicsWorld, TerrainManager* terrainManager, int subdivisions, int renderDistance)
+    : subdivisions(subdivisions), renderDistance(renderDistance)
 {
-    testTile = nullptr;
+    terrainManager->LoadTerrainTile(x, y, &tile);
+    CreateHeightmap(dynamicsWorld);
 }
 
-// Loads basic regional settings, such as shaders, that are independent of the current position and physics.
-bool Region::LoadBasics()
+
+void Region::CreateHeightmap(btDynamicsWorld* dynamicsWorld)
 {
-    return terrain.LoadBasics();
+    btHeightfieldTerrainShape* heighfield = new btHeightfieldTerrainShape(
+        PhysicsConfig::TerrainSize, PhysicsConfig::TerrainSize, tile->heightmap, 900.0f, 2, true, false);
+    heighfield->setMargin(2.0f);
+
+    // Position the heightfield so that it's not repositioned incorrectly.
+    btTransform pos;
+    pos.setIdentity();
+    pos.setOrigin(btVector3(
+        (tile->x + 0.5f) * PhysicsConfig::TerrainSize,
+        (tile->y + 0.5f) * PhysicsConfig::TerrainSize, 450.0f - 2.0f));
+
+    btDefaultMotionState *motionState = new btDefaultMotionState(pos);
+    btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, heighfield);
+
+    btTransform transform;
+    btVector3 min, max;
+
+    heighfield->getAabb(transform, min, max);
+    heightmap = new btRigidBody(ground);
+    dynamicsWorld->addRigidBody(heightmap);
 }
 
-void Region::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorld* dynamicsWorld)
+void Region::RenderRegion(TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const
 {
-    // TODO this is definitely going to be dynamic.
-    if (testTile == nullptr)
-    {
-        terrain.LoadTerrainTile(21, 10, &testTile);
-
-        // TODO config file.
-        const int heightmapSize = 1000;
-
-        btHeightfieldTerrainShape* heighfield = new btHeightfieldTerrainShape(heightmapSize, heightmapSize, testTile->heightmap, 900.0f, 2, true, false);
-        heighfield->setMargin(2.0f);
-
-        // Position the heightfield so that it's not repositioned incorrectly.
-        btTransform pos;
-        pos.setIdentity();
-        pos.setOrigin(btVector3((testTile->x + 0.5f) * terrain.GetTileSize(), (testTile->y + 0.5f) * terrain.GetTileSize(), 450.0f - 2.0f));
-
-        btDefaultMotionState *motionState = new btDefaultMotionState(pos);
-        btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, heighfield);
-
-        btTransform transform;
-        btVector3 min, max;
-
-        heighfield->getAabb(transform, min, max);
-        testBody = new btRigidBody(ground);
-        dynamicsWorld->addRigidBody(testBody);
-    }
-}
-
-void Region::RenderRegion(const vec::mat4& projectionMatrix)
-{
-    vec::mat4 mvMatrix = MatrixOps::Translate(testTile->x * terrain.GetTileSize(), testTile->y * terrain.GetTileSize(), 0);
-    terrain.RenderTile(testTile->x, testTile->y, projectionMatrix, mvMatrix);
+    vec::mat4 mvMatrix = MatrixOps::Translate(
+        (float)(tile->x * PhysicsConfig::TerrainSize),
+        (float)(tile->y * PhysicsConfig::TerrainSize), 0);
+    terrainManager->RenderTile(tile->x, tile->y, projectionMatrix, mvMatrix);
 }
 
 void Region::CleanupRegion(btDynamicsWorld* dynamicsWorld)
 {
-    dynamicsWorld->removeRigidBody(testBody);
-    delete testBody->getCollisionShape();
-    delete testBody->getMotionState();
-    delete testBody;
+    dynamicsWorld->removeRigidBody(heightmap);
+    delete heightmap->getCollisionShape();
+    delete heightmap->getMotionState();
+    delete heightmap;
 }
 
 Region::~Region()
