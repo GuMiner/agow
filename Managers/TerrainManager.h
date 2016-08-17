@@ -30,6 +30,7 @@ class TerrainManager
 public:
     TerrainManager(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileSize);
     
+	static const int Subdivisions = 10;
     int GetTileSize() const;
 
     // Loads generic OpenGL functionality needed.

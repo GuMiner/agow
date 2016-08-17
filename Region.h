@@ -9,19 +9,20 @@
 // Defines how to display our visible game region.
 class Region
 {
-    // TODO use these actually.
+	vec::vec2i pos;
     int subdivisions;
-    int renderDistance;
 
-    TerrainTile* tile;
+    TerrainTile* regionTile;
     btRigidBody* heightmap;
 
     void CreateHeightmap(btDynamicsWorld* dynamicsWorld);
 
 public:
-    Region(int x, int y, btDynamicsWorld* dynamicsWorld, TerrainManager* terrainManager, int subdivisions, int renderDistance);
-    
-    void RenderRegion(TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const;
+	Region();
+    Region(vec::vec2i pos, btDynamicsWorld* dynamicsWorld, TerrainManager* terrainManager, int subdivisions);
+	vec::vec2i GetPos() const;
+
+    void RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const;
 
     void CleanupRegion(btDynamicsWorld* dynamicsWorld);
     virtual ~Region();

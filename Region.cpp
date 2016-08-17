@@ -2,26 +2,33 @@
 #include "Config\PhysicsConfig.h"
 #include "Math\MatrixOps.h"
 
-Region::Region(int x, int y, btDynamicsWorld* dynamicsWorld, TerrainManager* terrainManager, int subdivisions, int renderDistance)
-    : subdivisions(subdivisions), renderDistance(renderDistance)
+Region::Region()
+{}
+
+Region::Region(vec::vec2i pos, btDynamicsWorld* dynamicsWorld, TerrainManager* terrainManager, int subdivisions)
+    : pos(pos), subdivisions(subdivisions)
 {
-    terrainManager->LoadTerrainTile(x, y, &tile);
+    terrainManager->LoadTerrainTile(pos.x, pos.y, &regionTile);
     CreateHeightmap(dynamicsWorld);
 }
 
+vec::vec2i Region::GetPos() const
+{
+	return pos;
+}
 
 void Region::CreateHeightmap(btDynamicsWorld* dynamicsWorld)
 {
     btHeightfieldTerrainShape* heighfield = new btHeightfieldTerrainShape(
-        PhysicsConfig::TerrainSize, PhysicsConfig::TerrainSize, tile->heightmap, 900.0f, 2, true, false);
+        PhysicsConfig::TerrainSize, PhysicsConfig::TerrainSize, regionTile->heightmap, 900.0f, 2, true, false);
     heighfield->setMargin(2.0f);
 
     // Position the heightfield so that it's not repositioned incorrectly.
     btTransform pos;
     pos.setIdentity();
     pos.setOrigin(btVector3(
-        (tile->x + 0.5f) * PhysicsConfig::TerrainSize,
-        (tile->y + 0.5f) * PhysicsConfig::TerrainSize, 450.0f - 2.0f));
+        (regionTile->x + 0.5f) * PhysicsConfig::TerrainSize,
+        (regionTile->y + 0.5f) * PhysicsConfig::TerrainSize, 450.0f - 2.0f));
 
     btDefaultMotionState *motionState = new btDefaultMotionState(pos);
     btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, heighfield);
@@ -34,12 +41,12 @@ void Region::CreateHeightmap(btDynamicsWorld* dynamicsWorld)
     dynamicsWorld->addRigidBody(heightmap);
 }
 
-void Region::RenderRegion(TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const
+void Region::RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const
 {
     vec::mat4 mvMatrix = MatrixOps::Translate(
-        (float)(tile->x * PhysicsConfig::TerrainSize),
-        (float)(tile->y * PhysicsConfig::TerrainSize), 0);
-    terrainManager->RenderTile(tile->x, tile->y, projectionMatrix, mvMatrix);
+        (float)(regionTile->x * PhysicsConfig::TerrainSize),
+        (float)(regionTile->y * PhysicsConfig::TerrainSize), 0);
+    terrainManager->RenderTile(regionTile->x, regionTile->y, projectionMatrix, mvMatrix);
 }
 
 void Region::CleanupRegion(btDynamicsWorld* dynamicsWorld)

@@ -115,6 +115,18 @@ namespace vec
     typedef vec3T<float> vec3;
     typedef vec3T<int> vec3i;
 
+	// Comparer for the integer variant of vec3T to support for sets and maps/
+	class vec2iComparer
+	{
+	public:
+		bool operator()(const vec2i& lhs, const vec2i& rhs) const
+		{
+			// Incorrect, but good enough for our purposes.
+			const int maxTileSize = 100000;
+			return lhs.x + lhs.y * maxTileSize > rhs.x + rhs.y * maxTileSize;
+		}
+	};
+
     // Comparer for the integer variant of vec3T, to support adding in std sets and maps.
     class vec3iComparer
     {

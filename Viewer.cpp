@@ -4,7 +4,7 @@
 
 Viewer::Viewer()
 {
-    viewPosition = vec::vec3(21500, 10500, 150);
+    viewPosition = vec::vec3(21000, 21000, 200);
     viewOrientation = vec::quaternion(0.70f, -0.11f, -0.11f, 0.70f);
     viewOrientation.normalize();
 
