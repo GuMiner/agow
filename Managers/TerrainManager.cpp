@@ -5,8 +5,8 @@
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
 
-TerrainManager::TerrainManager(ShaderManager* shaderManager, std::string terrainRootFolder, int maxTileSize, int tileSize)
-    : shaderManager(shaderManager), rootFolder(terrainRootFolder), maxTileSideCount(maxTileSize), tileSize(tileSize)
+TerrainManager::TerrainManager(ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize)
+    : shaderManager(shaderManager), rootFolder(terrainRootFolder), tileSize(tileSize)
 {
 }
 
@@ -30,11 +30,6 @@ bool TerrainManager::LoadBasics()
     return true;
 }
 
-int TerrainManager::GetTileId(int x, int y) const
-{
-    return x + y * maxTileSideCount;
-}
-
 GLuint TerrainManager::CreateHeightmapTexture(TerrainTile* tile)
 {
     GLuint newTextureId;
@@ -52,11 +47,10 @@ GLuint TerrainManager::CreateHeightmapTexture(TerrainTile* tile)
     return newTextureId;
 }
 
-bool TerrainManager::LoadTerrainTile(int x, int y, TerrainTile** tile)
+bool TerrainManager::LoadTerrainTile(vec::vec2i pos, TerrainTile** tile)
 {
     // Load from cache if we can.
-    int terrainId = GetTileId(x, y);
-    auto iterator = terrainTiles.find(terrainId);
+    auto iterator = terrainTiles.find(pos);
     if (iterator != terrainTiles.end())
     {
         *tile = iterator->second;
@@ -65,16 +59,14 @@ bool TerrainManager::LoadTerrainTile(int x, int y, TerrainTile** tile)
 
     // Else, perform a full load.
     std::stringstream tileName;
-    tileName << rootFolder << "/" << y << "/" << x << ".png";
+    tileName << rootFolder << "/" << pos.y << "/" << pos.x << ".png";
 
     TerrainTile* newTile = new TerrainTile();
-    newTile->x = x;
-    newTile->y = y;
 
     int width, height;
     if (!ImageUtils::GetRawImage(tileName.str().c_str(), &newTile->rawImage, &width, &height) || width != tileSize || height != tileSize)
     {
-        Logger::Log("Failed to load tile [", x, ", ", y, "] because of bad image/width/height: [", width, ", ", height, ".");
+        Logger::Log("Failed to load tile [", pos.x, ", ", pos.y, "] because of bad image/width/height: [", width, ", ", height, ".");
         return false;
     }
 
@@ -102,24 +94,25 @@ bool TerrainManager::LoadTerrainTile(int x, int y, TerrainTile** tile)
         }
     }
 
-    terrainTiles[terrainId] = newTile;
+    terrainTiles[pos] = newTile;
     *tile = newTile;
+	Logger::Log("Loaded region tile (", pos.x, ", ", pos.y, ") succeeded.");
+
     return true;
 }
 
-void TerrainManager::RenderTile(int x, int y, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix)
+void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix)
 {
-    int tileId = GetTileId(x, y);
-    if (terrainTiles.find(tileId) == terrainTiles.end())
+    if (terrainTiles.find(pos) == terrainTiles.end())
     {
-        Logger::LogWarn("Attempted to render a terrain tile not loaded with [", x, ", ", y, "].");
+        Logger::LogWarn("Attempted to render a terrain tile not loaded with [", pos.x, ", ", pos.y, "].");
         return; 
     }
 
     glUseProgram(terrainRenderProgram);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, terrainTiles[tileId]->heightmapTextureId);
+    glBindTexture(GL_TEXTURE_2D, terrainTiles[pos]->heightmapTextureId);
     glUniform1i(terrainTexLocation, 0);
 
     glUniformMatrix4fv(projLocation, 1, GL_FALSE, projectionMatrix);
@@ -129,14 +122,25 @@ void TerrainManager::RenderTile(int x, int y, const vec::mat4& projectionMatrix,
     glDrawArraysInstanced(GL_PATCHES, 0, 4, tileSize * tileSize);
 }
 
+void TerrainManager::CleanupTerrainTile(vec::vec2i pos)
+{
+	glDeleteTextures(1, &terrainTiles[pos]->heightmapTextureId);
+	ImageUtils::FreeRawImage(terrainTiles[pos]->rawImage);
+	delete[] terrainTiles[pos]->heightmap;
+	delete terrainTiles[pos];	
+}
+
+void TerrainManager::UnloadTerrainTile(vec::vec2i pos)
+{
+	CleanupTerrainTile(pos);
+	terrainTiles.erase(pos);
+}
+
 TerrainManager::~TerrainManager()
 {
     // Cleanup any allocated terrain tiles.
     for (auto iter = terrainTiles.begin(); iter != terrainTiles.end(); iter++)
     {
-        glDeleteTextures(1, &iter->second->heightmapTextureId);
-        ImageUtils::FreeRawImage(iter->second->rawImage);
-        delete[] iter->second->heightmap;
-        delete iter->second;
+		CleanupTerrainTile(iter->first);
     }
 }

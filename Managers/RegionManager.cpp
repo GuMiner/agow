@@ -1,9 +1,8 @@
 #include "Utils\Logger.h"
 #include "RegionManager.h"
 
-RegionManager::RegionManager(ShaderManager* shaderManager, std::string terrainRootFolder,
-	int maxTileCount, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance)
-	: terrainManager(shaderManager, terrainRootFolder, maxTileCount, tileSize),
+RegionManager::RegionManager(ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance)
+	: terrainManager(shaderManager, terrainRootFolder, tileSize),
 	  loadedRegions(), visibleTiles(), tileViewDistance(tileViewDistance)
 {
 	this->min = min * TerrainManager::Subdivisions;
@@ -62,15 +61,30 @@ void RegionManager::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynam
 	}
 
 	Logger::Log("Center (", centerTile.x, ", ", centerTile.y, "): visible tile results: found a total of ", visibleTiles.size(), " tiles in ", visibleRegions.size(), " regions.");
-	for (const vec::vec2i& visibleRegion : visibleRegions)
+	for (const vec::vec2i visibleRegion : visibleRegions)
 	{
 		if (loadedRegions.find(visibleRegion) == loadedRegions.end())
 		{
-			loadedRegions[visibleRegion] = Region(visibleRegion, dynamicsWorld, &terrainManager, TerrainManager::Subdivisions);
+			loadedRegions[visibleRegion] = new Region(visibleRegion, dynamicsWorld, &terrainManager, TerrainManager::Subdivisions);
 		}
 	}
 
-	// TODO unload regions if we don't anticipate reentering that area to save on memory & GPU resources.
+	// Remove regions we no longer need to keep in memory as they're very resource intensive objects.
+	std::vector<vec::vec2i> regionsToRemove;
+	for (std::pair<const vec::vec2i, Region*>& region : loadedRegions)
+	{
+		if (visibleRegions.find(region.first) == visibleRegions.end())
+		{
+			region.second->CleanupRegion(&terrainManager, dynamicsWorld);
+			delete region.second;
+			regionsToRemove.push_back(region.first);
+		}
+	}
+
+	for (const vec::vec2i cleanedRegion : regionsToRemove)
+	{
+		loadedRegions.erase(cleanedRegion);
+	}
 }
 
 void RegionManager::RenderRegions(const vec::mat4& projectionMatrix)
@@ -83,7 +97,7 @@ void RegionManager::RenderRegions(const vec::mat4& projectionMatrix)
 		vec::vec2i region = visibleTile / TerrainManager::Subdivisions;
 		if (renderedRegions.find(region) == renderedRegions.end())
 		{
-			loadedRegions[region].RenderRegion(visibleTile, &terrainManager, projectionMatrix);
+			loadedRegions[region]->RenderRegion(visibleTile, &terrainManager, projectionMatrix);
 			renderedRegions.insert(region);
 		}
     }
@@ -91,9 +105,10 @@ void RegionManager::RenderRegions(const vec::mat4& projectionMatrix)
 
 void RegionManager::CleanupPhysics(btDynamicsWorld* dynamicsWorld)
 {
-    for (std::pair<const vec::vec2i, Region>& region : loadedRegions)
+    for (std::pair<const vec::vec2i, Region*>& region : loadedRegions)
     {
-		region.second.CleanupRegion(dynamicsWorld);
+		region.second->CleanupRegion(&terrainManager, dynamicsWorld);
+		delete region.second;
     }
 }
 

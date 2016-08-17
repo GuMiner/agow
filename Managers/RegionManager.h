@@ -12,7 +12,7 @@
 class RegionManager
 {
     TerrainManager terrainManager;
-    std::map<vec::vec2i, Region, vec::vec2iComparer> loadedRegions;
+    std::map<vec::vec2i, Region*, vec::vec2iComparer> loadedRegions;
 
 	// Each region is subdivided into 100 tiles.
 	std::vector<vec::vec2i> visibleTiles;
@@ -27,8 +27,7 @@ class RegionManager
 	void ComputeVisibleTiles(vec::vec2i centerTile, std::vector<vec::vec2i>* visibleTiles) const;
 
 public:
-    RegionManager(ShaderManager* shaderManager, std::string terrainRootFolder, 
-        int maxTileCount, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance);
+    RegionManager(ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance);
     bool InitializeGraphics();
     
     void UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorld* dynamicsWorld);

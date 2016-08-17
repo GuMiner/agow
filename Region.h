@@ -18,13 +18,12 @@ class Region
     void CreateHeightmap(btDynamicsWorld* dynamicsWorld);
 
 public:
-	Region();
     Region(vec::vec2i pos, btDynamicsWorld* dynamicsWorld, TerrainManager* terrainManager, int subdivisions);
 	vec::vec2i GetPos() const;
 
     void RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const;
 
-    void CleanupRegion(btDynamicsWorld* dynamicsWorld);
+    void CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld);
     virtual ~Region();
 };
 

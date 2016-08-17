@@ -2,13 +2,10 @@
 #include "Config\PhysicsConfig.h"
 #include "Math\MatrixOps.h"
 
-Region::Region()
-{}
-
 Region::Region(vec::vec2i pos, btDynamicsWorld* dynamicsWorld, TerrainManager* terrainManager, int subdivisions)
     : pos(pos), subdivisions(subdivisions)
 {
-    terrainManager->LoadTerrainTile(pos.x, pos.y, &regionTile);
+    terrainManager->LoadTerrainTile(pos, &regionTile);
     CreateHeightmap(dynamicsWorld);
 }
 
@@ -24,13 +21,13 @@ void Region::CreateHeightmap(btDynamicsWorld* dynamicsWorld)
     heighfield->setMargin(2.0f);
 
     // Position the heightfield so that it's not repositioned incorrectly.
-    btTransform pos;
-    pos.setIdentity();
-    pos.setOrigin(btVector3(
-        (regionTile->x + 0.5f) * PhysicsConfig::TerrainSize,
-        (regionTile->y + 0.5f) * PhysicsConfig::TerrainSize, 450.0f - 2.0f));
+    btTransform heightfieldPos;
+	heightfieldPos.setIdentity();
+	heightfieldPos.setOrigin(btVector3(
+        (pos.x + 0.5f) * PhysicsConfig::TerrainSize,
+        (pos.y + 0.5f) * PhysicsConfig::TerrainSize, 450.0f - 2.0f));
 
-    btDefaultMotionState *motionState = new btDefaultMotionState(pos);
+    btDefaultMotionState *motionState = new btDefaultMotionState(heightfieldPos);
     btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, heighfield);
 
     btTransform transform;
@@ -44,13 +41,14 @@ void Region::CreateHeightmap(btDynamicsWorld* dynamicsWorld)
 void Region::RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const
 {
     vec::mat4 mvMatrix = MatrixOps::Translate(
-        (float)(regionTile->x * PhysicsConfig::TerrainSize),
-        (float)(regionTile->y * PhysicsConfig::TerrainSize), 0);
-    terrainManager->RenderTile(regionTile->x, regionTile->y, projectionMatrix, mvMatrix);
+        (float)(pos.x * PhysicsConfig::TerrainSize),
+        (float)(pos.y * PhysicsConfig::TerrainSize), 0);
+    terrainManager->RenderTile(pos, tilePos, projectionMatrix, mvMatrix);
 }
 
-void Region::CleanupRegion(btDynamicsWorld* dynamicsWorld)
+void Region::CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld)
 {
+	terrainManager->UnloadTerrainTile(pos);
     dynamicsWorld->removeRigidBody(heightmap);
     delete heightmap->getCollisionShape();
     delete heightmap->getMotionState();
