@@ -17,7 +17,7 @@ void main(void)
         vec4(-terrainCellHalfSize,  terrainCellHalfSize, 0.0, 1.0),
         vec4( terrainCellHalfSize,  terrainCellHalfSize, 0.0, 1.0));
     
-    // This is 100, not 1k, because the regions are subdivided.
+    // This is 100, not 1k, because the regions are subdivided, +1 to avoid line artifacts.
     const int textureSize = 100;
     int x = gl_InstanceID % textureSize;
     int y = gl_InstanceID / textureSize;
@@ -25,7 +25,7 @@ void main(void)
     
     // Figure out the texture coordinate by taking the position on the height texture and then the position in the cell.
 	// We add a pixel upon division to avoid seam errors.
-    vs_out.tc = (offset + (vertices[gl_VertexID].xy + vec2(terrainCellHalfSize)) / (2 * terrainCellHalfSize)) / float(textureSize + 1);
+    vs_out.tc = (offset + (vertices[gl_VertexID].xy + vec2(terrainCellHalfSize)) / (2 * terrainCellHalfSize)) / float(textureSize);
     
     // Move the terrain cells appropriately.
     gl_Position = vertices[gl_VertexID] + vec4(2 * terrainCellHalfSize * float(x), 2 * terrainCellHalfSize * float(y), 0.0, 0.0);

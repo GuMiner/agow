@@ -86,7 +86,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 
 	if (loadSubtiles && !terrainTiles[pos]->loadedSubtiles)
 	{
-		int subSize = GetSubTileSize() + 1;
+		int subSize = GetSubTileSize();// +1;
 		for (int i = 0; i < TerrainManager::Subdivisions; i++)
 		{
 			for (int j = 0; j < TerrainManager::Subdivisions; j++)
@@ -102,16 +102,15 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 						int xReal = x + i * GetSubTileSize();
 						int yReal = y + j * GetSubTileSize();
 						vec::vec2i tileOffset = vec::vec2i(0, 0);
-
-						if (x == subSize - 1 || y == subSize - 1)
-						{
-							continue;
-						}
-						/*
+						
 						// If x == subSize - 1, we need to pull from the X+ terrain tile.
 						// If y == subSize - 1, we need to pull from the Y+ terrain tile.
 						// If both == subSize - 1, as that pixel is "unimportant", we ignore.
-						if (x == subSize - 1 && y != subSize - 1)
+						/*if (x != subSize - 1 && y != subSize - 1)
+						{
+							// Do nothing, but prevet fall-through and recursive generation.
+						}
+						else if (x == subSize - 1 && y != subSize - 1)
 						{
 							xReal = 0;
 							tileOffset = vec::vec2i(1, 0);
@@ -127,8 +126,8 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 							// Pull the value from x = subSize - 2, y = subSize - 2;, as we don't need it really.
 							heightmap[x + y * subSize] = heightmap[(x - 1) + (y - 1) * subSize];
 							continue;
-						}*/
-
+						}
+						*/
 						// std::cout << i << " " << j << " " << x << " " << y << " " << tileOffset.x << " " << tileOffset.y << " " << xReal << " " << yReal << " " << pos.x << " " << pos.y << std::endl;
 						heightmap[x + y * subSize] =
 							(float)((unsigned short)terrainTiles[pos + tileOffset]->rawImage[(xReal + yReal * tileSize) * 4] +
@@ -146,7 +145,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 				{
 					for (int y = 0; y < GetSubTileSize(); y++)
 					{
-						realHeightmap[x + y * GetSubTileSize()] = heightmap[x + y * subSize];
+						realHeightmap[x + y * GetSubTileSize()] = scale * heightmap[x + y * subSize];
 					}
 				}
 
@@ -201,7 +200,7 @@ void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, c
     glUniformMatrix4fv(mvLocation, 1, GL_FALSE, mvMatrix);
 
     glPatchParameteri(GL_PATCH_VERTICES, 4);
-    glDrawArraysInstanced(GL_PATCHES, 0, 4, GetSubTileSize() * GetSubTileSize());
+    glDrawArraysInstanced(GL_PATCHES, 0, 4, std::pow(GetSubTileSize() + 1, 2));
 }
 
 void TerrainManager::CleanupTerrainTile(vec::vec2i pos, bool log)

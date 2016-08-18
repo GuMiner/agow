@@ -67,8 +67,10 @@ void RegionManager::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynam
 	{
 		if (loadedRegions.find(visibleRegion) == loadedRegions.end())
 		{
-			loadedRegions[visibleRegion] = new Region(visibleRegion, dynamicsWorld, &terrainManager, TerrainManager::Subdivisions);
+			loadedRegions[visibleRegion] = new Region(visibleRegion, &terrainManager, TerrainManager::Subdivisions);
 		}
+
+		loadedRegions[visibleRegion]->EnsureHeightmapsLoaded(dynamicsWorld, &visibleTiles);
 	}
 
 	// Remove regions we no longer need to keep in memory as they're very resource intensive objects.
