@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <set>
 #include <map>
 #include <GL/glew.h>
 #include "Data\TerrainTile.h"
@@ -9,6 +10,9 @@
 // Defines loading and displaying a single unit of terrain.
 class TerrainManager
 {
+	vec::vec2i min;
+	vec::vec2i max;
+
     ShaderManager* shaderManager;
     std::string rootFolder;
     int tileSize; // In pixels
@@ -22,13 +26,15 @@ class TerrainManager
     std::map<vec::vec2i, TerrainTile*, vec::vec2iComparer> terrainTiles;
 
     // Given a terrain tile, creates an appropriate heightmap texture for it.
-    GLuint CreateHeightmapTexture(TerrainTile* tile);
+    GLuint CreateHeightmapTexture(int subSize, float* heightmap);
+	bool LoadTileToCache(vec::vec2i pos, bool loadSubtiles);
 
 public:
-    TerrainManager(ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize);
+    TerrainManager(vec::vec2i min, vec::vec2i max, ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize);
     
 	static const int Subdivisions = 10;
     int GetTileSize() const;
+	int GetSubTileSize() const;
 
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();

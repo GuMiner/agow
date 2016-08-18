@@ -41,7 +41,7 @@ PhysicsOps agow::PhysicsOp;
 agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       shaderManager(), imageManager(), modelManager(&imageManager), 
-      regionManager(&shaderManager, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config
+      regionManager(&shaderManager, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 3), // All pulled from the Contour tiler, TODO move to config, make distance ~10
       scenery(&imageManager),
       viewer()
 {

@@ -2,7 +2,7 @@
 #include "RegionManager.h"
 
 RegionManager::RegionManager(ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance)
-	: terrainManager(shaderManager, terrainRootFolder, tileSize),
+	: terrainManager(min, max, shaderManager, terrainRootFolder, tileSize),
 	  loadedRegions(), visibleTiles(), tileViewDistance(tileViewDistance)
 {
 	this->min = min * TerrainManager::Subdivisions;

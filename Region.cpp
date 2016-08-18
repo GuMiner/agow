@@ -16,7 +16,8 @@ vec::vec2i Region::GetPos() const
 
 void Region::CreateHeightmap(btDynamicsWorld* dynamicsWorld)
 {
-    btHeightfieldTerrainShape* heighfield = new btHeightfieldTerrainShape(
+	// TODO -- Load and unload the heightmap based on tiles, not based on regions.
+    /*btHeightfieldTerrainShape* heighfield = new btHeightfieldTerrainShape(
         PhysicsConfig::TerrainSize, PhysicsConfig::TerrainSize, regionTile->heightmap, 900.0f, 2, true, false);
     heighfield->setMargin(2.0f);
 
@@ -35,7 +36,7 @@ void Region::CreateHeightmap(btDynamicsWorld* dynamicsWorld)
 
     heighfield->getAabb(transform, min, max);
     heightmap = new btRigidBody(ground);
-    dynamicsWorld->addRigidBody(heightmap);
+    dynamicsWorld->addRigidBody(heightmap);*/
 }
 
 void Region::RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const
@@ -49,10 +50,10 @@ void Region::RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, co
 void Region::CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld)
 {
 	terrainManager->UnloadTerrainTile(pos);
-    dynamicsWorld->removeRigidBody(heightmap);
+    /*dynamicsWorld->removeRigidBody(heightmap);
     delete heightmap->getCollisionShape();
     delete heightmap->getMotionState();
-    delete heightmap;
+    delete heightmap;*/
 }
 
 Region::~Region()
