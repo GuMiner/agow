@@ -1,3 +1,4 @@
+#include <iostream>
 #include <limits>
 #include <sstream>
 #include <stb\stb_image.h>
@@ -54,11 +55,11 @@ GLuint TerrainManager::CreateHeightmapTexture(int subSize, float* heightmap)
 
 bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 {
-	bool loadOnlySubtiles = false;
+	bool loadedImage = false;
 	if (terrainTiles.find(pos) != terrainTiles.end())
 	{
 		// Tile is already in the cache -- but if we want subtiles to be loaded and they haven't been, continue.
-		loadOnlySubtiles = !terrainTiles[pos]->loadedSubtiles;
+		loadedImage = true;
 		if (terrainTiles[pos]->loadedSubtiles || terrainTiles[pos]->loadedSubtiles == loadSubtiles)
 		{
 			return true;
@@ -70,11 +71,10 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 		terrainTiles[pos]->loadedSubtiles = false;
 	}
 
-	if (!loadOnlySubtiles)
+	if (!loadedImage)
 	{
 		std::stringstream tileName;
 		tileName << rootFolder << "/" << pos.y << "/" << pos.x << ".png";
-
 
 		int width, height;
 		if (!ImageUtils::GetRawImage(tileName.str().c_str(), &terrainTiles[pos]->rawImage, &width, &height) || width != tileSize || height != tileSize)
@@ -87,20 +87,27 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 	if (loadSubtiles && !terrainTiles[pos]->loadedSubtiles)
 	{
 		int subSize = GetSubTileSize() + 1;
-		for (int i = 0; i < tileSize / TerrainManager::Subdivisions; i++)
+		for (int i = 0; i < TerrainManager::Subdivisions; i++)
 		{
-			for (int j = 0; j < tileSize / TerrainManager::Subdivisions; j++)
+			for (int j = 0; j < TerrainManager::Subdivisions; j++)
 			{
 				float* heightmap = new float[subSize * subSize];
 				for (int x = 0; x < subSize; x++)
 				{
 					for (int y = 0; y < subSize; y++)
 					{
+						// heightmap[x + y * subSize] = 0.16f + 0.025f * std::cos(2*3.14159f * x / 100.0f) * std::sin(2*3.14159f * y / 50.0f);
+						
 						// Within our main image.
 						int xReal = x + i * GetSubTileSize();
 						int yReal = y + j * GetSubTileSize();
 						vec::vec2i tileOffset = vec::vec2i(0, 0);
 
+						if (x == subSize - 1 || y == subSize - 1)
+						{
+							continue;
+						}
+						/*
 						// If x == subSize - 1, we need to pull from the X+ terrain tile.
 						// If y == subSize - 1, we need to pull from the Y+ terrain tile.
 						// If both == subSize - 1, as that pixel is "unimportant", we ignore.
@@ -120,8 +127,9 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 							// Pull the value from x = subSize - 2, y = subSize - 2;, as we don't need it really.
 							heightmap[x + y * subSize] = heightmap[(x - 1) + (y - 1) * subSize];
 							continue;
-						}
+						}*/
 
+						// std::cout << i << " " << j << " " << x << " " << y << " " << tileOffset.x << " " << tileOffset.y << " " << xReal << " " << yReal << " " << pos.x << " " << pos.y << std::endl;
 						heightmap[x + y * subSize] =
 							(float)((unsigned short)terrainTiles[pos + tileOffset]->rawImage[(xReal + yReal * tileSize) * 4] +
 								  (((unsigned short)terrainTiles[pos + tileOffset]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
@@ -148,8 +156,6 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 				terrainTiles[pos]->subtiles[vec::vec2i(i, j)] = new SubTile(heightmapTextureId, realHeightmap);
 			}
 		}
-
-		
 
 		terrainTiles[pos]->loadedSubtiles = true;
 	}
@@ -179,6 +185,11 @@ void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, c
         Logger::LogWarn("Attempted to render a terrain tile not loaded with [", pos.x, ", ", pos.y, "].");
         return; 
     }
+	else if (terrainTiles[pos]->subtiles.find(subPos) == terrainTiles[pos]->subtiles.end())
+	{
+		Logger::LogWarn("Attempted to render a subtile that is invalid on [", pos.x, ", ", pos.y, "], subtile [", subPos.x, ", ", subPos.y, "].");
+		return;
+	}
 
     glUseProgram(terrainRenderProgram);
 
@@ -193,7 +204,7 @@ void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, c
     glDrawArraysInstanced(GL_PATCHES, 0, 4, GetSubTileSize() * GetSubTileSize());
 }
 
-void TerrainManager::CleanupTerrainTile(vec::vec2i pos)
+void TerrainManager::CleanupTerrainTile(vec::vec2i pos, bool log)
 {
 	// We need to delete all of the subtiles and then the tile itself.
 	for (std::pair<const vec::vec2i, SubTile*> subTile : terrainTiles[pos]->subtiles)
@@ -204,12 +215,17 @@ void TerrainManager::CleanupTerrainTile(vec::vec2i pos)
 	}
 	
 	ImageUtils::FreeRawImage(terrainTiles[pos]->rawImage);
-	delete terrainTiles[pos];	
+	delete terrainTiles[pos];
+
+	if (log)
+	{
+		Logger::Log("Unloaded tile ", pos.x, ", ", pos.y, ".");
+	}
 }
 
 void TerrainManager::UnloadTerrainTile(vec::vec2i pos)
 {
-	CleanupTerrainTile(pos);
+	CleanupTerrainTile(pos, true);
 	terrainTiles.erase(pos);
 }
 
@@ -218,6 +234,6 @@ TerrainManager::~TerrainManager()
     // Cleanup any allocated terrain tiles.
     for (auto iter = terrainTiles.begin(); iter != terrainTiles.end(); iter++)
     {
-		CleanupTerrainTile(iter->first);
+		CleanupTerrainTile(iter->first, false);
     }
 }

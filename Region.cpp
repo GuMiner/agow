@@ -42,9 +42,9 @@ void Region::CreateHeightmap(btDynamicsWorld* dynamicsWorld)
 void Region::RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const
 {
     vec::mat4 mvMatrix = MatrixOps::Translate(
-        (float)(pos.x * PhysicsConfig::TerrainSize),
-        (float)(pos.y * PhysicsConfig::TerrainSize), 0);
-    terrainManager->RenderTile(pos, tilePos, projectionMatrix, mvMatrix);
+        (float)(tilePos.x * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions)),
+        (float)(tilePos.y * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions)), 0);
+    terrainManager->RenderTile(pos, tilePos - (pos * TerrainManager::Subdivisions), projectionMatrix, mvMatrix);
 }
 
 void Region::CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld)

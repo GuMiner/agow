@@ -45,7 +45,7 @@ public:
     // Renders a tile. *The tile must have been loaded ahead-of-time.*
     void RenderTile(const vec::vec2i pos, const vec::vec2i subPos, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix);
 
-	void CleanupTerrainTile(vec::vec2i pos);
+	void CleanupTerrainTile(vec::vec2i pos, bool log);
 	void UnloadTerrainTile(vec::vec2i pos);
 
     virtual ~TerrainManager();

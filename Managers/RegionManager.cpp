@@ -51,6 +51,8 @@ void RegionManager::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynam
 	}
 
 	lastCenterTile = centerTile;
+
+	visibleTiles.clear();
 	ComputeVisibleTiles(centerTile, &visibleTiles);
 
 	// Load regions we have not loaded yet.
@@ -89,17 +91,10 @@ void RegionManager::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynam
 
 void RegionManager::RenderRegions(const vec::mat4& projectionMatrix)
 {
-	// TODO remove this code to allow region multi-rendering once rendering the selected tile only renders
-	//  that tile.
-	std::set<vec::vec2i, vec::vec2iComparer> renderedRegions;
     for (const vec::vec2i& visibleTile : visibleTiles)
     {
 		vec::vec2i region = visibleTile / TerrainManager::Subdivisions;
-		if (renderedRegions.find(region) == renderedRegions.end())
-		{
-			loadedRegions[region]->RenderRegion(visibleTile, &terrainManager, projectionMatrix);
-			renderedRegions.insert(region);
-		}
+		loadedRegions[region]->RenderRegion(visibleTile, &terrainManager, projectionMatrix);
     }
 }
 
