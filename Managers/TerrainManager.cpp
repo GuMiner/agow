@@ -86,7 +86,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 
 	if (loadSubtiles && !terrainTiles[pos]->loadedSubtiles)
 	{
-		int subSize = GetSubTileSize();// +1;
+		int subSize = GetSubTileSize() + 1;
 		for (int i = 0; i < TerrainManager::Subdivisions; i++)
 		{
 			for (int j = 0; j < TerrainManager::Subdivisions; j++)
@@ -96,8 +96,6 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 				{
 					for (int y = 0; y < subSize; y++)
 					{
-						// heightmap[x + y * subSize] = 0.16f + 0.025f * std::cos(2*3.14159f * x / 100.0f) * std::sin(2*3.14159f * y / 50.0f);
-						
 						// Within our main image.
 						int xReal = x + i * GetSubTileSize();
 						int yReal = y + j * GetSubTileSize();
@@ -106,7 +104,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 						// If x == subSize - 1, we need to pull from the X+ terrain tile.
 						// If y == subSize - 1, we need to pull from the Y+ terrain tile.
 						// If both == subSize - 1, as that pixel is "unimportant", we ignore.
-						/*if (x != subSize - 1 && y != subSize - 1)
+						if (x != subSize - 1 && y != subSize - 1)
 						{
 							// Do nothing, but prevet fall-through and recursive generation.
 						}
@@ -127,8 +125,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 							heightmap[x + y * subSize] = heightmap[(x - 1) + (y - 1) * subSize];
 							continue;
 						}
-						*/
-						// std::cout << i << " " << j << " " << x << " " << y << " " << tileOffset.x << " " << tileOffset.y << " " << xReal << " " << yReal << " " << pos.x << " " << pos.y << std::endl;
+						
 						heightmap[x + y * subSize] =
 							(float)((unsigned short)terrainTiles[pos + tileOffset]->rawImage[(xReal + yReal * tileSize) * 4] +
 								  (((unsigned short)terrainTiles[pos + tileOffset]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
@@ -200,7 +197,7 @@ void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, c
     glUniformMatrix4fv(mvLocation, 1, GL_FALSE, mvMatrix);
 
     glPatchParameteri(GL_PATCH_VERTICES, 4);
-    glDrawArraysInstanced(GL_PATCHES, 0, 4, std::pow(GetSubTileSize() + 1, 2));
+    glDrawArraysInstanced(GL_PATCHES, 0, 4, GetSubTileSize() * GetSubTileSize());
 }
 
 void TerrainManager::CleanupTerrainTile(vec::vec2i pos, bool log)
