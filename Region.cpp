@@ -36,8 +36,8 @@ btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDyn
     btTransform heightfieldPos;
 	heightfieldPos.setIdentity();
 	heightfieldPos.setOrigin(btVector3(
-        (float)(tilePos.x) * PhysicsConfig::TerrainSize / TerrainManager::Subdivisions,
-        (float)(tilePos.y) * PhysicsConfig::TerrainSize / TerrainManager::Subdivisions, 450.0f - 2.0f));
+        (float)(tilePos.x + 0.5f) * PhysicsConfig::TerrainSize / TerrainManager::Subdivisions,
+        (float)(tilePos.y + 0.5f) * PhysicsConfig::TerrainSize / TerrainManager::Subdivisions, 450.0f - 2.0f));
 
     btDefaultMotionState *motionState = new btDefaultMotionState(heightfieldPos);
     btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, heighfield);

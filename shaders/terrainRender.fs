@@ -15,7 +15,7 @@ void main(void)
     const float max = 0.173;
     
     float height = texture(terrainTexture, tc).r;
-    if (int(height * 10000) % 10 == 0)
+    if (int(height * 10000) % 10 == 1)
     {
         color = vec4(0.4f, 0.45f, 0.4f, 1.0f);
     }

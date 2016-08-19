@@ -110,14 +110,28 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 						}
 						else if (x == subSize - 1 && y != subSize - 1)
 						{
-							xReal = 0;
-							tileOffset = vec::vec2i(1, 0);
+							if (i == TerrainManager::Subdivisions - 1)
+							{
+								xReal = 0;
+								tileOffset = vec::vec2i(1, 0);
+							}
+							else
+							{
+								xReal++;
+							}
 
 						}
 						else if (x != subSize - 1 && y == subSize - 1)
 						{
-							yReal = 0;
-							tileOffset = vec::vec2i(0, 1);
+							if (j == TerrainManager::Subdivisions - 1)
+							{
+								yReal = 0;
+								tileOffset = vec::vec2i(0, 1);
+							}
+							else
+							{
+								yReal++;
+							}
 						}
 						else
 						{
