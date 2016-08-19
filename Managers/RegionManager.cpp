@@ -2,7 +2,7 @@
 #include "RegionManager.h"
 
 RegionManager::RegionManager(ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance)
-	: terrainManager(min, max, shaderManager, terrainRootFolder, tileSize),
+	: terrainManager(min, max,	shaderManager, terrainRootFolder, tileSize),
 	  loadedRegions(), visibleTiles(), tileViewDistance(tileViewDistance)
 {
 	this->min = min * TerrainManager::Subdivisions;
@@ -33,7 +33,7 @@ void RegionManager::ComputeVisibleTiles(vec::vec2i centerTile, std::vector<vec::
 	{
 		for (int j = minY; j < maxY; j++)
 		{
-			if (std::pow(i - centerTile.x, 2) + std::pow(j - centerTile.y, 2) < std::pow(tileViewDistance, 2))
+			if (std::pow(i - centerTile.x, 2) + std::pow(j - centerTile.y, 2) < std::pow(tileViewDistance / 2, 2))
 			{
 				visibleTiles->push_back(vec::vec2i(i, j));
 			}

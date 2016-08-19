@@ -2,15 +2,8 @@
 
 layout (vertices = 4) out;
 
-in VS_OUT
-{
-    vec2 tc;
-} tcs_in[];
-
-out TCS_OUT
-{
-    vec2 tc;
-} tcs_out[];
+in vec2 tcs_in[];
+out vec2 tes_in[];
 
 void main(void)
 {
@@ -27,6 +20,6 @@ void main(void)
     
     // Pass-through our position and texture coordinate
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
-    tcs_out[gl_InvocationID].tc = tcs_in[gl_InvocationID].tc;
+    tes_in[gl_InvocationID] = tcs_in[gl_InvocationID];
 }
 

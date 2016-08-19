@@ -2,8 +2,9 @@
 
 // Use the terrain texture for fragment shading. TODO this eventually will be a lot more complicated / interesting and use the other color components.
 uniform sampler2D terrainTexture;
+uniform sampler2D terrainType;
 
-smooth in vec2 tc;
+smooth in vec2 tc_fs;
 flat in float scaleFactor;
 
 out vec4 color;
@@ -14,7 +15,7 @@ void main(void)
     const float min = 0.155;
     const float max = 0.173;
     
-    float height = texture(terrainTexture, tc).r;
+    float height = texture(terrainTexture, tc_fs).r;
     if (int(height * 10000) % 10 == 1)
     {
         color = vec4(0.4f, 0.45f, 0.4f, 1.0f);
@@ -24,7 +25,7 @@ void main(void)
         color = vec4(0.4f, 0.4f, 0.4f, 1.0f);
     }
     
-    color = vec4(vec3(color) * scaleFactor, 1.0);
+    color = vec4(vec3(color) * scaleFactor * texture(terrainType, tc_fs).r, 1.0);
     
     /*
     // Apply lighting calculations.

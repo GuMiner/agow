@@ -30,18 +30,19 @@ bool TerrainManager::LoadBasics()
     }
 
     terrainTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainTexture");
+	terrainTypeTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainType");
     projLocation = glGetUniformLocation(terrainRenderProgram, "projMatrix");
     mvLocation = glGetUniformLocation(terrainRenderProgram, "mvMatrix");
 
     return true;
 }
 
-GLuint TerrainManager::CreateHeightmapTexture(int subSize, float* heightmap)
+GLuint TerrainManager::CreateTileTexture(GLenum activeTexture, int subSize, float* heightmap)
 {
     GLuint newTextureId;
     glGenTextures(1, &newTextureId);
 
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(activeTexture);
     glBindTexture(GL_TEXTURE_2D, newTextureId);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_R16, subSize, subSize);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, subSize, subSize, GL_RED, GL_FLOAT, heightmap);
@@ -51,6 +52,23 @@ GLuint TerrainManager::CreateHeightmapTexture(int subSize, float* heightmap)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     return newTextureId;
+}
+
+GLuint TerrainManager::CreateTileTexture(GLenum activeTexture, int subSize, unsigned char* heightmap)
+{
+	GLuint newTextureId;
+	glGenTextures(1, &newTextureId);
+
+	glActiveTexture(activeTexture);
+	glBindTexture(GL_TEXTURE_2D, newTextureId);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_R16, subSize, subSize);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, subSize, subSize, GL_RED, GL_UNSIGNED_BYTE, heightmap);
+
+	// Ensure we clamp to the edges to avoid border problems.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	return newTextureId;
 }
 
 bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
@@ -147,7 +165,21 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 					}
 				}
 
-				GLuint heightmapTextureId = CreateHeightmapTexture(subSize, heightmap);
+				unsigned char* types = new unsigned char[GetSubTileSize() * GetSubTileSize()];
+				for (int x = 0; x < GetSubTileSize(); x++)
+				{
+					for (int y = 0; y < GetSubTileSize(); y++)
+					{
+						// Within our main image.
+						int xReal = x + i * GetSubTileSize();
+						int yReal = y + j * GetSubTileSize();
+
+						types[x + y * GetSubTileSize()] = terrainTiles[pos]->rawImage[(xReal + yReal * tileSize) * 4 + 2];
+					}
+				}
+
+				GLuint heightmapTextureId = CreateTileTexture(GL_TEXTURE0, subSize, heightmap);
+				GLuint typeTextureId = CreateTileTexture(GL_TEXTURE1, GetSubTileSize(), types);
 
 				// After saving to OpenGL, scale accordingly for Bullet physics to properly deal with the terrain and remove the extra layer.
 				float* realHeightmap = new float[GetSubTileSize() * GetSubTileSize()];
@@ -163,7 +195,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 				// We no longer need the data as it is now in the GPU.
 				delete[] heightmap;
 
-				terrainTiles[pos]->subtiles[vec::vec2i(i, j)] = new SubTile(heightmapTextureId, realHeightmap);
+				terrainTiles[pos]->subtiles[vec::vec2i(i, j)] = new SubTile(heightmapTextureId, realHeightmap, typeTextureId, types);
 			}
 		}
 
@@ -207,6 +239,10 @@ void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, c
     glBindTexture(GL_TEXTURE_2D, terrainTiles[pos]->subtiles[subPos]->heightmapTextureId);
     glUniform1i(terrainTexLocation, 0);
 
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, terrainTiles[pos]->subtiles[subPos]->typeTextureId);
+	glUniform1i(terrainTypeTexLocation, 1);
+
     glUniformMatrix4fv(projLocation, 1, GL_FALSE, projectionMatrix);
     glUniformMatrix4fv(mvLocation, 1, GL_FALSE, mvMatrix);
 
@@ -221,6 +257,9 @@ void TerrainManager::CleanupTerrainTile(vec::vec2i pos, bool log)
 	{
 		glDeleteTextures(1, &subTile.second->heightmapTextureId);
 		delete[] subTile.second->heightmap;
+		glDeleteTextures(1, &subTile.second->typeTextureId);
+		delete[] subTile.second->type;
+
 		delete subTile.second;
 	}
 	

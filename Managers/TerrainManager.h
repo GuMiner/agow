@@ -20,13 +20,15 @@ class TerrainManager
     GLuint terrainRenderProgram;
 
     GLuint terrainTexLocation;
+	GLuint terrainTypeTexLocation;
     GLuint mvLocation;
     GLuint projLocation;
 
     std::map<vec::vec2i, TerrainTile*, vec::vec2iComparer> terrainTiles;
 
     // Given a terrain tile, creates an appropriate heightmap texture for it.
-    GLuint CreateHeightmapTexture(int subSize, float* heightmap);
+    GLuint CreateTileTexture(GLenum activeTexture, int subSize, float* heightmap);
+	GLuint CreateTileTexture(GLenum activeTexture, int subSize, unsigned char* heightmap);
 	bool LoadTileToCache(vec::vec2i pos, bool loadSubtiles);
 
 public:

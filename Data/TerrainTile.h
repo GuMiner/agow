@@ -8,8 +8,11 @@ struct SubTile
 	GLuint heightmapTextureId;
 	float* heightmap;
 
-	SubTile(GLuint heightmapTextureId, float* heightmap)
-		: heightmapTextureId(heightmapTextureId), heightmap(heightmap)
+	GLuint typeTextureId;
+	unsigned char* type;
+
+	SubTile(GLuint heightmapTextureId, float* heightmap, GLuint typeTextureId, unsigned char* type)
+		: heightmapTextureId(heightmapTextureId), heightmap(heightmap), typeTextureId(typeTextureId), type(type)
 	{
 	}
 };
