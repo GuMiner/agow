@@ -25,6 +25,7 @@ bool TerrainEffectManager::LoadBasics()
 	// terrainTypeTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainType");
     grassProgram.projMatrixLocation = glGetUniformLocation(grassProgram.programId, "projMatrix");
     grassProgram.mvMatrixLocation = glGetUniformLocation(grassProgram.programId, "mvMatrix");
+	grassProgram.waveOffsetsLocation = glGetUniformLocation(grassProgram.programId, "waveOffsets");
 
 	if (!shaderManager->CreateShaderProgram("roadRender", &roadProgram.programId))
 	{
@@ -96,6 +97,8 @@ void TerrainEffectManager::LoadGrassEffect(vec::vec2i pos, EffectData* effect, S
 {
 	effect->hasGrassEffect = false;
 
+	float frequency = 2;
+
 	// Scan the image for grass pixels.
 	for (int i = 0; i < subTileSize; i++)
 	{
@@ -120,12 +123,16 @@ void TerrainEffectManager::LoadGrassEffect(vec::vec2i pos, EffectData* effect, S
 				effect->grassEffect.grassStalks.colors.push_back(topColor);
 				effect->grassEffect.grassStalks.ids.push_back(effect->grassEffect.grassStalks.positions.size() - 1); // Starts at 1
 				effect->grassEffect.grassStalks.ids.push_back(effect->grassEffect.grassStalks.positions.size());
+
+				effect->grassEffect.grassOffsets.push_back(vec::vec4(0.0f));
+				effect->grassEffect.grassOffsets.push_back(vec::vec4(std::cos(2 * 3.14159f / 2), std::sin(2 * 3.14159f / 2), 0.0f, 0.0f));
 			}
 		}
 	}
 
 	if (effect->hasGrassEffect)
 	{
+		// Grass vertex data.
 		glGenVertexArrays(1, &effect->grassEffect.vao);
 		glBindVertexArray(effect->grassEffect.vao);
 		glGenBuffers(1, &effect->grassEffect.positionBuffer);
@@ -136,6 +143,12 @@ void TerrainEffectManager::LoadGrassEffect(vec::vec2i pos, EffectData* effect, S
 		effect->grassEffect.grassStalks.TransferPositionToOpenGl(effect->grassEffect.positionBuffer);
 		effect->grassEffect.grassStalks.TransferColorToOpenGl(effect->grassEffect.colorBuffer);
 		effect->grassEffect.grassStalks.TransferIdsToOpenGl(effect->grassEffect.drawIdBuffer);
+
+		// Grass modification data.
+		glActiveTexture(GL_TEXTURE0);
+		glGenTextures(1, &effect->grassEffect.grassOffsetsTexture);
+		glBindTexture(GL_TEXTURE_1D, effect->grassEffect.grassOffsetsTexture);
+		glTexSubImage1D(GL_TEXTURE_1D, 0, 0, effect->grassEffect.grassOffsets.size(), GL_RGBA, GL_FLOAT, &effect->grassEffect.grassOffsets[0]);
 	}
 }
 
@@ -147,6 +160,8 @@ void TerrainEffectManager::UnloadGrassEffect(vec::vec2i pos)
 		glDeleteBuffers(1, &effectData[pos]->grassEffect.positionBuffer);
 		glDeleteBuffers(1, &effectData[pos]->grassEffect.colorBuffer);
 		glDeleteBuffers(1, &effectData[pos]->grassEffect.drawIdBuffer);
+
+		glDeleteTextures(1, &effectData[pos]->grassEffect.grassOffsetsTexture);
 	}
 }
 
@@ -186,7 +201,15 @@ void TerrainEffectManager::Simulate(const vec::vec2i pos, float elapsedSeconds)
 
 	if (effectData[pos]->hasGrassEffect)
 	{
+		effectData[pos]->grassEffect.grassOffsets.clear();
+		effectData[pos]->grassEffect.grassOffsets.push_back(vec::vec4(0.0f));
+		effectData[pos]->grassEffect.grassOffsets.push_back(vec::vec4(MathOps::Rand(), MathOps::Rand(), 0.0f, 0.0f));
+
 		// Modify the grass image to result in a slight waviness of the grass.
+		glActiveTexture(GL_TEXTURE0);
+		glBindVertexArray(effectData[pos]->grassEffect.vao);
+		glBindTexture(GL_TEXTURE_1D, effectData[pos]->grassEffect.grassOffsetsTexture);
+		glTexSubImage1D(GL_TEXTURE_1D, 0, 0, effectData[pos]->grassEffect.grassOffsets.size(), GL_RGBA, GL_FLOAT, &effectData[pos]->grassEffect.grassOffsets[0]);
 	}
 }
 
@@ -203,15 +226,10 @@ void TerrainEffectManager::RenderSubTileEffects(const vec::vec2i pos, const vec:
 	{
 		glUseProgram(grassProgram.programId);
 		glBindVertexArray(effectData[pos]->grassEffect.vao);
-		// 
-		// glActiveTexture(GL_TEXTURE0);
-		// glBindTexture(GL_TEXTURE_2D, terrainTiles[pos]->subtiles[subPos]->heightmapTextureId);
-		// glUniform1i(terrainTexLocation, 0);
-		// 
-		// glActiveTexture(GL_TEXTURE1);
-		// glBindTexture(GL_TEXTURE_2D, terrainTiles[pos]->subtiles[subPos]->typeTextureId);
-		// glUniform1i(terrainTypeTexLocation, 1);
-		// 
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, grassProgram.waveOffsetsLocation);
+		glUniform1i(grassProgram.waveOffsetsLocation, 0);
 
 		glUniformMatrix4fv(grassProgram.projMatrixLocation, 1, GL_FALSE, projectionMatrix);
 		glUniformMatrix4fv(grassProgram.mvMatrixLocation, 1, GL_FALSE, mvMatrix);

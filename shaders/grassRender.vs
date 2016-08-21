@@ -15,5 +15,7 @@ uniform mat4 mvMatrix;
 void main(void)
 {
 	fs_color = vec4(color, 1.0f);
-    gl_Position = projMatrix * mvMatrix * vec4(position, 1.0f);
+	
+	vec4 positionOffsets = texelFetch(waveOffsets, int(drawId), 0);
+    gl_Position = projMatrix * mvMatrix * vec4(position.x + positionOffsets.x, position.y + positionOffsets.y, position.z, 1.0f);
 }

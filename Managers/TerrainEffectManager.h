@@ -15,7 +15,10 @@ struct GrassEffect
 	GLuint colorBuffer;
 	GLuint drawIdBuffer;
 
+	GLuint grassOffsetsTexture;
+
 	universalVertices grassStalks;
+	std::vector<vec::vec4> grassOffsets;
 };
 
 struct RoadEffect
@@ -42,6 +45,7 @@ struct GrassProgram
 
 	GLuint projMatrixLocation;
 	GLuint mvMatrixLocation;
+	GLuint waveOffsetsLocation;
 };
 
 struct RoadProgram
