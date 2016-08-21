@@ -163,10 +163,10 @@ Constants::Status agow::LoadGraphics()
 
     // Enable line and polygon smoothing
     glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_POLYGON_SMOOTH);
+    // glEnable(GL_POLYGON_SMOOTH);
 
     // Multisample if available
-    glEnable(GL_MULTISAMPLE);
+    // glEnable(GL_MULTISAMPLE);
 
     // Let OpenGL shaders determine point sizes.
     glEnable(GL_PROGRAM_POINT_SIZE);

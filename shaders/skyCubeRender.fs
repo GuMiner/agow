@@ -26,4 +26,5 @@ void main(void)
     }
 	
 	color = vec4((int(uvwPos.x * 200) % 20) / 20.0f, (int(uvwPos.y * 200) % 20) / 20.0f, (int(uvwPos.z * 200) % 20) / 20.0f, 1.0f);
+	color = textureColor;
 }
