@@ -76,6 +76,9 @@
     <ClCompile Include="Managers\TerrainManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
+    <ClCompile Include="Managers\TerrainEffectManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -165,6 +168,9 @@
     </ClInclude>
     <ClInclude Include="Data\TerrainTile.h">
       <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\TerrainEffectManager.h">
+      <Filter>Managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

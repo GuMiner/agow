@@ -7,7 +7,7 @@
 #include "Utils\ImageUtils.h"
 
 TerrainManager::TerrainManager(vec::vec2i min, vec::vec2i max, ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize)
-    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), tileSize(tileSize)
+    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), tileSize(tileSize), terrainEffects(shaderManager, tileSize / TerrainManager::Subdivisions)
 {
 }
 
@@ -195,7 +195,9 @@ bool TerrainManager::LoadTileToCache(vec::vec2i pos, bool loadSubtiles)
 				// We no longer need the data as it is now in the GPU.
 				delete[] heightmap;
 
-				terrainTiles[pos]->subtiles[vec::vec2i(i, j)] = new SubTile(heightmapTextureId, realHeightmap, typeTextureId, types);
+				vec::vec2i subTilePos = vec::vec2i(i, j);
+				terrainTiles[pos]->subtiles[subTilePos] = new SubTile(heightmapTextureId, realHeightmap, typeTextureId, types);
+				terrainEffects.LoadSubTileEffects(subTilePos + pos * TerrainManager::Subdivisions, terrainTiles[pos]->subtiles[subTilePos]);
 			}
 		}
 
@@ -233,6 +235,7 @@ void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, c
 		return;
 	}
 
+	// Render the tile.
     glUseProgram(terrainRenderProgram);
 
     glActiveTexture(GL_TEXTURE0);
@@ -248,6 +251,9 @@ void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, c
 
     glPatchParameteri(GL_PATCH_VERTICES, 4);
     glDrawArraysInstanced(GL_PATCHES, 0, 4, GetSubTileSize() * GetSubTileSize());
+
+	// Render tile SFX.
+	terrainEffects.RenderSubTileEffects(subPos + pos * TerrainManager::Subdivisions, projectionMatrix, mvMatrix);
 }
 
 void TerrainManager::CleanupTerrainTile(vec::vec2i pos, bool log)
@@ -274,6 +280,7 @@ void TerrainManager::CleanupTerrainTile(vec::vec2i pos, bool log)
 
 void TerrainManager::UnloadTerrainTile(vec::vec2i pos)
 {
+	terrainEffects.UnloadSubTileEffects(pos);
 	CleanupTerrainTile(pos, true);
 	terrainTiles.erase(pos);
 }

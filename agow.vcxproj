@@ -105,6 +105,7 @@
     <ClInclude Include="Managers\ModelManager.h" />
     <ClInclude Include="Managers\RegionManager.h" />
     <ClInclude Include="Managers\ShaderManager.h" />
+    <ClInclude Include="Managers\TerrainEffectManager.h" />
     <ClInclude Include="Managers\TerrainManager.h" />
     <ClInclude Include="Math\MathOps.h" />
     <ClInclude Include="Math\MatrixOps.h" />
@@ -136,6 +137,7 @@
     <ClCompile Include="Managers\ModelManager.cpp" />
     <ClCompile Include="Managers\RegionManager.cpp" />
     <ClCompile Include="Managers\ShaderManager.cpp" />
+    <ClCompile Include="Managers\TerrainEffectManager.cpp" />
     <ClCompile Include="Managers\TerrainManager.cpp" />
     <ClCompile Include="Math\MathOps.cpp" />
     <ClCompile Include="Math\MatrixOps.cpp" />
