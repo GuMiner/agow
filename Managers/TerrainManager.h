@@ -48,6 +48,9 @@ public:
     // Loads a single tile.
     bool LoadTerrainTile(vec::vec2i pos, TerrainTile** tile);
     
+	// Runs simulations on a loaded tile.
+	void Simulate(const vec::vec2i pos, const vec::vec2i subPos, float elapsedSeconds);
+
     // Renders a tile. *The tile must have been loaded ahead-of-time.*
     void RenderTile(const vec::vec2i pos, const vec::vec2i subPos, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix);
 

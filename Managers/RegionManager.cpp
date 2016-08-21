@@ -91,6 +91,15 @@ void RegionManager::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynam
 	}
 }
 
+void RegionManager::SimulateVisibleRegions(float elapsedSeconds)
+{
+	for (const vec::vec2i& visibleTile : visibleTiles)
+	{
+		vec::vec2i region = visibleTile / TerrainManager::Subdivisions;
+		loadedRegions[region]->Simulate(&terrainManager, visibleTile, elapsedSeconds);
+	}
+}
+
 void RegionManager::RenderRegions(const vec::mat4& projectionMatrix)
 {
     for (const vec::vec2i& visibleTile : visibleTiles)

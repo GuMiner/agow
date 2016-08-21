@@ -22,6 +22,7 @@ public:
 	vec::vec2i GetPos() const;
 
 	void EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::vector<vec::vec2i>* tilesToLoadHeightmapsFor);
+	void Simulate(TerrainManager* terrainManager, vec::vec2i tilePos, float elapsedSeconds);
     void RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const;
 
     void CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld);

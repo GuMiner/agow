@@ -228,6 +228,22 @@ bool TerrainManager::LoadTerrainTile(vec::vec2i pos, TerrainTile** tile)
 	return true;
 }
 
+void TerrainManager::Simulate(const vec::vec2i pos, const vec::vec2i subPos, float elapsedSeconds)
+{
+	if (terrainTiles.find(pos) == terrainTiles.end())
+	{
+		Logger::LogWarn("Attempted to simulate a terrain tile not loaded with [", pos.x, ", ", pos.y, "].");
+		return;
+	}
+	else if (terrainTiles[pos]->subtiles.find(subPos) == terrainTiles[pos]->subtiles.end())
+	{
+		Logger::LogWarn("Attempted to simulate a subtile that is invalid on [", pos.x, ", ", pos.y, "], subtile [", subPos.x, ", ", subPos.y, "].");
+		return;
+	}
+
+	terrainEffects.Simulate(subPos + pos * TerrainManager::Subdivisions, elapsedSeconds);
+}
+
 void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix)
 {
     if (terrainTiles.find(pos) == terrainTiles.end())

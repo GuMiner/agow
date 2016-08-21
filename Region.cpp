@@ -52,6 +52,12 @@ btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDyn
 	return heightmap;
 }
 
+
+void Region::Simulate(TerrainManager* terrainManager, vec::vec2i tilePos, float elapsedSeconds)
+{
+	terrainManager->Simulate(pos, tilePos - (pos * TerrainManager::Subdivisions), elapsedSeconds);
+}
+
 void Region::RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const
 {
     vec::mat4 mvMatrix = MatrixOps::Translate(

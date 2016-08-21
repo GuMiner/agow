@@ -373,9 +373,13 @@ Constants::Status agow::Run()
         HandleEvents(window, alive, focusPaused, escapePaused);
         Update(clock.getElapsedTime().asSeconds());
         
-        physics.Step(physicsClock.restart().asSeconds());
+		// TODO clock needs to be interval based.
+		float elapsedSeconds = physicsClock.restart().asSeconds();
+		regionManager.SimulateVisibleRegions(elapsedSeconds);
 
-        // Render, only if non-paused.
+        physics.Step(elapsedSeconds);
+
+        // Render, only if non-paused. TODO we also need to pause all game mechanics to avoid weird inconsistencies.
         if (!focusPaused && !escapePaused)
         {
             Render(window, viewMatrix);
