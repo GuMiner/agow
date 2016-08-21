@@ -6,10 +6,24 @@
 #include "Data\TerrainTile.h"
 #include "Managers\ShaderManager.h"
 #include "Math\Vec.h"
+#include "Utils\Vertex.h"
 
 struct EffectData
 {
+	GLuint vao;
+	GLuint positionBuffer;
+	GLuint colorBuffer;
+	GLuint drawIdBuffer;
 
+	universalVertices grassStalks;
+};
+
+struct GrassProgram
+{
+	GLuint programId;
+
+	GLuint projMatrixLocation;
+	GLuint mvMatrixLocation;
 };
 
 // Defines effects for each sub tile of terrain.
@@ -18,7 +32,7 @@ class TerrainEffectManager
     ShaderManager* shaderManager;
     int subTileSize; // In pixels
 
-    //GLuint terrainRenderProgram;
+	GrassProgram grassProgram;
 
     //GLuint terrainTexLocation;
 	//GLuint terrainTypeTexLocation;

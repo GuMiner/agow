@@ -3,6 +3,21 @@
 #include <GL/glew.h>
 #include "Math\Vec.h"
 
+// Copied from PaletteWindow.cpp, MapEditor.
+namespace TerrainTypes
+{
+	const int SNOW_PEAK = 0;
+	const int ROCKS = 25;
+	const int TREES = 50;
+	const int DIRTLAND = 75;
+	const int GRASSLAND = 100;
+	const int ROADS = 125;
+	const int CITY = 150;
+	const int SAND = 175;
+	const int RIVER = 200;
+	const int LAKE = 225;
+}
+
 struct SubTile
 {
 	GLuint heightmapTextureId;

@@ -34,6 +34,12 @@ bool TerrainManager::LoadBasics()
     projLocation = glGetUniformLocation(terrainRenderProgram, "projMatrix");
     mvLocation = glGetUniformLocation(terrainRenderProgram, "mvMatrix");
 
+	if (!terrainEffects.LoadBasics())
+	{
+		Logger::LogError("Failed to load the terrain effects initial setup; cannot continue.");
+		return false;
+	}
+
     return true;
 }
 
@@ -280,7 +286,11 @@ void TerrainManager::CleanupTerrainTile(vec::vec2i pos, bool log)
 
 void TerrainManager::UnloadTerrainTile(vec::vec2i pos)
 {
-	terrainEffects.UnloadSubTileEffects(pos);
+	for (std::pair<const vec::vec2i, SubTile*> subTile : terrainTiles[pos]->subtiles)
+	{
+		terrainEffects.UnloadSubTileEffects(pos * TerrainManager::Subdivisions + subTile.first);
+	}
+
 	CleanupTerrainTile(pos, true);
 	terrainTiles.erase(pos);
 }
