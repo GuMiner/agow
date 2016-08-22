@@ -20,12 +20,8 @@ bool TerrainEffectManager::LoadBasics()
         return false;
     }
 
-	// 
-    // terrainTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainTexture");
-	// terrainTypeTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainType");
     grassProgram.projMatrixLocation = glGetUniformLocation(grassProgram.programId, "projMatrix");
     grassProgram.mvMatrixLocation = glGetUniformLocation(grassProgram.programId, "mvMatrix");
-	grassProgram.waveOffsetsLocation = glGetUniformLocation(grassProgram.programId, "waveOffsets");
 
 	if (!shaderManager->CreateShaderProgram("roadRender", &roadProgram.programId))
 	{
@@ -39,14 +35,157 @@ bool TerrainEffectManager::LoadBasics()
     return true;
 }
 
+bool TerrainEffectManager::GetNearbyCheckOne(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const
+{
+	if (pos.x != 0)
+	{
+		if (tile->type[(pos.x - 1) + pos.y * subTileSize] == terrainType)
+		{
+			*result = pos + vec::vec2i(-1, 0);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool TerrainEffectManager::GetNearbyCheckTwo(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const
+{
+	if (pos.y != 0)
+	{
+		if (tile->type[pos.x + (pos.y - 1) * subTileSize] == terrainType)
+		{
+			*result = pos + vec::vec2i(0, -1);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool TerrainEffectManager::GetNearbyCheckThree(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const
+{
+	if (pos.x != subTileSize - 1)
+	{
+		if (tile->type[(pos.x + 1) + pos.y * subTileSize] == terrainType)
+		{
+			*result = pos + vec::vec2i(1, 0);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool TerrainEffectManager::GetNearbyCheckFour(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const
+{
+	if (pos.y != subTileSize - 1)
+	{
+		if (tile->type[pos.x + (pos.y + 1) * subTileSize] == terrainType)
+		{
+			*result = pos + vec::vec2i(0, 1);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+vec::vec2i TerrainEffectManager::GetNearbyType(SubTile* tile, const vec::vec2i pos, const int terrainType) const
+{
+	vec::vec2i result(-1, -1);
+	bool foundNearbyType = false;
+	
+	int checkOrder = (int)(MathOps::Rand() * 8);
+
+	switch (checkOrder)
+	{
+	case 0:
+		if (GetNearbyCheckOne(tile, pos, terrainType, &result) || GetNearbyCheckTwo(tile, pos, terrainType, &result)
+			|| GetNearbyCheckThree(tile, pos, terrainType, &result) || GetNearbyCheckFour(tile, pos, terrainType, &result))
+		{
+			break;
+		}
+
+		break;
+	case 1:
+		if (GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result)
+			|| GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result))
+		{
+			break;
+		}
+
+		break;
+	case 2:
+		if (GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result)
+			|| GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result))
+		{
+			break;
+		}
+
+		break;
+	case 3:
+		if (GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result)
+			|| GetNearbyCheckOne(tile, pos, terrainType, &result) || GetNearbyCheckFour(tile, pos, terrainType, &result))
+		{
+			break;
+		}
+
+		break;
+	case 4:
+		if (GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result)
+			|| GetNearbyCheckThree(tile, pos, terrainType, &result) || GetNearbyCheckTwo(tile, pos, terrainType, &result))
+		{
+			break;
+		}
+
+		break;
+	case 5:
+		if (GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result)
+			|| GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result))
+		{
+			break;
+		}
+
+		break;
+	case 6:
+		if (GetNearbyCheckThree(tile, pos, terrainType, &result) || GetNearbyCheckFour(tile, pos, terrainType, &result)
+			|| GetNearbyCheckOne(tile, pos, terrainType, &result) || GetNearbyCheckTwo(tile, pos, terrainType, &result))
+		{
+			break;
+		}
+
+		break;
+	case 7:
+		if (GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result)
+			|| GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result))
+		{
+			break;
+		}
+
+		break;
+	default:
+		if (GetNearbyCheckThree(tile, pos, terrainType, &result) || GetNearbyCheckTwo(tile, pos, terrainType, &result)
+			|| GetNearbyCheckOne(tile, pos, terrainType, &result) || GetNearbyCheckFour(tile, pos, terrainType, &result))
+		{
+			break;
+		}
+
+		break;
+	}
+	
+
+	return result;
+}
+
 void TerrainEffectManager::LoadRoadEffect(vec::vec2i pos, EffectData* effect, SubTile* tile)
 {
 	effect->hasRoadEffect = false;
+	effect->roadEffect.tile = tile;
 
 	// Scan the image for road pixels.
-	vec::vec2i lastRoadPos;
 	int roadCounter = 1;
-	const long ROAD_SUBCOUNT = 30;
+	const long ROAD_SUBCOUNT = 10;
 	for (int i = 0; i < subTileSize; i++)
 	{
 		for (int j = 0; j < subTileSize; j++)
@@ -57,25 +196,29 @@ void TerrainEffectManager::LoadRoadEffect(vec::vec2i pos, EffectData* effect, Su
 
 				if (roadCounter % ROAD_SUBCOUNT == 0)
 				{
-					effect->hasRoadEffect = true;
-					float height = tile->heightmap[i + j * subTileSize];
-					vec::vec2i realLastPos = pos * 0.10f + lastRoadPos;
-					vec::vec2i realPos = pos * 0.10f + vec::vec2i(i, j);
+					vec::vec2i nearbyRoad = GetNearbyType(tile, vec::vec2i(i, j), TerrainTypes::ROADS);
+					if (nearbyRoad.x != -1)
+					{
+						effect->hasRoadEffect = true;
+						float height = tile->heightmap[i + j * subTileSize];
+						float height2 = tile->heightmap[nearbyRoad.x + nearbyRoad.y * subTileSize];
+						vec::vec2i realLastPos = pos * 0.10f + nearbyRoad;
+						vec::vec2i realPos = pos * 0.10f + vec::vec2i(i, j);
 
-					// TODO configurable
-					vec::vec3 bottomColor = vec::vec3(0.0f, 0.50f, MathOps::Rand() * 0.20f + 0.80f);
-					vec::vec3 topColor = vec::vec3(0.40f + 0.60f * MathOps::Rand(), 0.0f, 0.20f + MathOps::Rand() * 0.40f);
-					vec::vec3 bottomPos = vec::vec3((float)realPos.x, (float)realPos.y, height + 2.0f);
-					vec::vec3 topPos = vec::vec3((float)realLastPos.x, (float)realLastPos.y, height + 2.0f);
+						// TODO configurable
+						vec::vec3 bottomColor = vec::vec3(0.0f, 0.50f, MathOps::Rand() * 0.20f + 0.80f);
+						vec::vec3 topColor = vec::vec3(0.40f + 0.60f * MathOps::Rand(), 0.0f, 0.20f + MathOps::Rand() * 0.40f);
+						vec::vec3 bottomPos = vec::vec3((float)realPos.x, (float)realPos.y, height + 0.5f);
+						vec::vec3 topPos = vec::vec3((float)realLastPos.x, (float)realLastPos.y, height2 + 0.5f);
 
-					// Add grass
-					effect->roadEffect.travellers.positions.push_back(bottomPos);
-					effect->roadEffect.travellers.positions.push_back(topPos);
-					effect->roadEffect.travellers.colors.push_back(bottomColor);
-					effect->roadEffect.travellers.colors.push_back(topColor);
+						// Add grass
+						effect->roadEffect.travellers.positions.push_back(bottomPos);
+						effect->roadEffect.travellers.positions.push_back(topPos);
+						effect->roadEffect.travellers.colors.push_back(bottomColor);
+						effect->roadEffect.travellers.colors.push_back(topColor);
+						effect->roadEffect.roadPositions.push_back(realPos);
+					}
 				}
-
-				lastRoadPos = vec::vec2i(i, j);
 			}
 		}
 	}
@@ -95,6 +238,8 @@ void TerrainEffectManager::LoadRoadEffect(vec::vec2i pos, EffectData* effect, Su
 
 void TerrainEffectManager::LoadGrassEffect(vec::vec2i pos, EffectData* effect, SubTile* tile)
 {
+	GLenum errorCode = glGetError();
+	Logger::Log(errorCode, glewGetErrorString(errorCode));
 	effect->hasGrassEffect = false;
 
 	float frequency = 2;
@@ -117,38 +262,38 @@ void TerrainEffectManager::LoadGrassEffect(vec::vec2i pos, EffectData* effect, S
 				vec::vec3 topPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height + 0.15f + 1.70f * MathOps::Rand());
 
 				// Add grass
-				effect->grassEffect.grassStalks.positions.push_back(bottomPos);
-				effect->grassEffect.grassStalks.positions.push_back(topPos);
+				vec::vec3 lowerOffset = vec::vec3(0.0f);
+				vec::vec3 upperOffset = vec::vec3(std::cos(2 * 3.14159f / 2), std::sin(2 * 3.14159f / 2), 0.0f);
+				effect->grassEffect.grassOffsets.push_back(lowerOffset);
+				effect->grassEffect.grassOffsets.push_back(upperOffset);
+
+				effect->grassEffect.grassStalks.positions.push_back(bottomPos + lowerOffset);
+				effect->grassEffect.grassStalks.positions.push_back(topPos + upperOffset);
 				effect->grassEffect.grassStalks.colors.push_back(bottomColor);
 				effect->grassEffect.grassStalks.colors.push_back(topColor);
 				effect->grassEffect.grassStalks.ids.push_back(effect->grassEffect.grassStalks.positions.size() - 1); // Starts at 1
 				effect->grassEffect.grassStalks.ids.push_back(effect->grassEffect.grassStalks.positions.size());
-
-				effect->grassEffect.grassOffsets.push_back(vec::vec4(0.0f));
-				effect->grassEffect.grassOffsets.push_back(vec::vec4(std::cos(2 * 3.14159f / 2), std::sin(2 * 3.14159f / 2), 0.0f, 0.0f));
 			}
 		}
 	}
 
 	if (effect->hasGrassEffect)
 	{
+		errorCode = glGetError();
+		Logger::Log(errorCode, glewGetErrorString(errorCode));
+
 		// Grass vertex data.
 		glGenVertexArrays(1, &effect->grassEffect.vao);
 		glBindVertexArray(effect->grassEffect.vao);
 		glGenBuffers(1, &effect->grassEffect.positionBuffer);
 		glGenBuffers(1, &effect->grassEffect.colorBuffer);
-		glGenBuffers(1, &effect->grassEffect.drawIdBuffer);
+		
+		errorCode = glGetError();
+		Logger::Log(errorCode, glewGetErrorString(errorCode));
 
 		Logger::Log("Parsed ", effect->grassEffect.grassStalks.positions.size() / 2, " grass stalks.");
 		effect->grassEffect.grassStalks.TransferPositionToOpenGl(effect->grassEffect.positionBuffer);
 		effect->grassEffect.grassStalks.TransferColorToOpenGl(effect->grassEffect.colorBuffer);
-		effect->grassEffect.grassStalks.TransferIdsToOpenGl(effect->grassEffect.drawIdBuffer);
-
-		// Grass modification data.
-		glActiveTexture(GL_TEXTURE0);
-		glGenTextures(1, &effect->grassEffect.grassOffsetsTexture);
-		glBindTexture(GL_TEXTURE_1D, effect->grassEffect.grassOffsetsTexture);
-		glTexSubImage1D(GL_TEXTURE_1D, 0, 0, effect->grassEffect.grassOffsets.size(), GL_RGBA, GL_FLOAT, &effect->grassEffect.grassOffsets[0]);
 	}
 }
 
@@ -159,9 +304,6 @@ void TerrainEffectManager::UnloadGrassEffect(vec::vec2i pos)
 		glDeleteVertexArrays(1, &effectData[pos]->grassEffect.vao);
 		glDeleteBuffers(1, &effectData[pos]->grassEffect.positionBuffer);
 		glDeleteBuffers(1, &effectData[pos]->grassEffect.colorBuffer);
-		glDeleteBuffers(1, &effectData[pos]->grassEffect.drawIdBuffer);
-
-		glDeleteTextures(1, &effectData[pos]->grassEffect.grassOffsetsTexture);
 	}
 }
 
@@ -201,15 +343,51 @@ void TerrainEffectManager::Simulate(const vec::vec2i pos, float elapsedSeconds)
 
 	if (effectData[pos]->hasGrassEffect)
 	{
-		effectData[pos]->grassEffect.grassOffsets.clear();
-		effectData[pos]->grassEffect.grassOffsets.push_back(vec::vec4(0.0f));
-		effectData[pos]->grassEffect.grassOffsets.push_back(vec::vec4(MathOps::Rand(), MathOps::Rand(), 0.0f, 0.0f));
-
+		// Don't update all the grass at once, that's too slow. Just move a few elements.
+		int minimizationFactor = 5 + (int)(MathOps::Rand() * 10);
+		for (int i = 0; i < effectData[pos]->grassEffect.grassOffsets.size() / 2; i++)
+		{
+			if (i % minimizationFactor == 0)
+			{
+				vec::vec3 upperOffset = vec::vec3(MathOps::Rand(), MathOps::Rand(), 0.0f);
+				effectData[pos]->grassEffect.grassStalks.positions[i * 2 + 1] =
+					(effectData[pos]->grassEffect.grassStalks.positions[i * 2 + 1]
+						- effectData[pos]->grassEffect.grassOffsets[i * 2 + 1]) + upperOffset;
+				effectData[pos]->grassEffect.grassOffsets[i * 2 + 1] = upperOffset;
+			}
+		}
+		
 		// Modify the grass image to result in a slight waviness of the grass.
-		glActiveTexture(GL_TEXTURE0);
 		glBindVertexArray(effectData[pos]->grassEffect.vao);
-		glBindTexture(GL_TEXTURE_1D, effectData[pos]->grassEffect.grassOffsetsTexture);
-		glTexSubImage1D(GL_TEXTURE_1D, 0, 0, effectData[pos]->grassEffect.grassOffsets.size(), GL_RGBA, GL_FLOAT, &effectData[pos]->grassEffect.grassOffsets[0]);
+		effectData[pos]->grassEffect.grassStalks.TransferPositionToOpenGl(effectData[pos]->grassEffect.positionBuffer);
+	}
+
+	if (effectData[pos]->hasRoadEffect)
+	{
+		auto& travellers = effectData[pos]->roadEffect.travellers.positions;
+		auto& roadPositions = effectData[pos]->roadEffect.roadPositions;
+		for (unsigned int i = 0; i < travellers.size() / 2; i++)
+		{
+			vec::vec2i nearbyRoad = GetNearbyType(effectData[pos]->roadEffect.tile, roadPositions[i], TerrainTypes::ROADS);
+			if (nearbyRoad.x != -1)
+			{
+				float height = effectData[pos]->roadEffect.tile->heightmap[nearbyRoad.x + nearbyRoad.y * subTileSize];
+				float height2 = effectData[pos]->roadEffect.tile->heightmap[roadPositions[i].x + roadPositions[i].y * subTileSize];
+				vec::vec2i realLastPos = pos * 0.10f + nearbyRoad;
+				vec::vec2i realPos = pos * 0.10f + roadPositions[i];
+
+				vec::vec3 bottomPos = vec::vec3((float)realLastPos.x, (float)realLastPos.y, height + 0.5f);
+				vec::vec3 topPos = vec::vec3((float)realPos.x, (float)realPos.y, height2 + 0.5f);
+
+				travellers[i * 2] = bottomPos;
+				travellers[i * 2 + 1] = topPos;
+			
+				roadPositions[i] = nearbyRoad;
+			}
+		}
+
+		glBindVertexArray(effectData[pos]->roadEffect.vao);
+		effectData[pos]->roadEffect.travellers.TransferPositionToOpenGl(effectData[pos]->roadEffect.positionBuffer);
 	}
 }
 
@@ -226,10 +404,6 @@ void TerrainEffectManager::RenderSubTileEffects(const vec::vec2i pos, const vec:
 	{
 		glUseProgram(grassProgram.programId);
 		glBindVertexArray(effectData[pos]->grassEffect.vao);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, grassProgram.waveOffsetsLocation);
-		glUniform1i(grassProgram.waveOffsetsLocation, 0);
 
 		glUniformMatrix4fv(grassProgram.projMatrixLocation, 1, GL_FALSE, projectionMatrix);
 		glUniformMatrix4fv(grassProgram.mvMatrixLocation, 1, GL_FALSE, mvMatrix);

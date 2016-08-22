@@ -78,13 +78,16 @@ void agow::LogGraphicsSettings()
 
     GLint maxTextureUnits, maxUniformBlockSize;
     GLint maxVertexUniformBlocks, maxFragmentUniformBlocks;
+	GLint maxTextureSize;
     glGetIntegerv(GL_MAX_TEXTURE_UNITS, &maxTextureUnits);
     glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &maxVertexUniformBlocks);
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &maxFragmentUniformBlocks);
     glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBlockSize);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
     Logger::Log("Max Texture Units: ", ", Max Uniform Size: ", (maxUniformBlockSize/1024), " kB");
     Logger::Log("Max Vertex Uniform Blocks: ", maxVertexUniformBlocks, ", Max Fragment Uniform Blocks: ", maxFragmentUniformBlocks);
+	Logger::Log("Max Texture Size: ", maxTextureSize);
 }
 
 void agow::UpdatePerspective(unsigned int width, unsigned int height)

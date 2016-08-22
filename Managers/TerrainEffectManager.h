@@ -13,21 +13,21 @@ struct GrassEffect
 	GLuint vao;
 	GLuint positionBuffer;
 	GLuint colorBuffer;
-	GLuint drawIdBuffer;
-
-	GLuint grassOffsetsTexture;
 
 	universalVertices grassStalks;
-	std::vector<vec::vec4> grassOffsets;
+	std::vector<vec::vec3> grassOffsets;
 };
 
 struct RoadEffect
 {
+	SubTile* tile;
+
 	GLuint vao;
 	GLuint positionBuffer;
 	GLuint colorBuffer;
 
 	universalVertices travellers;
+	std::vector<vec::vec2i> roadPositions;
 };
 
 struct EffectData
@@ -45,7 +45,6 @@ struct GrassProgram
 
 	GLuint projMatrixLocation;
 	GLuint mvMatrixLocation;
-	GLuint waveOffsetsLocation;
 };
 
 struct RoadProgram
@@ -67,6 +66,12 @@ class TerrainEffectManager
 
     std::map<vec::vec2i, EffectData*, vec::vec2iComparer> effectData;
 	
+	bool GetNearbyCheckOne(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
+	bool GetNearbyCheckTwo(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
+	bool GetNearbyCheckThree(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
+	bool GetNearbyCheckFour(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
+	vec::vec2i GetNearbyType(SubTile* tile, const vec::vec2i pos, const int terrainType) const;
+
 	void LoadGrassEffect(vec::vec2i pos, EffectData* effect, SubTile* tile);
 	void UnloadGrassEffect(vec::vec2i pos);
 

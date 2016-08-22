@@ -43,6 +43,7 @@ bool Scenery::Initialize(ShaderManager& shaderManager)
     }
 
     int imageWidth = height / 3;
+	Logger::Log("Shader image [", width, ", ", height, "], effective per-side size: ", imageWidth, ".");
     CreateImageSegments(imageWidth);
 
     // The sky image is stored as squares with height = 6 * width. Break and send each apart individually.
@@ -53,13 +54,12 @@ bool Scenery::Initialize(ShaderManager& shaderManager)
     glGenTextures(1, &skyCubeTexture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyCubeTexture);
 
-    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_RGBA, imageWidth, imageWidth);
-    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, xPositive);
-    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, xNegative);
-    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, yPositive);
-    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, yNegative);
-    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, zPositive);
-    glTexSubImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, 0, 0, imageWidth, imageWidth, GL_RGBA, GL_UNSIGNED_BYTE, zNegative);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, imageWidth, imageWidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, xPositive);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, imageWidth, imageWidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, xNegative);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, imageWidth, imageWidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, yPositive);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, imageWidth, imageWidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, yNegative);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, imageWidth, imageWidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, zPositive);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, imageWidth, imageWidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, zNegative);
 
     glActiveTexture(GL_TEXTURE1);
     colorTransformImageId = imageManager->CreateEmptyTexture(256, 256);
