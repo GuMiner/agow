@@ -13,6 +13,9 @@ class VecOps
         // Vector conversion from bullet physics.
         static vec::vec3 Convert(const btVector3& bulletPhysicsVector);
 
+		// Vector conversion to bullet physics.
+		static btVector3 Convert(const vec::vec3& physicsVector);
+
         // Cross-product.
         static vec::vec3 Cross(const vec::vec3& first, const vec::vec3& second);
 

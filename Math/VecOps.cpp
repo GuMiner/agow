@@ -12,6 +12,12 @@ vec::vec3 VecOps::Convert(const btVector3& vector)
     return vec::vec3(vector.getX(), vector.getY(), vector.getZ());
 }
 
+// Vector conversion to bullet physics.
+btVector3 VecOps::Convert(const vec::vec3& physicsVector)
+{
+	return btVector3::btVector3(physicsVector.x, physicsVector.y, physicsVector.z);
+}
+
 vec::vec3 VecOps::Cross(const vec::vec3& first, const vec::vec3& second)
 {
     return vec::vec3(

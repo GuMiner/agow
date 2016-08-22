@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include "Math\MatrixOps.h"
 #include "Utils\Logger.h"
+#include "NPC.h"
 #include "agow.h"
 #include "version.h"
 
@@ -230,6 +231,13 @@ Constants::Status agow::LoadAssets()
     // Load the mode for the test cube.
     testCubes.modelId = modelManager.LoadModel("models/cube");
 
+	Logger::Log("NPC model loading...");
+	if (!NPC::LoadNpcModels(&modelManager))
+	{
+		return Constants::Status::BAD_NPC;
+	}
+	Logger::Log("NPC loading complete.");
+
     // Now that *all* the models have loaded, prepare for rendering models by initializing OpenGL and sending the model data to OpenGL
     Logger::Log("Sending model VAO to OpenGL...");
     if (!modelManager.InitializeOpenGlResources(shaderManager))
@@ -338,6 +346,9 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
 
         modelManager.RenderModel(projectionMatrix, testCubes.modelId, mvMatrix, false);
     }
+
+	// Render the key NPCs
+	// TODO
 
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);

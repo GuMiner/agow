@@ -1,10 +1,12 @@
 #include "Config\PhysicsConfig.h"
 #include "Math\VecOps.h"
+#include "Map.h"
 #include "Viewer.h"
 
 Viewer::Viewer()
 {
-    viewPosition = vec::vec3(12000, 44000, 200);
+	vec::vec2 spawnPoint = Map::GetPoint(Map::PLAYER);
+    viewPosition = vec::vec3(spawnPoint.x, spawnPoint.y, 200);
     viewOrientation = vec::quaternion(0.70f, -0.11f, -0.11f, 0.70f);
     viewOrientation.normalize();
 

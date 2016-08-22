@@ -11,7 +11,7 @@ BasicPhysics::BasicPhysics()
 void BasicPhysics::LoadBasicCollisionShapes()
 {
     CollisionShapes.clear();
-    CollisionShapes[CShape::LARGE_CUBE] = new btBoxShape(btVector3(1000.0f, 1000.0f, 10.0f));
+	CollisionShapes[CShape::NPC_CAPSULE] = new btCapsuleShape(0.25f, 0.75f); // TODO other NPC shapes.
     CollisionShapes[CShape::SMALL_CUBE] = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
 }
 

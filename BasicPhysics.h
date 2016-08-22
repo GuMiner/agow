@@ -19,8 +19,9 @@ public:
     enum CShape 
     {
         SMALL_CUBE,
-        LARGE_CUBE,
-        SMALL_SPHERE,
+        NPC_CAPSULE,
+		NPC_CUBOID,
+		NPC_DIAMOND
     };
 
     std::map<CShape, btCollisionShape*> CollisionShapes;
