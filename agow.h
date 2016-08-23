@@ -18,7 +18,7 @@
 #include "NPC.h"
 #include "Scenery.h"
 #include "Statistics.h"
-#include "Viewer.h"
+#include "Player.h"
 
 // Handles startup and the base graphics rendering loop.
 class agow
@@ -38,7 +38,7 @@ class agow
     // Game data
     BasicPhysics physics;
     Statistics statistics;
-    Viewer viewer;
+    Player viewer;
     Scenery scenery;
 
 	// Key NPCs

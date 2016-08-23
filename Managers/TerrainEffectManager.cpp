@@ -336,7 +336,7 @@ void TerrainEffectManager::Simulate(const vec::vec2i pos, float elapsedSeconds)
 	if (effectData[pos]->hasGrassEffect)
 	{
 		// Don't update all the grass at once, that's too slow. Just move a few elements.
-		int minimizationFactor = 5 + (int)(MathOps::Rand() * 10);
+		/*int minimizationFactor = 5 + (int)(MathOps::Rand() * 10);
 		for (int i = 0; i < effectData[pos]->grassEffect.grassOffsets.size() / 2; i++)
 		{
 			if (i % minimizationFactor == 0)
@@ -351,7 +351,7 @@ void TerrainEffectManager::Simulate(const vec::vec2i pos, float elapsedSeconds)
 		
 		// Modify the grass image to result in a slight waviness of the grass.
 		glBindVertexArray(effectData[pos]->grassEffect.vao);
-		effectData[pos]->grassEffect.grassStalks.TransferPositionToOpenGl(effectData[pos]->grassEffect.positionBuffer);
+		effectData[pos]->grassEffect.grassStalks.TransferPositionToOpenGl(effectData[pos]->grassEffect.positionBuffer);*/
 	}
 
 	if (effectData[pos]->hasRoadEffect)

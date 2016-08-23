@@ -126,7 +126,7 @@
     <ClInclude Include="Utils\Vertex.h" />
     <ClInclude Include="agow.h" />
     <ClInclude Include="version.h" />
-    <ClInclude Include="Viewer.h" />
+    <ClInclude Include="Player.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicPhysics.cpp" />
@@ -160,7 +160,7 @@
     <ClCompile Include="Utils\StringUtils.cpp" />
     <ClCompile Include="Utils\Vertex.cpp" />
     <ClCompile Include="agow.cpp" />
-    <ClCompile Include="Viewer.cpp" />
+    <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

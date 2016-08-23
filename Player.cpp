@@ -1,9 +1,9 @@
 #include "Config\PhysicsConfig.h"
 #include "Math\VecOps.h"
 #include "Map.h"
-#include "Viewer.h"
+#include "Player.h"
 
-Viewer::Viewer()
+Player::Player()
 {
 	vec::vec2 spawnPoint = Map::GetPoint(Map::PLAYER);
     viewPosition = vec::vec3(spawnPoint.x, spawnPoint.y, 200);
@@ -13,24 +13,24 @@ Viewer::Viewer()
     lastMousePos = sf::Vector2i(-1, -1);
 }
 
-const vec::vec3& Viewer::GetViewPosition() const
+const vec::vec3& Player::GetViewPosition() const
 {
     return viewPosition;
 }
 
-const vec::quaternion& Viewer::GetViewOrientation() const
+const vec::quaternion& Player::GetViewOrientation() const
 {
     return viewOrientation;
 }
 
-void Viewer::Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos)
+void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos)
 {
     // TODO make these offsets configurable.
     float height = regionManager->GetPointHeight(world, mapPos);
     viewPosition = vec::vec3(mapPos.x, mapPos.y, height + 4);
 }
 
-void Viewer::InputUpdate()
+void Player::InputUpdate()
 {
     // TODO make motion time-sensitive, or rendering fixed to 60 fps.
 

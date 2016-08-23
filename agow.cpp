@@ -341,9 +341,7 @@ void agow::Update(float currentGameTime)
 
     regionManager.UpdateVisibleRegion(viewer.GetViewPosition(), physics.DynamicsWorld);
 
-    // Update useful statistics that are fancier than the standard GUI
-    statistics.UpdateRunTime(currentGameTime);
-    statistics.UpdateViewPos(viewer.GetViewPosition(), viewer.GetViewOrientation());
+    // TODO move stats back here.
 }
 
 void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
@@ -418,6 +416,9 @@ Constants::Status agow::Run()
 		// TODO clock needs to be interval based.
 		float elapsedSeconds = physicsClock.restart().asSeconds();
 		regionManager.SimulateVisibleRegions(elapsedSeconds);
+
+        // Update useful statistics that are fancier than the standard GUI TODO move back.
+        statistics.UpdateRunTime(clock.getElapsedTime().asSeconds(), elapsedSeconds);
 
         physics.Step(elapsedSeconds);
 

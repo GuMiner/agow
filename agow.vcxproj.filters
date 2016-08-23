@@ -57,7 +57,6 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="Scenery.cpp" />
-    <ClCompile Include="Viewer.cpp" />
     <ClCompile Include="Statistics.cpp" />
     <ClCompile Include="Math\Vec.cpp">
       <Filter>Math</Filter>
@@ -81,6 +80,7 @@
     </ClCompile>
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -140,7 +140,6 @@
       <Filter>Managers</Filter>
     </ClInclude>
     <ClInclude Include="Scenery.h" />
-    <ClInclude Include="Viewer.h" />
     <ClInclude Include="Statistics.h" />
     <ClInclude Include="Data\TextDataTypes.h">
       <Filter>Data</Filter>
@@ -176,6 +175,7 @@
     </ClInclude>
     <ClInclude Include="NPC.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="Player.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Managers">

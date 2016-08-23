@@ -6,10 +6,10 @@
 #include "Managers\RegionManager.h"
 #include "Math\Vec.h"
 
-class Viewer
+class Player
 {
     public:
-        Viewer();
+        Player();
         void InputUpdate();
 
         const vec::vec3& GetViewPosition() const;

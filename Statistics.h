@@ -16,25 +16,18 @@ class Statistics
         Statistics();
         bool Initialize(FontManager* fontManager);
 
-        void UpdateRunTime(float currentTime);
-        void UpdateViewPos(const vec::vec3& position, const vec::quaternion& viewOrientation);
-        void UpdatePlayerDetails(std::string& playerName);
+        void UpdateRunTime(float currentTime, float elapsedTime);
 
         void RenderStats(vec::mat4& perspectiveMatrix);
 
     private:
+        int currentFrameCounter;
+        float totalElapsedTime;
+        
         int textPixelHeight;
         vec::mat4 textScale;
 
         // Overall Details
-        RenderableSentence playerCount;
+        RenderableSentence fps;
         RenderableSentence runTime;
-
-        // Current player details.
-        RenderableSentence playerName;
-
-        // (Viewer details (for current player))
-        RenderableSentence xPosition;
-        RenderableSentence yPosition;
-        RenderableSentence zPosition;
 };
