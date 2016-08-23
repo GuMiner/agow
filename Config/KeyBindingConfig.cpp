@@ -1,5 +1,6 @@
 #include "KeyBindingConfig.h"
 
+// TODO make these letters and do the mapping here.
 sf::Keyboard::Key KeyBindingConfig::MoveLeft;
 sf::Keyboard::Key KeyBindingConfig::MoveRight;
 sf::Keyboard::Key KeyBindingConfig::MoveForward;

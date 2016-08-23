@@ -15,8 +15,10 @@ public:
 		CUBOID
 	};
 
+	static const int INVULNERABLE = -1;
+
 private:
-	std::map<Shape, unsigned int> models;
+	static std::map<Shape, unsigned int> models;
 
 	std::string name;
 	std::string description;
@@ -24,12 +26,13 @@ private:
 	vec::vec4 color;
 
 	int health;
+	bool isSelected;
 
 	PhysicalModel physicalModel;
 
 	bool CanKill()
 	{
-		return health != -1;
+		return health != INVULNERABLE;
 	}
 
 	static BasicPhysics::CShape GetPhysicalShape(Shape shape);
@@ -41,7 +44,7 @@ public:
 	
 	void LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass);
 
-	void Render(const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix);
+	void Render(ModelManager* modelManager, const vec::mat4& projectionMatrix);
 
 	void UnloadNpcPhysics(BasicPhysics physics);
 	virtual ~NPC();

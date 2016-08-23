@@ -238,8 +238,6 @@ void TerrainEffectManager::LoadRoadEffect(vec::vec2i pos, EffectData* effect, Su
 
 void TerrainEffectManager::LoadGrassEffect(vec::vec2i pos, EffectData* effect, SubTile* tile)
 {
-	GLenum errorCode = glGetError();
-	Logger::Log(errorCode, glewGetErrorString(errorCode));
 	effect->hasGrassEffect = false;
 
 	float frequency = 2;
@@ -279,18 +277,12 @@ void TerrainEffectManager::LoadGrassEffect(vec::vec2i pos, EffectData* effect, S
 
 	if (effect->hasGrassEffect)
 	{
-		errorCode = glGetError();
-		Logger::Log(errorCode, glewGetErrorString(errorCode));
-
 		// Grass vertex data.
 		glGenVertexArrays(1, &effect->grassEffect.vao);
 		glBindVertexArray(effect->grassEffect.vao);
 		glGenBuffers(1, &effect->grassEffect.positionBuffer);
 		glGenBuffers(1, &effect->grassEffect.colorBuffer);
 		
-		errorCode = glGetError();
-		Logger::Log(errorCode, glewGetErrorString(errorCode));
-
 		Logger::Log("Parsed ", effect->grassEffect.grassStalks.positions.size() / 2, " grass stalks.");
 		effect->grassEffect.grassStalks.TransferPositionToOpenGl(effect->grassEffect.positionBuffer);
 		effect->grassEffect.grassStalks.TransferColorToOpenGl(effect->grassEffect.colorBuffer);

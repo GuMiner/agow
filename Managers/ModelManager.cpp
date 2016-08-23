@@ -270,7 +270,13 @@ unsigned int ModelManager::GetCurrentModelCount() const
     return nextModelId;
 }
 
-void ModelManager::RenderModel(vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, bool selected)
+void ModelManager::RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, bool selected)
+{
+    RenderModel(projectionMatrix, id, mvMatrix, vec::vec4(1.0f), selected);
+}
+
+// Renders the specified model given by the ID, using the given color.
+void ModelManager::RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, vec::vec4 shadingColor, bool selected)
 {
     glUseProgram(modelRenderProgram);
 
@@ -279,6 +285,7 @@ void ModelManager::RenderModel(vec::mat4& projectionMatrix, unsigned int id, vec
     glBindTexture(GL_TEXTURE_2D, models[id].textureId);
     glUniform1i(textureLocation, unit);
 
+    glUniform4f(shadingColorLocation, shadingColor.x, shadingColor.y, shadingColor.z, shadingColor.w);
     glUniformMatrix4fv(projLocation, 1, GL_FALSE, projectionMatrix);
     glUniformMatrix4fv(mvLocation, 1, GL_FALSE, mvMatrix);
     glUniform1f(selectionFactorLocation, selected ? 0.40f : 0.0f);
@@ -300,6 +307,7 @@ bool ModelManager::InitializeOpenGlResources(ShaderManager& shaderManager)
     mvLocation = glGetUniformLocation(modelRenderProgram, "mvMatrix");
     projLocation = glGetUniformLocation(modelRenderProgram, "projMatrix");
     selectionFactorLocation = glGetUniformLocation(modelRenderProgram, "selectionFactor");
+    shadingColorLocation = glGetUniformLocation(modelRenderProgram, "shadingColor");
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);

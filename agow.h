@@ -15,6 +15,7 @@
 #include "Utils\Constants.h"
 
 #include "BasicPhysics.h"
+#include "NPC.h"
 #include "Scenery.h"
 #include "Statistics.h"
 #include "Viewer.h"
@@ -39,6 +40,12 @@ class agow
     Statistics statistics;
     Viewer viewer;
     Scenery scenery;
+
+	// Key NPCs
+	NPC gearScientist;
+	NPC intellScientist;
+	NPC generalMilitary;
+	NPC sergeantMilitary;
 
     // TEST DATA
     PhysicalModelSet testCubes;

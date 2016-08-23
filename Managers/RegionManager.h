@@ -30,6 +30,9 @@ public:
     RegionManager(ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance);
     bool InitializeGraphics();
     
+    // Returns the height of the point, in real units. If the point is out-of-bounds, returns 0 (min height).
+    float GetPointHeight(btDynamicsWorld* dynamicsWorld, const vec::vec2 point);
+
     void UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorld* dynamicsWorld);
 	void SimulateVisibleRegions(float elapsedSeconds);
     void RenderRegions(const vec::mat4& projectionMatrix);

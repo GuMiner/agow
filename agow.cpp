@@ -7,7 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include "Math\MatrixOps.h"
 #include "Utils\Logger.h"
-#include "NPC.h"
+#include "Map.h"
 #include "agow.h"
 #include "version.h"
 
@@ -44,7 +44,11 @@ agow::agow()
       shaderManager(), imageManager(), modelManager(&imageManager), 
       regionManager(&shaderManager, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
       scenery(&imageManager),
-      viewer()
+      viewer(), // TODO configurable
+	  gearScientist("James Blanton", "Giver of yer gear.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE),
+      intellScientist("Aaron Krinst", "Giver of yer data.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 0.20f, 1.0f, 0.70f), NPC::INVULNERABLE),
+      generalMilitary("Barry Ingleson", "Nominal strategy director.", NPC::Shape::CUBOID, vec::vec4(1.0f, 0.10f, 0.0f, 0.90f), NPC::INVULNERABLE),
+      sergeantMilitary("Oliver Yttrisk", "Battle assistant extraordinaire.", NPC::Shape::CUBOID, vec::vec4(1.0f, 0.50f, 0.0f, 0.50f), NPC::INVULNERABLE)
 {
 }
 
@@ -55,6 +59,16 @@ Constants::Status agow::LoadPhysics()
         return Constants::Status::BAD_PHYSICS;
     }
 
+    // TODO configurable.
+    vec::vec2 gearSciPos = Map::GetPoint(Map::POI::GEAR_SCIENTIST);
+    vec::vec2 intelSciPos = Map::GetPoint(Map::POI::INTELLIGENCE_SCIENTIST);
+    vec::vec2 generalMilPos = Map::GetPoint(Map::POI::GENERAL_MILITARY);
+    vec::vec2 sergeantMilPos = Map::GetPoint(Map::POI::SERGEANT_MILITARY);
+    gearScientist.LoadNpcPhysics(physics, vec::vec3(gearSciPos.x, gearSciPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, gearSciPos)), 100);
+    intellScientist.LoadNpcPhysics(physics, vec::vec3(intelSciPos.x, intelSciPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, intelSciPos)), 90);
+    generalMilitary.LoadNpcPhysics(physics, vec::vec3(generalMilPos.x, generalMilPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, generalMilPos)), 80);
+    sergeantMilitary.LoadNpcPhysics(physics, vec::vec3(sergeantMilPos.x, sergeantMilPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, sergeantMilPos)), 65);
+
     return Constants::Status::OK;
 }
 
@@ -62,6 +76,11 @@ void agow::UnloadPhysics()
 {
     // Delete our test data.
     regionManager.CleanupPhysics(physics.DynamicsWorld);
+
+    gearScientist.UnloadNpcPhysics(physics);
+    intellScientist.UnloadNpcPhysics(physics);
+    generalMilitary.UnloadNpcPhysics(physics);
+    sergeantMilitary.UnloadNpcPhysics(physics);
 
     for (btRigidBody* rigidBody : testCubes.rigidBodies)
     {
@@ -135,15 +154,6 @@ Constants::Status agow::Initialize()
     }
 
     Logger::Log("Configuration loaded!");
-
-    Logger::Log("Loading physics...");
-    Constants::Status status = LoadPhysics();
-    if (status != Constants::Status::OK)
-    {
-        Logger::Log("Bad physics loading!");
-        return status;
-    }
-    Logger::Log("Physics loaded!");
 
     return Constants::Status::OK;
 }
@@ -247,6 +257,15 @@ Constants::Status agow::LoadAssets()
 
     modelManager.ResetOpenGlModelData();
 
+    Logger::Log("Loading physics...");
+    Constants::Status status = LoadPhysics();
+    if (status != Constants::Status::OK)
+    {
+        Logger::Log("Bad physics loading!");
+        return status;
+    }
+    Logger::Log("Physics loaded!");
+
     return Constants::Status::OK;
 }
 
@@ -296,6 +315,12 @@ void agow::Update(float currentGameTime)
 {
     viewer.InputUpdate();
     
+    // TODO test code
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+    {
+        viewer.Warp(&regionManager, physics.DynamicsWorld, vec::vec2(viewer.GetViewPosition().x, viewer.GetViewPosition().y));
+    }
+
     // TODO test code
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F) && !wasPressed)
     {
@@ -348,7 +373,10 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     }
 
 	// Render the key NPCs
-	// TODO
+    gearScientist.Render(&modelManager, projectionMatrix);
+    intellScientist.Render(&modelManager, projectionMatrix);
+    generalMilitary.Render(&modelManager, projectionMatrix);
+    sergeantMilitary.Render(&modelManager, projectionMatrix);
 
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);

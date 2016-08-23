@@ -23,8 +23,17 @@ const vec::quaternion& Viewer::GetViewOrientation() const
     return viewOrientation;
 }
 
+void Viewer::Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos)
+{
+    // TODO make these offsets configurable.
+    float height = regionManager->GetPointHeight(world, mapPos);
+    viewPosition = vec::vec3(mapPos.x, mapPos.y, height + 4);
+}
+
 void Viewer::InputUpdate()
 {
+    // TODO make motion time-sensitive, or rendering fixed to 60 fps.
+
     vec::vec3 forwardsVector = viewOrientation.forwardVector();
     vec::vec3 sidewaysVector = VecOps::Cross(viewOrientation.upVector(), forwardsVector);
     if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveLeft))

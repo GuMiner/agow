@@ -30,7 +30,10 @@ class ModelManager
         unsigned int GetCurrentModelCount() const;
 
         // Renders the specified model given by the ID.
-        void RenderModel(vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, bool selected);
+        void RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, bool selected);
+
+        // Renders the specified model given by the ID, using the given color.
+        void RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, vec::vec4 shadingColor, bool selected);
 
         // Initializes the OpenGL resources
         bool InitializeOpenGlResources(ShaderManager& shaderManager);
@@ -53,6 +56,7 @@ class ModelManager
         GLuint modelRenderProgram;
 
         GLuint textureLocation;
+        GLuint shadingColorLocation;
         GLuint mvLocation;
         GLuint projLocation;
         GLuint selectionFactorLocation;

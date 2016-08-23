@@ -16,7 +16,7 @@ vec::vec2 Map::GetPoint(POI point)
 		return vec::vec2(12000, 44040);
 	case POI::GENERAL_MILITARY:
 		return vec::vec2(11980, 44000);
-	case POI::SERGANT_MILITARY:
+	case POI::SERGEANT_MILITARY:
 		return vec::vec2(12000, 43980);
 	default:
 		return vec::vec2(12000, 44000);
