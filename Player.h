@@ -4,23 +4,30 @@
 #include <Bullet\btBulletDynamicsCommon.h>
 #include "Config\KeyBindingConfig.h"
 #include "Managers\RegionManager.h"
+#include "Managers\ModelManager.h"
 #include "Math\Vec.h"
+#include "BasicPhysics.h"
 
 class Player
 {
+    // Where the viewer is currently oriented on-screen.
+    PhysicalModel physicalModel;
+
+    // Used for view rotation.
+    sf::Vector2i lastMousePos;
+
     public:
         Player();
-        void InputUpdate();
+        bool LoadPlayerModel(ModelManager* modelManager);
+        void LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass);
+        
+        void Render(ModelManager* modelManager, const vec::mat4& projectionMatrix);
+        void InputUpdate(float frameTime);
 
-        const vec::vec3& GetViewPosition() const;
-        const vec::quaternion& GetViewOrientation() const;
+        const vec::vec3 GetViewPosition() const;
+        const vec::quaternion GetViewOrientation() const;
 
-        void Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos);
+        void Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos);      
 
-    private:
-        // Where the viewer is currently oriented on-screen.
-        vec::vec3 viewPosition;
-        vec::quaternion viewOrientation;
-
-        sf::Vector2i lastMousePos;
+        void UnloadPlayerPhysics(BasicPhysics physics);
 };

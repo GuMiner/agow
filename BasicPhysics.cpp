@@ -34,6 +34,8 @@ void BasicPhysics::LoadBasicCollisionShapes()
 	delete[] diamondPoints;
 
     CollisionShapes[CShape::SMALL_CUBE] = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+    
+    CollisionShapes[CShape::PLAYER] = new btBoxShape(btVector3(width, width, height)); // new btConeShape(width / 2.0f, height);
 }
 
 bool BasicPhysics::LoadPhysics()
@@ -128,6 +130,14 @@ vec::mat4 BasicPhysics::GetBodyMatrix(const btRigidBody* body)
 
     vec::quaternion rotation = VecOps::Convert(worldTransform.getRotation());
     return MatrixOps::Translate(VecOps::Convert(worldTransform.getOrigin())) * rotation.asMatrix();
+}
+
+vec::quaternion BasicPhysics::GetBodyRotation(const btRigidBody* body)
+{
+    btTransform worldTransform;
+    body->getMotionState()->getWorldTransform(worldTransform);
+
+    return VecOps::Convert(worldTransform.getRotation());
 }
 
 void BasicPhysics::DeleteBody(btRigidBody* body) const

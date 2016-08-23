@@ -21,7 +21,8 @@ public:
         SMALL_CUBE,
         NPC_CAPSULE,
 		NPC_CUBOID,
-		NPC_DIAMOND
+		NPC_DIAMOND,
+        PLAYER
     };
 
     std::map<CShape, btCollisionShape*> CollisionShapes;
@@ -44,6 +45,7 @@ public:
 
     // Converts from Bullet geometry to our game geometry.
     static vec::mat4 GetBodyMatrix(const btRigidBody* body);
+    static vec::quaternion GetBodyRotation(const btRigidBody* body);
     void DeleteBody(btRigidBody* body) const;
 };
 

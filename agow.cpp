@@ -44,7 +44,7 @@ agow::agow()
       shaderManager(), imageManager(), modelManager(&imageManager), 
       regionManager(&shaderManager, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
       scenery(&imageManager),
-      viewer(), // TODO configurable
+      player(), // TODO configurable
 	  gearScientist("James Blanton", "Giver of yer gear.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE),
       intellScientist("Aaron Krinst", "Giver of yer data.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 0.20f, 1.0f, 0.70f), NPC::INVULNERABLE),
       generalMilitary("Barry Ingleson", "Nominal strategy director.", NPC::Shape::CUBOID, vec::vec4(1.0f, 0.10f, 0.0f, 0.90f), NPC::INVULNERABLE),
@@ -68,6 +68,9 @@ Constants::Status agow::LoadPhysics()
     intellScientist.LoadNpcPhysics(physics, vec::vec3(intelSciPos.x, intelSciPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, intelSciPos)), 90);
     generalMilitary.LoadNpcPhysics(physics, vec::vec3(generalMilPos.x, generalMilPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, generalMilPos)), 80);
     sergeantMilitary.LoadNpcPhysics(physics, vec::vec3(sergeantMilPos.x, sergeantMilPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, sergeantMilPos)), 65);
+    
+    vec::vec2 spawnPoint = Map::GetPoint(Map::PLAYER);
+    player.LoadPlayerPhysics(physics, vec::vec3(spawnPoint.x, spawnPoint.y, 200), 70);
 
     return Constants::Status::OK;
 }
@@ -81,6 +84,7 @@ void agow::UnloadPhysics()
     intellScientist.UnloadNpcPhysics(physics);
     generalMilitary.UnloadNpcPhysics(physics);
     sergeantMilitary.UnloadNpcPhysics(physics);
+    player.UnloadPlayerPhysics(physics);
 
     for (btRigidBody* rigidBody : testCubes.rigidBodies)
     {
@@ -248,6 +252,12 @@ Constants::Status agow::LoadAssets()
 	}
 	Logger::Log("NPC loading complete.");
 
+    Logger::Log("Player model loading...");
+    if (!player.LoadPlayerModel(&modelManager))
+    {
+        return Constants::Status::BAD_MODEL;
+    }
+
     // Now that *all* the models have loaded, prepare for rendering models by initializing OpenGL and sending the model data to OpenGL
     Logger::Log("Sending model VAO to OpenGL...");
     if (!modelManager.InitializeOpenGlResources(shaderManager))
@@ -311,22 +321,22 @@ void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused
 }
 
 bool wasPressed = false;
-void agow::Update(float currentGameTime)
+void agow::Update(float currentGameTime, float frameTime)
 {
-    viewer.InputUpdate();
+    player.InputUpdate(frameTime);
     
     // TODO test code
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     {
-        viewer.Warp(&regionManager, physics.DynamicsWorld, vec::vec2(viewer.GetViewPosition().x, viewer.GetViewPosition().y));
+        player.Warp(&regionManager, physics.DynamicsWorld, vec::vec2(player.GetViewPosition().x, player.GetViewPosition().y));
     }
 
     // TODO test code
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F) && !wasPressed)
     {
         // Fire a cube for collision tests.
-        vec::vec3 pos = viewer.GetViewPosition() + 5.0f * viewer.GetViewOrientation().forwardVector();
-        vec::vec3 vel = 40.0f * viewer.GetViewOrientation().forwardVector();
+        vec::vec3 pos = player.GetViewPosition() + 5.0f * player.GetViewOrientation().forwardVector();
+        vec::vec3 vel = 40.0f * player.GetViewOrientation().forwardVector();
 
         btRigidBody* rigidBody = physics.GetDynamicBody(BasicPhysics::SMALL_CUBE, btVector3(pos.x, pos.y, pos.z), 20.0f);
         rigidBody->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
@@ -339,9 +349,14 @@ void agow::Update(float currentGameTime)
         wasPressed = false;
     }
 
-    regionManager.UpdateVisibleRegion(viewer.GetViewPosition(), physics.DynamicsWorld);
+    regionManager.UpdateVisibleRegion(player.GetViewPosition(), physics.DynamicsWorld);
+    regionManager.SimulateVisibleRegions(frameTime);
 
-    // TODO move stats back here.
+    // Update useful statistics that are fancier than the standard GUI
+    statistics.UpdateRunTime(currentGameTime, frameTime);
+
+    // Update physics.
+    physics.Step(frameTime);
 }
 
 void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
@@ -376,6 +391,9 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     generalMilitary.Render(&modelManager, projectionMatrix);
     sergeantMilitary.Render(&modelManager, projectionMatrix);
 
+    // Player rendering
+    player.Render(&modelManager, projectionMatrix);
+
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);
 }
@@ -399,7 +417,7 @@ Constants::Status agow::Run()
     Logger::Log("Graphics Initialized!");
 
     sf::Clock clock;
-    sf::Clock physicsClock;
+    sf::Clock frameClock;
     sf::Time clockStartTime;
     bool alive = true;
     bool focusPaused = false;
@@ -408,23 +426,17 @@ Constants::Status agow::Run()
     while (alive)
     {
         clockStartTime = clock.getElapsedTime();
-        viewMatrix = viewer.GetViewOrientation().asMatrix() * MatrixOps::Translate(-viewer.GetViewPosition());
+        viewMatrix = player.GetViewOrientation().asMatrix() * MatrixOps::Translate(-player.GetViewPosition());
 
+        float frameTime = frameClock.restart().asSeconds();
         HandleEvents(window, alive, focusPaused, escapePaused);
-        Update(clock.getElapsedTime().asSeconds());
         
-		// TODO clock needs to be interval based.
-		float elapsedSeconds = physicsClock.restart().asSeconds();
-		regionManager.SimulateVisibleRegions(elapsedSeconds);
-
-        // Update useful statistics that are fancier than the standard GUI TODO move back.
-        statistics.UpdateRunTime(clock.getElapsedTime().asSeconds(), elapsedSeconds);
-
-        physics.Step(elapsedSeconds);
-
-        // Render, only if non-paused. TODO we also need to pause all game mechanics to avoid weird inconsistencies.
+        // Run the game and render if not paused.
         if (!focusPaused && !escapePaused)
         {
+            float gameTime = clock.getElapsedTime().asSeconds();
+            Update(gameTime, frameTime);
+
             Render(window, viewMatrix);
 
             // Display what we rendered.
@@ -433,7 +445,7 @@ Constants::Status agow::Run()
         }
 
         // Delay to run approximately at our maximum framerate.
-        sf::Int64 sleepDelay = (1000000 / Constants::MAX_FRAMERATE) - clock.getElapsedTime().asMicroseconds() - clockStartTime.asMicroseconds();
+        sf::Int64 sleepDelay = ((long)1e6 / Constants::MAX_FRAMERATE) - (long)(frameTime * 1e6);
         sf::sleep(sf::microseconds(sleepDelay));
     }
 

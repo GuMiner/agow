@@ -38,7 +38,7 @@ class agow
     // Game data
     BasicPhysics physics;
     Statistics statistics;
-    Player viewer;
+    Player player;
     Scenery scenery;
 
 	// Key NPCs
@@ -64,7 +64,7 @@ class agow
     void HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused, bool& escapePaused);
     
     // Performs game updates.
-    void Update(float currentGameTime);
+    void Update(float currentGameTime, float frameTime);
 
     // Renders the scene.
     void Render(sf::RenderWindow& window, vec::mat4& viewMatrix);
