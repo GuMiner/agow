@@ -16,9 +16,10 @@
 
 #include "BasicPhysics.h"
 #include "NPC.h"
+#include "Player.h"
+#include "RockGenerator.h"
 #include "Scenery.h"
 #include "Statistics.h"
-#include "Player.h"
 
 // Handles startup and the base graphics rendering loop.
 class agow
@@ -37,8 +38,9 @@ class agow
 
     // Game data
     BasicPhysics physics;
-    Statistics statistics;
     Player player;
+    RockGenerator rockGenerator;
+    Statistics statistics;
     Scenery scenery;
 
 	// Key NPCs
@@ -48,7 +50,7 @@ class agow
 	NPC sergeantMilitary;
 
     // TEST DATA
-    PhysicalModelSet testCubes;
+    std::vector<PhysicalModel> testCubes;
     
     // Physics setup.
     Constants::Status LoadPhysics();

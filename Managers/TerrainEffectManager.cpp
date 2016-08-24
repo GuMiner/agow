@@ -96,7 +96,7 @@ vec::vec2i TerrainEffectManager::GetNearbyType(SubTile* tile, const vec::vec2i p
 	vec::vec2i result(-1, -1);
 	bool foundNearbyType = false;
 	
-	int checkOrder = (int)(MathOps::Rand() * 8);
+    int checkOrder = MathOps::Rand(0, 8);
 
 	switch (checkOrder)
 	{

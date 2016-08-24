@@ -24,7 +24,7 @@ BasicPhysics::CShape NPC::GetPhysicalShape(Shape shape)
 
 bool NPC::LoadNpcModels(ModelManager* modelManager)
 {
-	unsigned int capsuleModel = modelManager->LoadModel("models/npc_capsule");
+	unsigned int capsuleModel = modelManager->LoadModel("models/npc/capsule");
 	if (capsuleModel == 0)
 	{
 		return false;
@@ -32,7 +32,7 @@ bool NPC::LoadNpcModels(ModelManager* modelManager)
 
 	models[Shape::CAPSULE] = capsuleModel;
 
-	unsigned int diamondModel = modelManager->LoadModel("models/npc_diamond");
+	unsigned int diamondModel = modelManager->LoadModel("models/npc/diamond");
 	if (diamondModel == 0)
 	{
 		return false;
@@ -40,7 +40,7 @@ bool NPC::LoadNpcModels(ModelManager* modelManager)
 
 	models[Shape::DIAMOND] = diamondModel;
 
-	unsigned int cuboidModel = modelManager->LoadModel("models/npc_cuboid");
+	unsigned int cuboidModel = modelManager->LoadModel("models/npc/cuboid");
 	if (cuboidModel == 0)
 	{
 		return false;

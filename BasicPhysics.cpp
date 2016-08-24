@@ -46,7 +46,7 @@ void BasicPhysics::LoadBasicCollisionShapes()
     delete[] playerPoints;
 }
 
-bool BasicPhysics::LoadPhysics()
+bool BasicPhysics::LoadPhysics(std::map<CShape, const std::vector<vec::vec3>*> shapePoints)
 {
     collisionConfiguration = new btDefaultCollisionConfiguration();
     collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
@@ -57,7 +57,13 @@ bool BasicPhysics::LoadPhysics()
         constraintSolver, collisionConfiguration);
 
     DynamicsWorld->setGravity(btVector3(0, 0, -9.80f));
+    
+    // Our basic collision shapes are hardcoded, and any model-based shapes are passed-in directly.
     LoadBasicCollisionShapes();
+    for (std::pair<const CShape, const std::vector<vec::vec3>*> shapePointPair : shapePoints)
+    {
+        CollisionShapes[shapePointPair.first] = new btConvexHullShape((btScalar*)&(*shapePointPair.second)[0], shapePointPair.second->size(), sizeof(vec::vec3));
+    }
 
     return true;
 }

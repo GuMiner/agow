@@ -79,5 +79,5 @@ class ModelManager
 
         // Loads an OBJ model into the specified vertices, returning true on success.
         // Note that the OBJ model must fully specify all positions / UVs *before* any indices.
-        bool LoadModel(const char* objFilename, universalVertices& vertices, vec::vec3* minBounds, vec::vec3* maxBounds);
+        bool LoadModel(const char* objFilename, universalVertices& vertices, int* rawPointCount, vec::vec3* minBounds, vec::vec3* maxBounds);
 };

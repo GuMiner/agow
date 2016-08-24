@@ -43,7 +43,7 @@ agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       shaderManager(), imageManager(), modelManager(&imageManager), 
       regionManager(&shaderManager, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
-      scenery(),
+      scenery(), rockGenerator(),
       player(), // TODO configurable
 	  gearScientist("James Blanton", "Giver of yer gear.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE),
       intellScientist("Aaron Krinst", "Giver of yer data.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 0.20f, 1.0f, 0.70f), NPC::INVULNERABLE),
@@ -54,7 +54,7 @@ agow::agow()
 
 Constants::Status agow::LoadPhysics()
 {
-    if (!physics.LoadPhysics())
+    if (!physics.LoadPhysics(rockGenerator.GetModelPoints(&modelManager)))
     {
         return Constants::Status::BAD_PHYSICS;
     }
@@ -86,10 +86,10 @@ void agow::UnloadPhysics()
     sergeantMilitary.UnloadNpcPhysics(physics);
     player.UnloadPlayerPhysics(physics);
 
-    for (btRigidBody* rigidBody : testCubes.rigidBodies)
+    for (const PhysicalModel& model : testCubes)
     {
-        physics.DynamicsWorld->removeRigidBody(rigidBody);
-        physics.DeleteBody(rigidBody);
+        physics.DynamicsWorld->removeRigidBody(model.rigidBody);
+        physics.DeleteBody(model.rigidBody);
     }
 
     physics.UnloadPhysics();
@@ -179,12 +179,8 @@ Constants::Status agow::LoadGraphics()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Enable line and polygon smoothing
+    // Enable line, but not polygon smoothing.
     glEnable(GL_LINE_SMOOTH);
-    // glEnable(GL_POLYGON_SMOOTH);
-
-    // Multisample if available
-    // glEnable(GL_MULTISAMPLE);
 
     // Let OpenGL shaders determine point sizes.
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -197,14 +193,6 @@ Constants::Status agow::LoadGraphics()
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    // Ensure cube maps (skybox) are seemless and clamp to the edges 
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
     return LoadAssets();
 }
 
@@ -214,11 +202,8 @@ Constants::Status agow::LoadAssets()
     Logger::Log("Scenery loading...");
     if (!scenery.Initialize(shaderManager))
     {
-        Logger::Log("Bad scenery");
         return Constants::Status::BAD_SCENERY;
     }
-
-    Logger::Log("Scenery loading done!");
 
     // Fonts
     Logger::Log("Font loading...");
@@ -226,8 +211,6 @@ Constants::Status agow::LoadAssets()
     {
         return Constants::Status::BAD_FONT;
     }
-
-    Logger::Log("Font loading done!");
 
     // Statistics
     Logger::Log("Statistics loading...");
@@ -242,13 +225,10 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_TERRAIN;
     }
 
-    // Load the mode for the test cube.
-    testCubes.modelId = modelManager.LoadModel("models/cube");
-
 	Logger::Log("NPC model loading...");
 	if (!NPC::LoadNpcModels(&modelManager))
 	{
-		return Constants::Status::BAD_NPC;
+        return Constants::Status::BAD_MODEL;
 	}
 
     gearScientist.LoadGraphics(&fontManager);
@@ -256,7 +236,11 @@ Constants::Status agow::LoadAssets()
     generalMilitary.LoadGraphics(&fontManager);
     sergeantMilitary.LoadGraphics(&fontManager);
 
-	Logger::Log("NPC loading complete.");
+    Logger::Log("Rock loading...");
+    if (!rockGenerator.LoadModels(&modelManager))
+    {
+        return Constants::Status::BAD_MODEL;
+    }
 
     Logger::Log("Player model loading...");
     if (!player.LoadPlayerModel(&modelManager))
@@ -277,10 +261,8 @@ Constants::Status agow::LoadAssets()
     Constants::Status status = LoadPhysics();
     if (status != Constants::Status::OK)
     {
-        Logger::Log("Bad physics loading!");
         return status;
     }
-    Logger::Log("Physics loaded!");
 
     return Constants::Status::OK;
 }
@@ -349,10 +331,15 @@ void agow::Update(float currentGameTime, float frameTime)
         vec::vec3 pos = player.GetViewPosition() + 5.0f * player.GetViewOrientation().forwardVector();
         vec::vec3 vel = 40.0f * player.GetViewOrientation().forwardVector();
 
-        btRigidBody* rigidBody = physics.GetDynamicBody(BasicPhysics::SMALL_CUBE, btVector3(pos.x, pos.y, pos.z), 20.0f);
-        rigidBody->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
-        testCubes.rigidBodies.push_back(rigidBody);
-        physics.DynamicsWorld->addRigidBody(rigidBody);
+        PhysicalModel model;
+        BasicPhysics::CShape shape;
+        rockGenerator.GetRandomRockModel(&model.modelId, &shape);
+
+        model.rigidBody = physics.GetDynamicBody(shape, btVector3(pos.x, pos.y, pos.z), 20.0f);
+        model.rigidBody->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
+        testCubes.push_back(model);
+
+        physics.DynamicsWorld->addRigidBody(model.rigidBody);
         wasPressed = true;
     }
     else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F) && wasPressed)
@@ -387,13 +374,10 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     regionManager.RenderRegions(projectionMatrix);
 
     // Render all the moving objects
-    for (unsigned int i = 0; i < testCubes.rigidBodies.size(); i++)
+    for (unsigned int i = 0; i < testCubes.size(); i++)
     {
-        btRigidBody* body = testCubes.rigidBodies[i];
-        vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(body);
-        mvMatrix = mvMatrix * MatrixOps::Scale(vec::vec3(1.0f / 100.0f, 1.0f / 100.0f, 1.0f / 100.0f));
-
-        modelManager.RenderModel(projectionMatrix, testCubes.modelId, mvMatrix, false);
+        vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(testCubes[i].rigidBody);
+        modelManager.RenderModel(projectionMatrix, testCubes[i].modelId, mvMatrix, false);
     }
 
 	// Render the key NPCs
@@ -494,7 +478,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        Logger::LogError("Could not initialize AGOW!");
+        Logger::LogError("Could not initialize agow: ", runStatus);
     }
 
     // Wait before closing for display purposes.

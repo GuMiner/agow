@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <vector>
 #include <Bullet\btBulletDynamicsCommon.h>
 #include "Math\Vec.h"
 
@@ -22,6 +23,14 @@ public:
         NPC_CAPSULE,
 		NPC_CUBOID,
 		NPC_DIAMOND,
+        ROCK_OCTAHEDRON,
+        ROCK_DODECAHEDRON,
+        ROCK_ICOSAHEDRON,
+        ROCK_OCTOTOAD,
+        ROCK_SPHERE_ONE,
+        ROCK_SPHERE_TWO,
+        ROCK_SPHERE_THREE,
+        ROCK_TETRAHEDRON,
         PLAYER
     };
 
@@ -29,7 +38,7 @@ public:
     btDiscreteDynamicsWorld *DynamicsWorld;
 
     BasicPhysics();
-    bool LoadPhysics();
+    bool LoadPhysics(std::map<CShape, const std::vector<vec::vec3>*> shapePoints);
     void Step(float timestep);
     void UnloadPhysics();
 

@@ -127,7 +127,7 @@ bool ModelManager::ParseLine(const std::vector<std::string>& line, universalVert
     return true;
 }
 
-bool ModelManager::LoadModel(const char* objFilename, universalVertices& vertices, vec::vec3* minBounds, vec::vec3* maxBounds)
+bool ModelManager::LoadModel(const char* objFilename, universalVertices& vertices, int* rawPointCount, vec::vec3* minBounds, vec::vec3* maxBounds)
 {
     std::string fileString;
     if (!StringUtils::LoadStringFromFile(objFilename, fileString))
@@ -153,6 +153,8 @@ bool ModelManager::LoadModel(const char* objFilename, universalVertices& vertice
             return false;
         }
     }
+
+    *rawPointCount = vertices.positions.size();
 
     // Properly render out the vertices so that there is one UV per vertex.
     uvVertexRemapping.clear();
@@ -248,7 +250,7 @@ unsigned int ModelManager::LoadModel(const char* rootFilename)
         return 0;
     }
 
-    if (!LoadModel(objString.c_str(), textureModel.vertices, &textureModel.minBounds, &textureModel.maxBounds))
+    if (!LoadModel(objString.c_str(), textureModel.vertices, &textureModel.rawPointCount, &textureModel.minBounds, &textureModel.maxBounds))
     {
         Logger::Log("Error loading the OBJ model!");
         Logger::LogError(objString.c_str());
