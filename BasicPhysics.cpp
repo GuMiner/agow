@@ -106,7 +106,9 @@ btRigidBody* BasicPhysics::GetDynamicBody(const CShape shape, const btVector3& o
     CollisionShapes[shape]->calculateLocalInertia(mass, localInertia);
     btDefaultMotionState *motionState = new btDefaultMotionState(pos);
     btRigidBody::btRigidBodyConstructionInfo object(mass, motionState, CollisionShapes[shape], localInertia);
-    return new btRigidBody(object);
+    btRigidBody* newBody = new btRigidBody(object);
+    newBody->setFriction(0.50f); // TODO configurable.
+    return newBody;
 }
 
 vec::vec3 BasicPhysics::GetBodyPosition(const btRigidBody* body)

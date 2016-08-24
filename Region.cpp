@@ -49,6 +49,7 @@ btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDyn
 
     btRigidBody* heightmap =  new btRigidBody(ground);
 	dynamicsWorld->addRigidBody(heightmap);
+    heightmap->setFriction(0.50f); // TODO configurable.
 	return heightmap;
 }
 

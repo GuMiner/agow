@@ -33,7 +33,7 @@ void Camera::Update(float elapsedTime)
         * vec::quaternion::fromAxisAngle(MathOps::Radians(centerPitch + currentPitch), vec::vec3(1, 0, 0))
         * vec::quaternion::fromAxisAngle(MathOps::Radians(currentYaw), vec::vec3(0, 1, 0));
 
-    cameraRotation = expectedRotation;// *cameraRotation.conjugate();
+    cameraRotation = expectedRotation;
 
     this->playerObject = playerObject;
     vec::vec3 pos = BasicPhysics::GetBodyPosition(playerObject);
@@ -43,8 +43,11 @@ void Camera::Update(float elapsedTime)
     vec::vec3 upVector = orientation.upVector();
 
     // TODO configurable distance from the player.
-    cameraPos = pos - (upVector * 0.1f + forwardsVector * 3.5f);
-    cameraPos.z = std::max(cameraPos.z, pos.z);
+    vec::vec3 newCameraPos = pos - (upVector * 0.1f + forwardsVector * 3.5f);
+    newCameraPos.z = std::max(newCameraPos.z, pos.z);
+
+    vec::vec3 difference = newCameraPos - cameraPos;
+    cameraPos += difference * 0.20f; // TODO configurable.
 }
 
 void Camera::Yaw(float factor)

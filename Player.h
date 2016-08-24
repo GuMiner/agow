@@ -18,10 +18,6 @@ class Player
     // Used for view rotation.
     sf::Vector2i lastMousePos;
 
-    bool hasFallenOver;
-    float timeToGetUp;
-
-
 public:
     Player();
     bool LoadPlayerModel(ModelManager* modelManager);

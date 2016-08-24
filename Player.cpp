@@ -19,8 +19,8 @@ void Player::LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition,
 {
     physicalModel.rigidBody = physics.GetDynamicBody(BasicPhysics::CShape::PLAYER, VecOps::Convert(startingPosition), mass);
     physicalModel.rigidBody->forceActivationState(DISABLE_DEACTIVATION);
-    physicalModel.rigidBody->setAngularFactor(btVector3(0.01f, 0.01f, 0.08f)); // TODO configurable
-    physicalModel.rigidBody->setDamping(0.0f, 0.1f);
+    physicalModel.rigidBody->setAngularFactor(0.0f);
+    physicalModel.rigidBody->setFriction(2.0f); // TODO configurable.
     physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
 
     camera.Initialize(physicalModel.rigidBody);
@@ -48,16 +48,13 @@ void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const ve
     // TODO make these offsets configurable.
     float height = regionManager->GetPointHeight(world, mapPos);
 
-    btTransform worldTransform;
-    physicalModel.rigidBody->getMotionState()->getWorldTransform(worldTransform);
+    btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
     
     worldTransform.setIdentity();
     worldTransform.setOrigin(btVector3(mapPos.x, mapPos.y, height + 4));
     physicalModel.rigidBody->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
     physicalModel.rigidBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
     physicalModel.rigidBody->activate(true); // Ensure we don't hang in midair.
-    physicalModel.rigidBody->setWorldTransform(worldTransform);
-    physicalModel.rigidBody->getMotionState()->setWorldTransform(worldTransform);
 }
 
 void Player::Render(ModelManager* modelManager, const vec::mat4& projectionMatrix)
@@ -68,13 +65,13 @@ void Player::Render(ModelManager* modelManager, const vec::mat4& projectionMatri
 
 void Player::Update(float frameTime)
 {
-    // TODO rotate the player upwards if they have fallen over.
-
     vec::quaternion travelRotation = BasicPhysics::GetBodyRotation(physicalModel.rigidBody).conjugate() * vec::quaternion::fromAxisAngle(MathOps::Radians(90), vec::vec3(0, 0, 1));
 
     vec::vec3 upVector = travelRotation.upVector();
     vec::vec3 forwardsVector = travelRotation.forwardVector();
     vec::vec3 sidewaysVector = VecOps::Cross(upVector, forwardsVector);
+
+    sidewaysVector = vec::normalize(sidewaysVector);
     if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveForward))
     {
         physicalModel.rigidBody->applyCentralForce(VecOps::Convert(sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
@@ -96,11 +93,19 @@ void Player::Update(float frameTime)
     if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveLeft))
     {
         physicalModel.rigidBody->applyCentralForce(VecOps::Convert(-forwardsVector * PhysicsConfig::ViewForwardsSpeed));
+        btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
+        btQuaternion rotation = worldTransform.getRotation();
+        rotation = rotation * btQuaternion(btVector3(0, 0, 1), 0.05f); // TODO configurable
+        worldTransform.setRotation(rotation);
     }
 
     if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveRight))
     {
         physicalModel.rigidBody->applyCentralForce(VecOps::Convert(forwardsVector * PhysicsConfig::ViewForwardsSpeed));
+        btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
+        btQuaternion rotation = worldTransform.getRotation();
+        rotation = rotation * btQuaternion(btVector3(0, 0, 1), -0.05f); // TODO configurable
+        worldTransform.setRotation(rotation);
     }
 
     if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveUp))
