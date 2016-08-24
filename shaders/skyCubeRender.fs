@@ -1,30 +1,32 @@
 #version 400 core
 
-uniform samplerCube skyCubeMap;
-
+uniform vec4 flavorColor;
 in vec3 uvwPos;
-
-// 512 entries.
-uniform sampler2D colorTransformImage;
-uniform vec2 colorTransformOffset; 
 
 out vec4 color;
 
 void main(void)
 {
-    // Simply apply the color taking it from the cube map.
-    vec4 textureColor = texture(skyCubeMap, uvwPos);
-    
-    if (textureColor.x > 0.20)
-    {
-        vec2 uvPos = vec2((uvwPos.x + 1.0) / 2.0, (uvwPos.y + 1.0) / 2.0);
-        color = texture(colorTransformImage, uvPos + colorTransformOffset);
-    }
-    else
-    {
-        color = textureColor;
-    }
+	ivec3 uvwId = ivec3(uvwPos.x * 100, uvwPos.y * 100, uvwPos.z * 100);
+	bool isStar = sin(dot(uvwId.xy, vec2(7.0f, 5.0f))*dot(uvwId.yz, vec2(3.0f, 11.0f)) * uvwId.x) > 0.99999f;
 	
-	color = vec4((int(uvwPos.x * 200) % 20) / 20.0f, (int(uvwPos.y * 200) % 20) / 20.0f, (int(uvwPos.z * 200) % 20) / 20.0f, 1.0f);
-	color = textureColor;
+	// Generate a 'random' star color.
+	vec3 starColor = 
+		vec3(0.75f + 0.25f * sin(dot(uvwId.xy, vec2(3.0f, 5.0f)) * 2000.0f),
+			 0.75f + 0.25f * sin(dot(uvwId.xy, vec2(9.0f, 5.0f)) * 2000.0f),
+			 0.75f + 0.25f * cos(dot(uvwId.xy, vec2(3.0f, 7.0f)) * 2000.0f));
+			 
+	vec3 backgroundColor = vec3(0.078f, 0.047f, 0.188f);
+	
+	if (isStar)
+	{
+		color = vec4(starColor, 1.0f);
+	}
+    else
+	{
+		color = vec4(backgroundColor, 1.0f);
+	}
+	
+	// Apply the flavor color to all the stars found.
+	color = color * vec4(flavorColor.xyz, 1.0f) * flavorColor.w;
 }

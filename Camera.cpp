@@ -60,8 +60,8 @@ void Camera::Yaw(float factor)
 void Camera::Pitch(float factor)
 {
     currentPitch += factor;
-    currentPitch = std::min(currentPitch, pitchLimits.y);
-    currentPitch = std::max(currentPitch, pitchLimits.x);
+    //currentPitch = std::min(currentPitch, pitchLimits.y);
+    //  currentPitch = std::max(currentPitch, pitchLimits.x);
 }
 
 const vec::vec3 Camera::GetViewPosition() const
@@ -71,5 +71,5 @@ const vec::vec3 Camera::GetViewPosition() const
 
 const vec::quaternion Camera::GetViewOrientation() const
 {
-    return cameraRotation;
+    return cameraRotation;  
 }

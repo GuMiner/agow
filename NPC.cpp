@@ -55,13 +55,13 @@ bool NPC::LoadNpcModels(ModelManager* modelManager)
 NPC::NPC(std::string name, std::string description, Shape shape, vec::vec4 color, int startingHealth)
 	: name(name), description(description), shape(shape), color(color), health(startingHealth), isSelected(false)
 {
+    nameString.color = vec::vec3(1.0f) - vec::vec3(color.x, color.y, color.z);
 }
 
 void NPC::LoadGraphics(FontManager* fontManager)
 {
     nameString.sentenceId = fontManager->CreateNewSentence();
-    nameString.color = vec::vec3(1.0f, 0.0f, 1.0f);
-    fontManager->UpdateSentence(nameString.sentenceId, name, 22, vec::vec3(1.0f, 0.0f, 1.0f));
+    fontManager->UpdateSentence(nameString.sentenceId, name, 22, nameString.color);
 }
 
 void NPC::LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass)
@@ -79,9 +79,10 @@ void NPC::LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float
 void NPC::Update(float gameTime, float elapsedTime)
 {
     nameString.posRotMatrix =
-        MatrixOps::Translate(vec::vec3(0.0f, 0.0f, 1.5f)) *
+        MatrixOps::Translate(vec::vec3(-0.60f, -0.60f, 0.55f)) *
         BasicPhysics::GetBodyMatrix(physicalModel.rigidBody) * 
-        MatrixOps::Rotate(MathOps::Radians(90.0f), vec::vec3(0.0f, 1.0f, 0.0f));
+        MatrixOps::Scale(0.20f, 0.20f, 0.20f) * 
+        MatrixOps::Rotate(90.0f, vec::vec3(1.0f, 0.0f, 0.0f));
 }
 
 void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const vec::mat4& projectionMatrix)

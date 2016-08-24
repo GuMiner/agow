@@ -43,7 +43,7 @@ agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       shaderManager(), imageManager(), modelManager(&imageManager), 
       regionManager(&shaderManager, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
-      scenery(&imageManager),
+      scenery(),
       player(), // TODO configurable
 	  gearScientist("James Blanton", "Giver of yer gear.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE),
       intellScientist("Aaron Krinst", "Giver of yer data.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 0.20f, 1.0f, 0.70f), NPC::INVULNERABLE),
@@ -381,7 +381,7 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     glClearBufferfv(GL_DEPTH, 0, &one);
 
     // Render the scenery
-    scenery.Render(viewMatrix, projectionMatrix);
+    scenery.Render(projectionMatrix);
 
     // Render our ground, and any derivative items from that.
     regionManager.RenderRegions(projectionMatrix);

@@ -4,46 +4,26 @@
 #include "Managers\ShaderManager.h"
 #include "Math\Vec.h"
 
-// Holds static scenery objects that are rendered.
+// Renders long-range scenery to give an impression of an infinite world.
 class Scenery
 {
-    public:
-        Scenery(ImageManager* imageManager);
+    // Sky cube
+    GLuint skyCubeProgram;
+    GLuint viewMatrixLocation;
+    GLuint flavorColorLocation;
 
-        bool Initialize(ShaderManager& shaderManager);
-        void Render(vec::mat4& viewMatrix, vec::mat4& projectionMatrix);
+    GLuint skyCubeVao;
 
-        ~Scenery();
+    float flavorColorStrength;
+    vec::vec3 flavorColor;
 
-    private:
-        // Sky cube image segments.
-        unsigned char* xNegative;
-        unsigned char* yPositive;
-        unsigned char* xPositive;
-        unsigned char* yNegative;
-        unsigned char* zPositive;
-        unsigned char* zNegative;
+public:
+    Scenery();
 
-        unsigned char* rawImage;
-        
-        void CreateImageSegments(int imageWidth);
-        void FreeImageSegments();
+    bool Initialize(ShaderManager& shaderManager);
+    void UpdateSkyColoration(vec::vec3 skyColor, float strength);
+    void Render(vec::mat4& viewMatrix);
 
-        // Ground plane
-        vec::mat4 groundOrientation;
-        unsigned int groundModelId;
-
-        // Sky cube
-        GLuint skyCubeProgram;
-        GLuint viewMatrixLocation;
-        GLuint skyCubeMapLocation;
-        GLuint colorTransformImageLocation;
-        GLuint colorTransformOffsetLocation;
-
-        GLuint skyCubeVao;
-        GLuint skyCubeTexture;
-        GLuint colorTransformImageId;
-
-        ImageManager* imageManager;
+    virtual ~Scenery();
 };
 
