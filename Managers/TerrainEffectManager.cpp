@@ -261,7 +261,7 @@ void TerrainEffectManager::LoadGrassEffect(vec::vec2i pos, EffectData* effect, S
 
 				// Add grass
 				vec::vec3 lowerOffset = vec::vec3(0.0f);
-				vec::vec3 upperOffset = vec::vec3(std::cos(2 * 3.14159f / 2), std::sin(2 * 3.14159f / 2), 0.0f);
+				vec::vec3 upperOffset = vec::vec3(std::cos(2 * Constants::PI / 2), std::sin(2 * Constants::PI / 2), 0.0f);
 				effect->grassEffect.grassOffsets.push_back(lowerOffset);
 				effect->grassEffect.grassOffsets.push_back(upperOffset);
 

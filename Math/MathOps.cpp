@@ -1,6 +1,7 @@
 #include <cmath>
 #include "MathOps.h"
 #include "MatrixOps.h"
+#include "Utils\Constants.h"
 
 std::mt19937 MathOps::mersenneTwiser;
 uint32_t MathOps::seedValue;
@@ -14,13 +15,13 @@ MathOps::MathOps()
 
 float MathOps::Degrees(float angleInRadians)
 {
-    return angleInRadians * (180.0f / 3.14159f);
+    return angleInRadians * (180.0f / Constants::PI);
 }
 
 // Goes from degrees to radians
 float MathOps::Radians(float angleInDegrees)
 {
-    return angleInDegrees * (3.14159f / 180.0f);
+    return angleInDegrees * (Constants::PI / 180.0f);
 }
 
 // Determines if the given point is within the cube specified by the min and max point.

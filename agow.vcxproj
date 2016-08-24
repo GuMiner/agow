@@ -91,6 +91,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BasicPhysics.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Config\GraphicsConfig.h" />
     <ClInclude Include="Config\KeyBindingConfig.h" />
     <ClInclude Include="Config\PhysicsConfig.h" />
@@ -130,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicPhysics.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Config\GraphicsConfig.cpp" />
     <ClCompile Include="Config\KeyBindingConfig.cpp" />
     <ClCompile Include="Config\PhysicsConfig.cpp" />

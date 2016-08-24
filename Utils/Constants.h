@@ -17,6 +17,9 @@ public:
     static float ASPECT;
     static float NEAR_PLANE;
     static float FAR_PLANE;
+
+    static float PI;
+
     static vec::mat4 PerspectiveMatrix;
 
     // To support 144 Hz monitors.

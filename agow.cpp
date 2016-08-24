@@ -323,7 +323,7 @@ void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused
 bool wasPressed = false;
 void agow::Update(float currentGameTime, float frameTime)
 {
-    player.InputUpdate(frameTime);
+    player.Update(frameTime);
     
     // TODO test code
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))

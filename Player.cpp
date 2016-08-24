@@ -1,10 +1,11 @@
 #include "Config\PhysicsConfig.h"
+#include "Math\MathOps.h"
 #include "Math\VecOps.h"
 #include "Map.h"
 #include "Player.h"
 
 Player::Player()
-    : lastMousePos(sf::Vector2i(-1, -1))
+    : lastMousePos(sf::Vector2i(-1, -1)), camera()
 {
 }
 
@@ -18,8 +19,10 @@ void Player::LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition,
 {
     physicalModel.rigidBody = physics.GetDynamicBody(BasicPhysics::CShape::PLAYER, VecOps::Convert(startingPosition), mass);
     physicalModel.rigidBody->forceActivationState(DISABLE_DEACTIVATION);
-    physicalModel.rigidBody->setAngularFactor(btVector3(0.0f, 0.0f, 1.0f));
+    physicalModel.rigidBody->setAngularFactor(btVector3(0.1f, 0.1f, 0.8f)); // TODO configurable
     physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
+
+    camera.Initialize(physicalModel.rigidBody);
 }
 
 void Player::UnloadPlayerPhysics(BasicPhysics physics)
@@ -31,21 +34,12 @@ void Player::UnloadPlayerPhysics(BasicPhysics physics)
 
 const vec::vec3 Player::GetViewPosition() const
 {
-    vec::vec3 pos = BasicPhysics::GetBodyPosition(physicalModel.rigidBody);
-    vec::quaternion orientation = GetViewOrientation();
-
-    vec::vec3 forwardsVector = orientation.forwardVector();
-    vec::vec3 upVector = orientation.upVector();
-    
-    // TODO configurable.
-    // The view position is behind the player.
-    return pos - (upVector * 1.0f + forwardsVector * 3.0f);
+    return camera.GetViewPosition();
 }
 
 const vec::quaternion Player::GetViewOrientation() const
 {
-    // Our camera is rotated 90 degrees to be visible. TODO configurable
-    return vec::quaternion::fromAxisAngle(3.14159f * 0.20f, vec::vec3(1, 0, 0)) * BasicPhysics::GetBodyRotation(physicalModel.rigidBody);
+    return camera.GetViewOrientation();
 }
 
 void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos)
@@ -71,12 +65,14 @@ void Player::Render(ModelManager* modelManager, const vec::mat4& projectionMatri
     modelManager->RenderModel(projectionMatrix, physicalModel.modelId, mvMatrix, false);
 }
 
-void Player::InputUpdate(float frameTime)
+void Player::Update(float frameTime)
 {
-    // TODO make motion time-sensitive, or rendering fixed to 60 fps.
+    // TODO rotate the player upwards if they have fallen over.
 
-    vec::vec3 upVector = GetViewOrientation().upVector();
-    vec::vec3 forwardsVector = GetViewOrientation().forwardVector();
+    vec::quaternion travelRotation = BasicPhysics::GetBodyRotation(physicalModel.rigidBody).conjugate() * vec::quaternion::fromAxisAngle(MathOps::Radians(90), vec::vec3(0, 0, 1));
+
+    vec::vec3 upVector = travelRotation.upVector();
+    vec::vec3 forwardsVector = travelRotation.forwardVector();
     vec::vec3 sidewaysVector = VecOps::Cross(upVector, forwardsVector);
     if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveLeft))
     {
@@ -133,14 +129,16 @@ void Player::InputUpdate(float frameTime)
             float yAmount = PhysicsConfig::ViewRotateUpFactor * (float)deltaPos.y;
 
             // Rotate around
-            physicalModel.rigidBody->applyTorque(VecOps::Convert(upVector * xAmount));
+            //physicalModel.rigidBody->applyTorque(VecOps::Convert(upVector * xAmount));
             
             // Rotate up
-            physicalModel.rigidBody->applyTorque(VecOps::Convert(sidewaysVector * yAmount));
+            //physicalModel.rigidBody->applyTorque(VecOps::Convert(sidewaysVector * yAmount));
         }
     }
     else
     {
         lastMousePos = sf::Vector2i(-1, -1);
     }
+
+    camera.Update(frameTime);
 }
