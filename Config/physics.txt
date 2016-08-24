@@ -10,8 +10,8 @@ PhysicsThreadDelay 33
 ViewForwardsSpeed 500.0
 ViewSidewaysSpeed 4000.0
 
-ViewRotateUpFactor 120
-ViewRotateAroundFactor 120
+ViewRotateUpFactor 0.05
+ViewRotateAroundFactor 0.05
 
 # Physics size of the terrain size. 
 # *This always will equal the graphics size*

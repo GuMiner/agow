@@ -5,7 +5,7 @@
 #include "Player.h"
 
 Player::Player()
-    : lastMousePos(sf::Vector2i(-1, -1)), camera()
+    : lastMousePos(sf::Vector2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)) // TODO configurable camera.
 {
 }
 
@@ -19,7 +19,8 @@ void Player::LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition,
 {
     physicalModel.rigidBody = physics.GetDynamicBody(BasicPhysics::CShape::PLAYER, VecOps::Convert(startingPosition), mass);
     physicalModel.rigidBody->forceActivationState(DISABLE_DEACTIVATION);
-    physicalModel.rigidBody->setAngularFactor(btVector3(0.1f, 0.1f, 0.8f)); // TODO configurable
+    physicalModel.rigidBody->setAngularFactor(btVector3(0.01f, 0.01f, 0.08f)); // TODO configurable
+    physicalModel.rigidBody->setDamping(0.0f, 0.1f);
     physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
 
     camera.Initialize(physicalModel.rigidBody);
@@ -74,14 +75,14 @@ void Player::Update(float frameTime)
     vec::vec3 upVector = travelRotation.upVector();
     vec::vec3 forwardsVector = travelRotation.forwardVector();
     vec::vec3 sidewaysVector = VecOps::Cross(upVector, forwardsVector);
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveLeft))
-    {
-        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(-sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
-    }
-
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveRight))
+    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveForward))
     {
         physicalModel.rigidBody->applyCentralForce(VecOps::Convert(sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
+    }
+
+    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveBackward))
+    {
+        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(-sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
     }
 
     forwardsVector.z = 0; // Moving forwards doesn't move you down in the Z-direction.
@@ -92,14 +93,14 @@ void Player::Update(float frameTime)
 
     forwardsVector = vec::normalize(forwardsVector);
 
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveForward))
-    {
-        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(forwardsVector * PhysicsConfig::ViewForwardsSpeed));
-    }
-
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveBackward))
+    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveLeft))
     {
         physicalModel.rigidBody->applyCentralForce(VecOps::Convert(-forwardsVector * PhysicsConfig::ViewForwardsSpeed));
+    }
+
+    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveRight))
+    {
+        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(forwardsVector * PhysicsConfig::ViewForwardsSpeed));
     }
 
     if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveUp))
@@ -129,10 +130,10 @@ void Player::Update(float frameTime)
             float yAmount = PhysicsConfig::ViewRotateUpFactor * (float)deltaPos.y;
 
             // Rotate around
-            //physicalModel.rigidBody->applyTorque(VecOps::Convert(upVector * xAmount));
+            camera.Yaw(xAmount);
             
             // Rotate up
-            //physicalModel.rigidBody->applyTorque(VecOps::Convert(sidewaysVector * yAmount));
+            camera.Pitch(yAmount);
         }
     }
     else

@@ -4,5 +4,5 @@
 namespace AutoVersion
 {
     static const long MAJOR_VERSION = 0;
-    static const long MINOR_VERSION = 387;
+    static const long MINOR_VERSION = 402;
 }

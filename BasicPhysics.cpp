@@ -35,7 +35,15 @@ void BasicPhysics::LoadBasicCollisionShapes()
 
     CollisionShapes[CShape::SMALL_CUBE] = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
     
-    CollisionShapes[CShape::PLAYER] = new btBoxShape(btVector3(width, width, height)); // new btConeShape(width / 2.0f, height);
+    const int playerPointCount = 4;
+    vec::vec3* playerPoints = new vec::vec3[playerPointCount];
+    playerPoints[0] = vec::vec3(0.0f, 0.0f, 0.7825f);
+    playerPoints[1] = vec::vec3(-0.50f, 0.2887f, -0.4423f);
+    playerPoints[2] = vec::vec3(0.50f, 0.2887f, -0.4423f);
+    playerPoints[3] = vec::vec3(0.0f, 0.0f, 0.4825f);
+   
+    CollisionShapes[CShape::PLAYER] = new btConvexHullShape((btScalar*)&playerPoints[0], playerPointCount, sizeof(vec::vec3));
+    delete[] playerPoints;
 }
 
 bool BasicPhysics::LoadPhysics()
