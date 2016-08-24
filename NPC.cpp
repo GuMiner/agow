@@ -1,3 +1,5 @@
+#include "Managers\FontManager.h"
+#include "Math\MathOps.h"
 #include "Math\VecOps.h"
 #include "Utils\Logger.h"
 #include "NPC.h"
@@ -55,6 +57,13 @@ NPC::NPC(std::string name, std::string description, Shape shape, vec::vec4 color
 {
 }
 
+void NPC::LoadGraphics(FontManager* fontManager)
+{
+    nameString.sentenceId = fontManager->CreateNewSentence();
+    nameString.color = vec::vec3(1.0f, 0.0f, 1.0f);
+    fontManager->UpdateSentence(nameString.sentenceId, name, 22, vec::vec3(1.0f, 0.0f, 1.0f));
+}
+
 void NPC::LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass)
 {
 	BasicPhysics::CShape physicalShape = GetPhysicalShape(shape);
@@ -67,10 +76,20 @@ void NPC::LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float
 	physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
 }
 
-void NPC::Render(ModelManager* modelManager, const vec::mat4& projectionMatrix)
+void NPC::Update(float gameTime, float elapsedTime)
+{
+    nameString.posRotMatrix =
+        MatrixOps::Translate(vec::vec3(0.0f, 0.0f, 1.5f)) *
+        BasicPhysics::GetBodyMatrix(physicalModel.rigidBody) * 
+        MatrixOps::Rotate(MathOps::Radians(90.0f), vec::vec3(0.0f, 1.0f, 0.0f));
+}
+
+void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const vec::mat4& projectionMatrix)
 {
     vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(physicalModel.rigidBody);
 	modelManager->RenderModel(projectionMatrix, physicalModel.modelId, mvMatrix, color, isSelected);
+    
+    fontManager->RenderSentence(nameString.sentenceId, projectionMatrix, nameString.posRotMatrix);
 }
 
 void NPC::UnloadNpcPhysics(BasicPhysics physics)

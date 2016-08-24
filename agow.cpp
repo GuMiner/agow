@@ -250,6 +250,12 @@ Constants::Status agow::LoadAssets()
 	{
 		return Constants::Status::BAD_NPC;
 	}
+
+    gearScientist.LoadGraphics(&fontManager);
+    intellScientist.LoadGraphics(&fontManager);
+    generalMilitary.LoadGraphics(&fontManager);
+    sergeantMilitary.LoadGraphics(&fontManager);
+
 	Logger::Log("NPC loading complete.");
 
     Logger::Log("Player model loading...");
@@ -324,6 +330,11 @@ bool wasPressed = false;
 void agow::Update(float currentGameTime, float frameTime)
 {
     player.Update(frameTime);
+
+    gearScientist.Update(currentGameTime, frameTime);
+    intellScientist.Update(currentGameTime, frameTime);
+    generalMilitary.Update(currentGameTime, frameTime);
+    sergeantMilitary.Update(currentGameTime, frameTime);
     
     // TODO test code
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
@@ -386,10 +397,10 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     }
 
 	// Render the key NPCs
-    gearScientist.Render(&modelManager, projectionMatrix);
-    intellScientist.Render(&modelManager, projectionMatrix);
-    generalMilitary.Render(&modelManager, projectionMatrix);
-    sergeantMilitary.Render(&modelManager, projectionMatrix);
+    gearScientist.Render(&fontManager, &modelManager, projectionMatrix);
+    intellScientist.Render(&fontManager, &modelManager, projectionMatrix);
+    generalMilitary.Render(&fontManager, &modelManager, projectionMatrix);
+    sergeantMilitary.Render(&fontManager, &modelManager, projectionMatrix);
 
     // Player rendering
     player.Render(&modelManager, projectionMatrix);

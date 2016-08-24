@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <map>
+#include "Data\RenderableSentence.h"
 #include "Managers\ModelManager.h"
 #include "Math/Vec.h"
 #include "BasicPhysics.h"
@@ -21,6 +22,8 @@ private:
 	static std::map<Shape, unsigned int> models;
 
 	std::string name;
+    RenderableSentence nameString;
+
 	std::string description;
 	Shape shape;
 	vec::vec4 color;
@@ -42,9 +45,11 @@ public:
 
 	NPC(std::string name, std::string description, Shape shape, vec::vec4 color, int startingHealth);
 	
+    void LoadGraphics(FontManager* fontManager);
 	void LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass);
-
-	void Render(ModelManager* modelManager, const vec::mat4& projectionMatrix);
+    
+    void Update(float gameTime, float elapsedTime);
+	void Render(FontManager* fontManager, ModelManager* modelManager, const vec::mat4& projectionMatrix);
 
 	void UnloadNpcPhysics(BasicPhysics physics);
 	virtual ~NPC();

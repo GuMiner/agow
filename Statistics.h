@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
+#include "Data\RenderableSentence.h"
 #include "Managers\FontManager.h"
 #include "Math\Vec.h"
-#include "Data\RenderableSentence.h"
 #include "Utils\Vertex.h"
 
 // Draws statistics information in a more fancier (and older) manner than using the GUI library.

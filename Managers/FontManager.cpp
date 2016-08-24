@@ -259,7 +259,7 @@ void FontManager::UpdateSentence(int sentenceId, const std::string& sentence, in
 }
 
 // Renders the specified sentence.
-void FontManager::RenderSentence(int sentenceId, vec::mat4& perpective, vec::mat4& mvMatrix)
+void FontManager::RenderSentence(int sentenceId, const vec::mat4& perpective, const vec::mat4& mvMatrix)
 {
     const SentenceInfo sentenceInfo = sentences[sentenceId];
     if (sentenceInfo.characterStartIndices == nullptr)

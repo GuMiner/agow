@@ -51,7 +51,7 @@ public:
 
     int CreateNewSentence();
     void UpdateSentence(int sentenceId, const std::string& sentence, int pixelHeight, vec::vec3 textColor);
-    void RenderSentence(int sentenceId, vec::mat4& perpective, vec::mat4& mvMatrix);
+    void RenderSentence(int sentenceId, const vec::mat4& perpective, const vec::mat4& mvMatrix);
 
     ~FontManager();
 };
