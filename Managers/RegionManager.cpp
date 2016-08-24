@@ -112,8 +112,10 @@ void RegionManager::UpdateVisibleRegion(const vec::vec3& playerPosition, btDynam
 	}
 }
 
-void RegionManager::SimulateVisibleRegions(float elapsedSeconds)
+void RegionManager::SimulateVisibleRegions(float gameTime, float elapsedSeconds)
 {
+    terrainManager.Update(gameTime);
+
 	for (const vec::vec2i& visibleTile : visibleTiles)
 	{
 		vec::vec2i region = visibleTile / TerrainManager::Subdivisions;

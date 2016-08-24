@@ -9,6 +9,7 @@ uniform mat4 mvMatrix;
 in vec2 tes_in[];
 
 smooth out vec2 tc_fs;
+smooth out vec3 fragment_position;
 flat out float scaleFactor;
 
 void main(void)
@@ -30,7 +31,8 @@ void main(void)
     // Note that as the terrain texture only contains height, so 'r' is the only valid (0-1) component.
     pos.z += texture(terrainTexture, tc).r * depth;
         
-    gl_Position = projMatrix * mvMatrix * pos;    
+    gl_Position = projMatrix * mvMatrix * pos;  
+	fragment_position = vec3(gl_Position);	
     tc_fs = tc;
     
     float t1 = texture(terrainTexture, tes_in[0]).r * depth;

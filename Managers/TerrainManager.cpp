@@ -31,6 +31,7 @@ bool TerrainManager::LoadBasics()
 
     terrainTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainTexture");
 	terrainTypeTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainType");
+    gameTimeLocation = glGetUniformLocation(terrainRenderProgram, "gameTime");
     projLocation = glGetUniformLocation(terrainRenderProgram, "projMatrix");
     mvLocation = glGetUniformLocation(terrainRenderProgram, "mvMatrix");
 
@@ -228,6 +229,11 @@ bool TerrainManager::LoadTerrainTile(vec::vec2i pos, TerrainTile** tile)
 	return true;
 }
 
+void TerrainManager::Update(float gameTime)
+{
+    lastGameTime = gameTime;
+}
+
 void TerrainManager::Simulate(const vec::vec2i pos, const vec::vec2i subPos, float elapsedSeconds)
 {
 	if (terrainTiles.find(pos) == terrainTiles.end())
@@ -270,6 +276,8 @@ void TerrainManager::RenderTile(const vec::vec2i pos, const vec::vec2i subPos, c
 
     glUniformMatrix4fv(projLocation, 1, GL_FALSE, projectionMatrix);
     glUniformMatrix4fv(mvLocation, 1, GL_FALSE, mvMatrix);
+
+    glUniform1f(gameTimeLocation, lastGameTime);
 
     glPatchParameteri(GL_PATCH_VERTICES, 4);
     glDrawArraysInstanced(GL_PATCHES, 0, 4, GetSubTileSize() * GetSubTileSize());

@@ -4,7 +4,10 @@
 uniform sampler2D terrainTexture;
 uniform sampler2D terrainType;
 
+uniform float gameTime;
+
 smooth in vec2 tc_fs;
+smooth in vec3 fragment_position;
 flat in float scaleFactor;
 
 out vec4 color;
@@ -32,7 +35,24 @@ const vec4 SAND_COLOR = vec4(255.0f / 255.0f,  255.0f / 255.0f,  128.0f / 255.0f
 const vec4 RIVER_COLOR = vec4(121.0f / 255.0f,  121.0f / 255.0f,  255.0f / 255.0f, 1.0f);
 const vec4 LAKE_COLOR = vec4(0.0f / 255.0f,  0.0f / 255.0f,  179.0f / 255.0f, 1.0f);
 
-vec4 GetTypeColor(int type)	
+vec4 GetTypeColor(int type)
+{
+	switch (type)
+	{
+		case SNOW_PEAK: return SNOW_PEAK_COLOR;
+		case ROCKS: return ROCKS_COLOR;
+		case TREES: return TREES_COLOR;
+		case DIRTLAND: return DIRTLAND_COLOR;
+		case GRASSLAND: return GRASSLAND_COLOR;
+		case ROADS: return ROADS_COLOR;
+		case CITY: return CITY_COLOR;
+		case SAND: return SAND_COLOR;
+		case RIVER: return RIVER_COLOR;
+		case LAKE: return LAKE_COLOR;
+	}
+}
+
+int GetNearestType(int type)	
 {
 	if (type < LAKE)
     {
@@ -52,34 +72,34 @@ vec4 GetTypeColor(int type)
                                 {
                                     if (type < ROCKS)
                                     {
-                                        return SNOW_PEAK_COLOR;
+										return SNOW_PEAK;
                                     }
 
-                                    return ROCKS_COLOR;
+									return ROCKS;
                                 }
 
-                                return TREES_COLOR;
+								return TREES;
                             }
 
-                            return DIRTLAND_COLOR;
+							return DIRTLAND;
                         }
 
-                        return GRASSLAND_COLOR;
+						return GRASSLAND;
                     }
 
-                    return ROADS_COLOR;
+					return ROADS;
                 }
 
-                return CITY_COLOR;
+				return CITY;
             }
 
-            return SAND_COLOR;
+			return SAND;
         }
 
-        return RIVER_COLOR;
+		return RIVER;
     }
-
-    return LAKE_COLOR;
+	
+	return LAKE;
 }
 
 void main(void)
@@ -98,11 +118,30 @@ void main(void)
         color = vec4(0.4f, 0.4f, 0.4f, 1.0f);
     }
     
-	int type = int(texture(terrainType, tc_fs).r * 255.0f);
+	int type = GetNearestType(int(texture(terrainType, tc_fs).r * 255.0f));
 	vec4 typeColor = GetTypeColor(type);
 	
-	
-    color = vec4(vec3(color) * scaleFactor * vec3(typeColor), 1.0);
+	if (type == LAKE)
+	{
+		float speed = 0.50f;
+		float frequencyX = 1.25f;
+		float frequencyY = 0.40f;
+		
+		float scaleSpeedX = 0.25f;
+		float scaleSpeedY = 0.33f;
+		
+		float factorMin = 0.80;
+		float factorScale = 0.20f;
+		float factor = factorMin + factorScale * cos(fragment_position.x*frequencyX*cos(gameTime * scaleSpeedX) + gameTime*speed) * sin(fragment_position.y*frequencyY*sin(gameTime*scaleSpeedY) + gameTime*speed);
+		color = vec4(vec3(color) * scaleFactor * vec3(typeColor), 1.0);
+		color.r *= factor;
+		color.g *= 1.0f;
+		color.b *= factor;
+	}
+	else
+	{
+		color = vec4(vec3(color) * scaleFactor * vec3(typeColor), 1.0);
+	}
     
     /*
     // Apply lighting calculations.

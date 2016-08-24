@@ -34,7 +34,7 @@ public:
     float GetPointHeight(btDynamicsWorld* dynamicsWorld, const vec::vec2 point);
 
     void UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorld* dynamicsWorld);
-	void SimulateVisibleRegions(float elapsedSeconds);
+	void SimulateVisibleRegions(float gameTime, float elapsedSeconds);
     void RenderRegions(const vec::mat4& projectionMatrix);
 
     void CleanupPhysics(btDynamicsWorld* dynamicsWorld);

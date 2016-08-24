@@ -350,7 +350,7 @@ void agow::Update(float currentGameTime, float frameTime)
     }
 
     regionManager.UpdateVisibleRegion(player.GetViewPosition(), physics.DynamicsWorld);
-    regionManager.SimulateVisibleRegions(frameTime);
+    regionManager.SimulateVisibleRegions(currentGameTime, frameTime);
 
     // Update useful statistics that are fancier than the standard GUI
     statistics.UpdateRunTime(currentGameTime, frameTime);

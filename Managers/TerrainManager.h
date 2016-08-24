@@ -22,8 +22,11 @@ class TerrainManager
 
     GLuint terrainTexLocation;
 	GLuint terrainTypeTexLocation;
+    GLuint gameTimeLocation;
     GLuint mvLocation;
     GLuint projLocation;
+
+    float lastGameTime;
 
 	TerrainEffectManager terrainEffects;
     std::map<vec::vec2i, TerrainTile*, vec::vec2iComparer> terrainTiles;
@@ -49,6 +52,7 @@ public:
     bool LoadTerrainTile(vec::vec2i pos, TerrainTile** tile);
     
 	// Runs simulations on a loaded tile.
+    void Update(float gameTime);
 	void Simulate(const vec::vec2i pos, const vec::vec2i subPos, float elapsedSeconds);
 
     // Renders a tile. *The tile must have been loaded ahead-of-time.*
