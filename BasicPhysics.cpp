@@ -34,6 +34,9 @@ void BasicPhysics::LoadBasicCollisionShapes()
 	CollisionShapes[CShape::NPC_DIAMOND] = new btConvexHullShape((btScalar*)&diamondPoints[0], diamondPointCount, sizeof(vec::vec3));
 	delete[] diamondPoints;
 
+    // TODO these all should be configurable size values (TODO configurable).
+    CollisionShapes[CShape::NPC_NEARFIELD_BUBBLE] = new btSphereShape(height * 4);
+
     CollisionShapes[CShape::SMALL_CUBE] = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
     
     const int playerPointCount = 4;
@@ -163,6 +166,13 @@ btRigidBody* BasicPhysics::GetDynamicBody(const CShape shape, const btVector3& o
     return newBody;
 }
 
+btRigidBody* BasicPhysics::GetGhostObject(const CShape shape, const btVector3& origin)
+{
+    btRigidBody* rigidBody = GetDynamicBody(shape, origin, 1.0f);
+    rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
+    return rigidBody;
+}
+
 vec::vec3 BasicPhysics::GetBodyPosition(const btRigidBody* body)
 {
     btTransform worldTransform;
@@ -200,6 +210,11 @@ vec::quaternion BasicPhysics::GetBodyRotation(const btRigidBody* body)
     body->getMotionState()->getWorldTransform(worldTransform);
 
     return VecOps::Convert(worldTransform.getRotation());
+}
+
+void BasicPhysics::DeleteGhostObject(btRigidBody* ghostObject) const
+{
+    DeleteBody(ghostObject);
 }
 
 void BasicPhysics::DeleteBody(btRigidBody* body) const

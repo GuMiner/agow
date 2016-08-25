@@ -1,12 +1,14 @@
 #pragma once
 #include <string>
 #include <map>
+#include <Bullet\btBulletDynamicsCommon.h>
 #include "Data\RenderableSentence.h"
+#include "Data\UserPhysics.h"
 #include "Managers\ModelManager.h"
 #include "Math/Vec.h"
 #include "BasicPhysics.h"
 
-class NPC
+class NPC : public ICollisionCallback
 {
 public:
 	enum Shape
@@ -30,7 +32,11 @@ private:
 
 	int health;
 	bool isSelected;
+    bool showInteractionKeys;
 
+    bool nearFieldCollisionLastFrame;
+
+    btRigidBody* nearFieldBubble;
 	PhysicalModel physicalModel;
 
 	bool CanKill()
@@ -53,5 +59,8 @@ public:
 
 	void UnloadNpcPhysics(BasicPhysics physics);
 	virtual ~NPC();
+
+    // Inherited via ICollisionCallback
+    virtual void CollisionCallback(ObjectType collidingObject) override;
 };
 

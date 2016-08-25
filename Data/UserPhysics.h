@@ -5,7 +5,8 @@
 enum ObjectType
 {
 	HEIGHTMAP = 0,
-	PLAYER = 1
+	PLAYER = 1,
+    NPC_CLOSEUP = 2
 };
 
 class ICollisionCallback
@@ -45,6 +46,14 @@ struct UserPhysics
             switch(source)
             {
             case HEIGHTMAP:
+                return true;
+            default:
+                return false;
+            }
+        case NPC_CLOSEUP:
+            switch (source)
+            {
+            case PLAYER:
                 return true;
             default:
                 return false;
