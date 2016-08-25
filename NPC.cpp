@@ -123,7 +123,7 @@ NPC::~NPC()
 
 }
 
-void NPC::Callback(UserPhysics::ObjectType collidingObject)
+void NPC::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpecificData)
 {
     // This occurs when the NPC's ghost object -- representing their FOV -- is hit.
     if (collidingObject == UserPhysics::ObjectType::PLAYER)

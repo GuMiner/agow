@@ -86,6 +86,7 @@
     <ClCompile Include="Utils\TypedCallback.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="Events.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -188,6 +189,10 @@
     </ClInclude>
     <ClInclude Include="Utils\TypedCallback.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Events.h" />
+    <ClInclude Include="Data\CallbackTypes.h">
+      <Filter>Data</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

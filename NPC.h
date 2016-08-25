@@ -62,6 +62,6 @@ public:
 	virtual ~NPC();
 
     // Used for NPC collision callbacks.
-    virtual void Callback(UserPhysics::ObjectType callingObject) override;
+    virtual void Callback(UserPhysics::ObjectType callingObject, void* callbackSpecificData) override;
 };
 

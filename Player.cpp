@@ -34,7 +34,7 @@ void Player::UnloadPlayerPhysics(BasicPhysics physics)
     physics.DeleteBody(physicalModel.rigidBody);
 }
 
-void Player::Callback(UserPhysics::ObjectType collidingObject)
+void Player::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpecificData)
 {
     if (collidingObject == UserPhysics::ObjectType::HEIGHTMAP)
     {

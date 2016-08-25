@@ -9,18 +9,22 @@ public:
     {
     }
 
-    virtual void Callback(T callingObject) = 0;
+    virtual void Callback(T callingObject, void* callbackSpecificData) = 0;
 };
 
+// Represents an instance of a callback that has a type, a callback, and can take in (and optionally delete) callback specific data.
 template<typename T>
 class TypedCallback
 {
     T type;
     ICallback<T>* callback;
 
+    bool deleteCSDAfterCallback;
+    void* callbackSpecificData;
+
 public:
-    TypedCallback(T type, ICallback<T>* callback = nullptr)
-        : type(type), callback(callback)
+    TypedCallback(T type, ICallback<T>* callback = nullptr, void* callbackSpecificData = nullptr, bool deleteCSDAfterCallback = false)
+        : type(type), callback(callback), callbackSpecificData(callbackSpecificData), deleteCSDAfterCallback(deleteCSDAfterCallback)
     {
     }
 
@@ -33,7 +37,12 @@ public:
     {
         if (callback != nullptr)
         {
-            callback->Callback(callingObject);
+            callback->Callback(callingObject, callbackSpecificData);
+        }
+
+        if (callbackSpecificData != nullptr && deleteCSDAfterCallback)
+        {
+            delete callbackSpecificData;
         }
     }
 };

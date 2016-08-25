@@ -39,5 +39,5 @@ public:
     void UnloadPlayerPhysics(BasicPhysics physics);
 
     // Used for collision callbacks.
-    virtual void Callback(UserPhysics::ObjectType collidingObject) override;
+    virtual void Callback(UserPhysics::ObjectType callingObject, void* callbackSpecificData) override;
 };

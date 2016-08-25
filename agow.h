@@ -43,6 +43,8 @@ class agow
     Statistics statistics;
     Scenery scenery;
 
+    Events events;
+
 	// Key NPCs
 	NPC gearScientist;
 	NPC intellScientist;

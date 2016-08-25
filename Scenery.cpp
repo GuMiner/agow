@@ -51,3 +51,12 @@ Scenery::~Scenery()
 {
     glDeleteVertexArrays(1, &skyCubeVao);
 }
+
+void Scenery::Callback(EventType eventType, void* callbackSpecificData)
+{
+    if (eventType == EventType::SKY_FLAVOR_COLOR_CHANGE && callbackSpecificData != nullptr)
+    {
+        SkyColorChange* colorChange = (SkyColorChange*)callbackSpecificData;
+        UpdateSkyColoration(colorChange->flavorColor, colorChange->strength);
+    }
+}
