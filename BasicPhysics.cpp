@@ -3,6 +3,7 @@
 #include "Math\MatrixOps.h"
 #include "Math\VecOps.h"
 #include "Utils\Logger.h"
+#include "Utils\TypedCallback.h"
 #include "BasicPhysics.h"
 
 BasicPhysics::BasicPhysics()
@@ -104,16 +105,16 @@ void BasicPhysics::Step(float timestep)
             if (doesCollide)
             {
                 // These are two objects we know about, so decipher their types and call the callbacks for collisions as appropriate.
-                UserPhysics* userObject1 = (UserPhysics*)userObj1;
-                UserPhysics* userObject2 = (UserPhysics*)userObj2;
-                if (UserPhysics::Collides(userObject1->objectType, userObject2->objectType))
+                TypedCallback<UserPhysics::ObjectType>* userObject1 = (TypedCallback<UserPhysics::ObjectType>*)userObj1;
+                TypedCallback<UserPhysics::ObjectType>* userObject2 = (TypedCallback<UserPhysics::ObjectType>*)userObj2;
+                if (UserPhysics::Collides(userObject1->GetType(), userObject2->GetType()))
                 {
-                    userObject1->CallCallback(userObject2->objectType);
+                    userObject1->CallCallback(userObject2->GetType());
                 }
 
-                if (UserPhysics::Collides(userObject2->objectType, userObject1->objectType))
+                if (UserPhysics::Collides(userObject2->GetType(), userObject1->GetType()))
                 {
-                    userObject2->CallCallback(userObject1->objectType);
+                    userObject2->CallCallback(userObject1->GetType());
                 }
             }
         }

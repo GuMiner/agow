@@ -21,7 +21,7 @@ void Player::LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition,
     physicalModel.rigidBody->forceActivationState(DISABLE_DEACTIVATION);
     physicalModel.rigidBody->setAngularFactor(0.0f);
     physicalModel.rigidBody->setFriction(2.0f); // TODO configurable.
-    physicalModel.rigidBody->setUserPointer(new UserPhysics(ObjectType::PLAYER, this));
+    physicalModel.rigidBody->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::PLAYER, this));
     physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
 
     camera.Initialize(physicalModel.rigidBody);
@@ -34,9 +34,9 @@ void Player::UnloadPlayerPhysics(BasicPhysics physics)
     physics.DeleteBody(physicalModel.rigidBody);
 }
 
-void Player::CollisionCallback(ObjectType collidingObject)
+void Player::Callback(UserPhysics::ObjectType collidingObject)
 {
-    if (collidingObject == ObjectType::HEIGHTMAP)
+    if (collidingObject == UserPhysics::ObjectType::HEIGHTMAP)
     {
         isOnGround = true;
     }

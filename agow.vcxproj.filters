@@ -83,6 +83,9 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="RockGenerator.cpp" />
+    <ClCompile Include="Utils\TypedCallback.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -182,6 +185,9 @@
     <ClInclude Include="RockGenerator.h" />
     <ClInclude Include="Data\UserPhysics.h">
       <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\TypedCallback.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

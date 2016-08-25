@@ -1,41 +1,16 @@
 #pragma once
 #include "Math\Vec.h"
 
-// Copied from PaletteWindow.cpp, MapEditor.
-enum ObjectType
-{
-	HEIGHTMAP = 0,
-	PLAYER = 1,
-    NPC_CLOSEUP = 2
-};
-
-class ICollisionCallback
+class UserPhysics
 {
 public:
-    virtual ~ICollisionCallback()
+    // Copied from PaletteWindow.cpp, MapEditor.
+    enum ObjectType
     {
-    }
-
-    virtual void CollisionCallback(ObjectType collidingObject) = 0;
-};
-
-struct UserPhysics
-{
-	ObjectType objectType;
-    ICollisionCallback* callback;
-	
-    UserPhysics(ObjectType objectType, ICollisionCallback* callback = nullptr)
-        : objectType(objectType), callback(callback)
-    {
-    }
-
-    void CallCallback(ObjectType collidingObject)
-    {
-        if (callback != nullptr)
-        {
-            callback->CollisionCallback(collidingObject);
-        }
-    }
+        HEIGHTMAP = 0,
+        PLAYER = 1,
+        NPC_CLOSEUP = 2
+    };
 
     // Returns true if source collides with target. If so, target's collision callback should be called.
     static bool Collides(ObjectType target, ObjectType source)

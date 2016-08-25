@@ -77,7 +77,7 @@ void NPC::LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float
     physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
 
     nearFieldBubble = physics.GetGhostObject(BasicPhysics::CShape::NPC_NEARFIELD_BUBBLE, VecOps::Convert(startingPosition));
-    nearFieldBubble->setUserPointer(new UserPhysics(ObjectType::NPC_CLOSEUP, this));
+    nearFieldBubble->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::NPC_CLOSEUP, this));
     physics.DynamicsWorld->addRigidBody(nearFieldBubble);
 }
 
@@ -123,10 +123,10 @@ NPC::~NPC()
 
 }
 
-void NPC::CollisionCallback(ObjectType collidingObject)
+void NPC::Callback(UserPhysics::ObjectType collidingObject)
 {
     // This occurs when the NPC's ghost object -- representing their FOV -- is hit.
-    if (collidingObject == ObjectType::PLAYER)
+    if (collidingObject == UserPhysics::ObjectType::PLAYER)
     {
         isSelected = true;
         showInteractionKeys = true;

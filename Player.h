@@ -7,10 +7,11 @@
 #include "Managers\RegionManager.h"
 #include "Managers\ModelManager.h"
 #include "Math\Vec.h"
+#include "Utils\TypedCallback.h"
 #include "BasicPhysics.h"
 #include "Camera.h"
 
-class Player : public ICollisionCallback
+class Player : public ICallback<UserPhysics::ObjectType>
 {
     // Where the viewer is currently oriented on-screen.
     Camera camera;
@@ -37,6 +38,6 @@ public:
 
     void UnloadPlayerPhysics(BasicPhysics physics);
 
-    // Inherited via ICollisionCallback
-    virtual void CollisionCallback(ObjectType collidingObject) override;
+    // Used for collision callbacks.
+    virtual void Callback(UserPhysics::ObjectType collidingObject) override;
 };

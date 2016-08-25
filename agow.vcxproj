@@ -126,6 +126,7 @@
     <ClInclude Include="Utils\Logger.h" />
     <ClInclude Include="Utils\SharedExclusiveLock.h" />
     <ClInclude Include="Utils\StringUtils.h" />
+    <ClInclude Include="Utils\TypedCallback.h" />
     <ClInclude Include="Utils\Vertex.h" />
     <ClInclude Include="agow.h" />
     <ClInclude Include="version.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="Utils\SharedExclusiveLock.cpp" />
     <ClCompile Include="Utils\stb_implementations.cpp" />
     <ClCompile Include="Utils\StringUtils.cpp" />
+    <ClCompile Include="Utils\TypedCallback.cpp" />
     <ClCompile Include="Utils\Vertex.cpp" />
     <ClCompile Include="agow.cpp" />
     <ClCompile Include="Player.cpp" />

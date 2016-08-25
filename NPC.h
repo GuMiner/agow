@@ -6,9 +6,10 @@
 #include "Data\UserPhysics.h"
 #include "Managers\ModelManager.h"
 #include "Math/Vec.h"
+#include "Utils\TypedCallback.h"
 #include "BasicPhysics.h"
 
-class NPC : public ICollisionCallback
+class NPC : public ICallback<UserPhysics::ObjectType>
 {
 public:
 	enum Shape
@@ -60,7 +61,7 @@ public:
 	void UnloadNpcPhysics(BasicPhysics physics);
 	virtual ~NPC();
 
-    // Inherited via ICollisionCallback
-    virtual void CollisionCallback(ObjectType collidingObject) override;
+    // Used for NPC collision callbacks.
+    virtual void Callback(UserPhysics::ObjectType callingObject) override;
 };
 

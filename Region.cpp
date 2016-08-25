@@ -2,6 +2,7 @@
 #include "Config\PhysicsConfig.h"
 #include "Data\UserPhysics.h"
 #include "Math\MatrixOps.h"
+#include "Utils\TypedCallback.h"
 
 Region::Region(vec::vec2i pos, TerrainManager* terrainManager, int subdivisions)
     : pos(pos), subdivisions(subdivisions)
@@ -45,7 +46,7 @@ btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDyn
 
     btRigidBody* heightmap =  new btRigidBody(ground);
     heightmap->setFriction(0.50f); // TODO configurable.
-    heightmap->setUserPointer(new UserPhysics(ObjectType::HEIGHTMAP));
+    heightmap->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::HEIGHTMAP));
 
 	dynamicsWorld->addRigidBody(heightmap);
 	return heightmap;
