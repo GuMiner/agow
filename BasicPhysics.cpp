@@ -1,4 +1,5 @@
 #include <limits>
+#include "Data\UserPhysics.h"
 #include "Math\MatrixOps.h"
 #include "Math\VecOps.h"
 #include "Utils\Logger.h"
@@ -70,8 +71,50 @@ bool BasicPhysics::LoadPhysics(std::map<CShape, const std::vector<vec::vec3>*> s
 
 void BasicPhysics::Step(float timestep)
 {
-    // Honestly this doesn't need to be its own method, but it encapsulates this nicely.
-    DynamicsWorld->stepSimulation(timestep, 10);
+    // Run our simulation!
+    DynamicsWorld->stepSimulation(timestep, 6);
+
+    // Check for interesting collisions.
+    const int manifoldCount = collisionDispatcher->getNumManifolds();
+    for (int i = 0; i < manifoldCount; i++)
+    {
+        const btPersistentManifold* manifold = collisionDispatcher->getManifoldByIndexInternal(i);
+        const btCollisionObject* objOne = manifold->getBody0();
+        const btCollisionObject* objTwo = manifold->getBody1();
+
+        void* userObj1 = objOne->getUserPointer();
+        void* userObj2 = objTwo->getUserPointer();
+        if (userObj1 != nullptr && userObj2 != nullptr)
+        {
+            // These objects could collide, so verify this is a real collision.
+            bool doesCollide = false;
+            int contactCount = manifold->getNumContacts();
+            for (int j = 0; j < contactCount; j++)
+            {
+                if (manifold->getContactPoint(j).getDistance() < 0.0f)
+                {
+                    doesCollide = true;
+                    break;
+                }
+            }
+
+            if (doesCollide)
+            {
+                // These are two objects we know about, so decipher their types and call the callbacks for collisions as appropriate.
+                UserPhysics* userObject1 = (UserPhysics*)userObj1;
+                UserPhysics* userObject2 = (UserPhysics*)userObj2;
+                if (UserPhysics::Collides(userObject1->objectType, userObject2->objectType))
+                {
+                    userObject1->CallCallback(userObject2->objectType);
+                }
+
+                if (UserPhysics::Collides(userObject2->objectType, userObject1->objectType))
+                {
+                    userObject2->CallCallback(userObject1->objectType);
+                }
+            }
+        }
+    }
 }
 
 void BasicPhysics::UnloadPhysics()
@@ -98,8 +141,10 @@ btRigidBody* BasicPhysics::GetStaticBody(const CShape shape, const btVector3& or
     pos.setOrigin(origin);
 
     btDefaultMotionState *motionState = new btDefaultMotionState(pos);
-    btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, CollisionShapes[shape]);
-    return new btRigidBody(ground);
+    btRigidBody::btRigidBodyConstructionInfo bodyInfo(0.0f, motionState, CollisionShapes[shape]);
+    btRigidBody* body = new btRigidBody(bodyInfo);
+    body->setUserPointer(nullptr);
+    return body;
 }
 
 btRigidBody* BasicPhysics::GetDynamicBody(const CShape shape, const btVector3& origin, const float mass)
@@ -114,6 +159,7 @@ btRigidBody* BasicPhysics::GetDynamicBody(const CShape shape, const btVector3& o
     btRigidBody::btRigidBodyConstructionInfo object(mass, motionState, CollisionShapes[shape], localInertia);
     btRigidBody* newBody = new btRigidBody(object);
     newBody->setFriction(0.50f); // TODO configurable.
+    newBody->setUserPointer(nullptr);
     return newBody;
 }
 

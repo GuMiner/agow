@@ -1,5 +1,6 @@
 #include "Region.h"
 #include "Config\PhysicsConfig.h"
+#include "Data\UserPhysics.h"
 #include "Math\MatrixOps.h"
 
 Region::Region(vec::vec2i pos, TerrainManager* terrainManager, int subdivisions)
@@ -28,9 +29,9 @@ void Region::EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::v
 
 btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDynamicsWorld* dynamicsWorld)
 {
-    btHeightfieldTerrainShape* heighfield = new btHeightfieldTerrainShape(
+    btHeightfieldTerrainShape* heightfield = new btHeightfieldTerrainShape(
         PhysicsConfig::TerrainSize / TerrainManager::Subdivisions, PhysicsConfig::TerrainSize / TerrainManager::Subdivisions, subTile->heightmap, 900.0f, 2, true, false);
-    heighfield->setMargin(2.0f);
+    heightfield->setMargin(2.0f);
 
     // Position the heightfield so that it's not repositioned incorrectly.
     btTransform heightfieldPos;
@@ -40,16 +41,13 @@ btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDyn
         (float)(tilePos.y + 0.5f) * PhysicsConfig::TerrainSize / TerrainManager::Subdivisions, 450.0f - 2.0f));
 
     btDefaultMotionState *motionState = new btDefaultMotionState(heightfieldPos);
-    btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, heighfield);
-
-    btTransform transform;
-    btVector3 min, max;
-
-    heighfield->getAabb(transform, min, max);
+    btRigidBody::btRigidBodyConstructionInfo ground(0.0f, motionState, heightfield);
 
     btRigidBody* heightmap =  new btRigidBody(ground);
-	dynamicsWorld->addRigidBody(heightmap);
     heightmap->setFriction(0.50f); // TODO configurable.
+    heightmap->setUserPointer(new UserPhysics(ObjectType::HEIGHTMAP));
+
+	dynamicsWorld->addRigidBody(heightmap);
 	return heightmap;
 }
 
@@ -83,6 +81,7 @@ void Region::CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dyna
 	for (std::pair<const vec::vec2i, btRigidBody*> heightmap : loadedHeightmaps)
 	{
 		dynamicsWorld->removeRigidBody(heightmap.second);
+        delete heightmap.second->getUserPointer();
 		delete heightmap.second->getCollisionShape();
 		delete heightmap.second->getMotionState();
 		delete heightmap.second;

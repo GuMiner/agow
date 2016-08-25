@@ -100,6 +100,7 @@
     <ClInclude Include="Data\RenderableSentence.h" />
     <ClInclude Include="Data\TerrainTile.h" />
     <ClInclude Include="Data\TextDataTypes.h" />
+    <ClInclude Include="Data\UserPhysics.h" />
     <ClInclude Include="Managers\ConfigManager.h" />
     <ClInclude Include="Managers\FontManager.h" />
     <ClInclude Include="Managers\ImageManager.h" />

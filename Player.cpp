@@ -5,7 +5,7 @@
 #include "Player.h"
 
 Player::Player()
-    : lastMousePos(sf::Vector2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)) // TODO configurable camera.
+    : lastMousePos(sf::Vector2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)), isOnGround(false) // TODO configurable camera.
 {
 }
 
@@ -21,6 +21,7 @@ void Player::LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition,
     physicalModel.rigidBody->forceActivationState(DISABLE_DEACTIVATION);
     physicalModel.rigidBody->setAngularFactor(0.0f);
     physicalModel.rigidBody->setFriction(2.0f); // TODO configurable.
+    physicalModel.rigidBody->setUserPointer(new UserPhysics(ObjectType::PLAYER, this));
     physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
 
     camera.Initialize(physicalModel.rigidBody);
@@ -28,10 +29,24 @@ void Player::LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition,
 
 void Player::UnloadPlayerPhysics(BasicPhysics physics)
 {
+    delete physicalModel.rigidBody->getUserPointer();
     physics.DynamicsWorld->removeRigidBody(physicalModel.rigidBody);
     physics.DeleteBody(physicalModel.rigidBody);
 }
 
+void Player::CollisionCallback(ObjectType collidingObject)
+{
+    if (collidingObject == ObjectType::HEIGHTMAP)
+    {
+        isOnGround = true;
+    }
+}
+
+const vec::vec2 Player::GetTerrainPosition() const
+{
+    vec::vec3 bodyPos = BasicPhysics::GetBodyPosition(physicalModel.rigidBody);
+    return vec::vec2(bodyPos.x, bodyPos.y);
+}
 
 const vec::vec3 Player::GetViewPosition() const
 {
@@ -55,6 +70,7 @@ void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const ve
     physicalModel.rigidBody->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
     physicalModel.rigidBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
     physicalModel.rigidBody->activate(true); // Ensure we don't hang in midair.
+    isOnGround = false;
 }
 
 void Player::Render(ModelManager* modelManager, const vec::mat4& projectionMatrix)
@@ -72,12 +88,12 @@ void Player::Update(float frameTime)
     vec::vec3 sidewaysVector = VecOps::Cross(upVector, forwardsVector);
 
     sidewaysVector = vec::normalize(sidewaysVector);
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveForward))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     {
         physicalModel.rigidBody->applyCentralForce(VecOps::Convert(sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
     }
 
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveBackward))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
     {
         physicalModel.rigidBody->applyCentralForce(VecOps::Convert(-sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
     }
@@ -90,32 +106,27 @@ void Player::Update(float frameTime)
 
     forwardsVector = vec::normalize(forwardsVector);
 
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveLeft))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
     {
-        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(-forwardsVector * PhysicsConfig::ViewForwardsSpeed));
         btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
         btQuaternion rotation = worldTransform.getRotation();
         rotation = rotation * btQuaternion(btVector3(0, 0, 1), 0.05f); // TODO configurable
         worldTransform.setRotation(rotation);
     }
 
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveRight))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
     {
-        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(forwardsVector * PhysicsConfig::ViewForwardsSpeed));
         btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
         btQuaternion rotation = worldTransform.getRotation();
         rotation = rotation * btQuaternion(btVector3(0, 0, 1), -0.05f); // TODO configurable
         worldTransform.setRotation(rotation);
     }
 
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveUp))
+    // TODO configurable (jump and force),
+    if (isOnGround && sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
     {
-        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(-upVector * PhysicsConfig::ViewForwardsSpeed));
-    }
-
-    if (sf::Keyboard::isKeyPressed(KeyBindingConfig::MoveDown))
-    {
-        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(upVector * PhysicsConfig::ViewForwardsSpeed));
+        physicalModel.rigidBody->applyCentralImpulse(VecOps::Convert(vec::vec3(0.0f, 0.0f, 200.0f)));
+        isOnGround = false;
     }
 
     if (sf::Mouse::isButtonPressed(sf::Mouse::Right))

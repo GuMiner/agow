@@ -180,6 +180,9 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="RockGenerator.h" />
+    <ClInclude Include="Data\UserPhysics.h">
+      <Filter>Data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Managers">

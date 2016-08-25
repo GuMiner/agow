@@ -319,9 +319,9 @@ void agow::Update(float currentGameTime, float frameTime)
     sergeantMilitary.Update(currentGameTime, frameTime);
     
     // TODO test code
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
     {
-        player.Warp(&regionManager, physics.DynamicsWorld, vec::vec2(player.GetViewPosition().x, player.GetViewPosition().y));
+        player.Warp(&regionManager, physics.DynamicsWorld, player.GetTerrainPosition());
     }
 
     // TODO test code
