@@ -33,6 +33,19 @@ public:
         return type;
     }
 
+    void CallCallback()
+    {
+        if (callback != nullptr)
+        {
+            callback->Callback(type, callbackSpecificData);
+        }
+
+        if (callbackSpecificData != nullptr && deleteCSDAfterCallback)
+        {
+            delete callbackSpecificData;
+        }
+    }
+
     void CallCallback(T callingObject) const
     {
         if (callback != nullptr)

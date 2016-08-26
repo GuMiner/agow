@@ -264,6 +264,9 @@ Constants::Status agow::LoadAssets()
         return status;
     }
 
+    // TODO test code remove.
+    events.AddPeriodicEvent(TypedCallback<EventType>(EventType::SKY_FLAVOR_RANDOM_COLOR_CHANGE, &scenery), 1.0f, false);
+
     return Constants::Status::OK;
 }
 

@@ -1,6 +1,7 @@
 #include <string>
 #include <sstream>
 #include "Math\MatrixOps.h"
+#include "Math\MathOps.h"
 #include "Utils\ImageUtils.h"
 #include "Utils\Logger.h"
 #include "Scenery.h"
@@ -58,5 +59,12 @@ void Scenery::Callback(EventType eventType, void* callbackSpecificData)
     {
         SkyColorChange* colorChange = (SkyColorChange*)callbackSpecificData;
         UpdateSkyColoration(colorChange->flavorColor, colorChange->strength);
+    }
+    else if (eventType == EventType::SKY_FLAVOR_RANDOM_COLOR_CHANGE)
+    {
+        // Used for fancy effects, not for in-game 'mood' determinations. TODO configurable.
+        vec::vec3 randomColor = vec::vec3(0.70f + 0.20f * MathOps::Rand(), 0.70f + 0.20f * MathOps::Rand(), 0.70f + 0.20f * MathOps::Rand());
+        float strength = 0.60f + MathOps::Rand() * 2.0f;
+        UpdateSkyColoration(randomColor, strength);
     }
 }

@@ -21,12 +21,12 @@ void main(void)
 	if (isStar)
 	{
 		color = vec4(starColor, 1.0f);
+		
+		// Apply the flavor color to all the stars found.
+		color = color * vec4(flavorColor.xyz, 1.0f) * flavorColor.w;
 	}
     else
 	{
 		color = vec4(backgroundColor, 1.0f);
-	}
-	
-	// Apply the flavor color to all the stars found.
-	color = color * vec4(flavorColor.xyz, 1.0f) * flavorColor.w;
+	}	
 }
