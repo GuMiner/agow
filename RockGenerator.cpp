@@ -1,6 +1,7 @@
 #include "Math\MathOps.h"
 #include "RockGenerator.h"
 
+std::vector<RockInternal> RockGenerator::rockArchetypes;
 
 RockGenerator::RockGenerator()
 {

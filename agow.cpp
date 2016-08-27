@@ -41,9 +41,9 @@ PhysicsOps agow::PhysicsOp;
 
 agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
-      shaderManager(), imageManager(), modelManager(&imageManager), 
-      regionManager(&shaderManager, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
-      scenery(), rockGenerator(),
+      physics(), shaderManager(), imageManager(), modelManager(&imageManager),
+      regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
+      scenery(),
       player(), // TODO configurable
 	  gearScientist("James Blanton", "Giver of yer gear.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE),
       intellScientist("Aaron Krinst", "Giver of yer data.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 0.20f, 1.0f, 0.70f), NPC::INVULNERABLE),
@@ -54,6 +54,7 @@ agow::agow()
 
 Constants::Status agow::LoadPhysics()
 {
+    RockGenerator rockGenerator;
     if (!physics.LoadPhysics(rockGenerator.GetModelPoints(&modelManager)))
     {
         return Constants::Status::BAD_PHYSICS;
@@ -237,7 +238,7 @@ Constants::Status agow::LoadAssets()
     sergeantMilitary.LoadGraphics(&fontManager);
 
     Logger::Log("Rock loading...");
-    if (!rockGenerator.LoadModels(&modelManager))
+    if (!RockGenerator::LoadModels(&modelManager))
     {
         return Constants::Status::BAD_MODEL;
     }
@@ -336,6 +337,7 @@ void agow::Update(float currentGameTime, float frameTime)
 
         PhysicalModel model;
         BasicPhysics::CShape shape;
+        RockGenerator rockGenerator;
         rockGenerator.GetRandomRockModel(&model.modelId, &shape);
 
         model.rigidBody = physics.GetDynamicBody(shape, btVector3(pos.x, pos.y, pos.z), 20.0f);

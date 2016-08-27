@@ -31,6 +31,12 @@ struct PhysicalModel
     btRigidBody* rigidBody;
 };
 
+struct ColoredPhysicalModel
+{
+    vec::vec4 color;
+    PhysicalModel model;
+};
+
 struct PhysicalModelSet
 {
     unsigned int modelId;

@@ -39,7 +39,6 @@ class agow
     // Game data
     BasicPhysics physics;
     Player player;
-    RockGenerator rockGenerator;
     Statistics statistics;
     Scenery scenery;
 

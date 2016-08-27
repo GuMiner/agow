@@ -18,11 +18,11 @@ struct RockInternal
 
 class RockGenerator
 {
-    std::vector<RockInternal> rockArchetypes;
+    static std::vector<RockInternal> rockArchetypes;
 
 public:
     RockGenerator();
-    bool LoadModels(ModelManager* modelManager);
+    static bool LoadModels(ModelManager* modelManager);
 
     // Returns the model points so that physics can properly work on these models.
     std::map<BasicPhysics::CShape, const std::vector<vec::vec3>*> GetModelPoints(ModelManager* modelManager);

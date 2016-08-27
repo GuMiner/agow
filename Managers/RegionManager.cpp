@@ -1,8 +1,8 @@
 #include "Utils\Logger.h"
 #include "RegionManager.h"
 
-RegionManager::RegionManager(ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance)
-	: terrainManager(min, max,	shaderManager, terrainRootFolder, tileSize),
+RegionManager::RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance)
+	: terrainManager(min, max, shaderManager, modelManager, physics, terrainRootFolder, tileSize),
 	  loadedRegions(), visibleTiles(), tileViewDistance(tileViewDistance)
 {
 	this->min = min * TerrainManager::Subdivisions;

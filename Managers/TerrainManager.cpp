@@ -6,8 +6,8 @@
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
 
-TerrainManager::TerrainManager(vec::vec2i min, vec::vec2i max, ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize)
-    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), tileSize(tileSize), terrainEffects(shaderManager, tileSize / TerrainManager::Subdivisions)
+TerrainManager::TerrainManager(vec::vec2i min, vec::vec2i max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, std::string terrainRootFolder, int tileSize)
+    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), tileSize(tileSize), terrainEffects(shaderManager, modelManager, basicPhysics, tileSize / TerrainManager::Subdivisions)
 {
 }
 

@@ -7,6 +7,7 @@
 #include "Managers\ShaderManager.h"
 #include "Managers\TerrainEffectManager.h"
 #include "Math\Vec.h"
+#include "BasicPhysics.h"
 
 // Defines loading and displaying a single unit of terrain.
 class TerrainManager
@@ -39,7 +40,7 @@ class TerrainManager
 	void CleanupTerrainTile(vec::vec2i pos, bool log);
 
 public:
-    TerrainManager(vec::vec2i min, vec::vec2i max, ShaderManager* shaderManager, std::string terrainRootFolder, int tileSize);
+    TerrainManager(vec::vec2i min, vec::vec2i max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, int tileSize);
     
 	static const int Subdivisions = 10;
     int GetTileSize() const;

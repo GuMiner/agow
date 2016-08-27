@@ -2,13 +2,15 @@
 #include <limits>
 #include <sstream>
 #include <stb\stb_image.h>
+#include "Config\PhysicsConfig.h"
 #include "TerrainManager.h"
 #include "Math\MathOps.h"
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
+#include "RockGenerator.h"
 
-TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, int subTileSize)
-    : shaderManager(shaderManager), subTileSize(subTileSize)
+TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, int subTileSize)
+    : shaderManager(shaderManager), modelManager(modelManager), physics(basicPhysics), subTileSize(subTileSize)
 {
 }
 
@@ -289,6 +291,77 @@ void TerrainEffectManager::LoadGrassEffect(vec::vec2i pos, EffectData* effect, S
 	}
 }
 
+void TerrainEffectManager::LoadRockEffect(vec::vec2i pos, EffectData* effect, SubTile* tile)
+{
+    effect->hasRockEffect = false;
+    effect->rockEffect.rocks.clear();
+
+    // Scan the image for rock pixels.
+    int rockCounter = 1;
+    const long ROCK_SUBCOUNT = 8;
+    const long MOVABLE_ROCK_SUBCOUNT = 16;
+    for (int i = 0; i < subTileSize; i++)
+    {
+        for (int j = 0; j < subTileSize; j++)
+        {
+            if (tile->type[i + j * subTileSize] == TerrainTypes::ROCKS)
+            {
+                ++rockCounter;
+                if (rockCounter % ROCK_SUBCOUNT == 0)
+                {
+                    effect->hasRockEffect = true;
+
+                    // Add a non-movable rock substrate.
+                    ColoredPhysicalModel coloredModel;
+                    BasicPhysics::CShape shape;
+
+                    RockGenerator rockGenerator;
+                    rockGenerator.GetRandomRockModel(&coloredModel.model.modelId, &shape);
+
+                    // TODO randomly generated from the rock generator
+                    coloredModel.color = vec::vec4(0.60f, 0.70f, 0.60f, 1.0f);
+
+                    // TODO configurable
+                    // TODO randomly generated masses.
+                    float height = tile->heightmap[i + j * subTileSize];
+                    vec::vec2 realPos = vec::vec2((float)pos.x, (float)pos.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i + MathOps::Rand(), (float)j + MathOps::Rand());
+                    coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
+
+                    effect->rockEffect.rocks.push_back(coloredModel);
+                    physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
+                }
+
+                if (rockCounter % MOVABLE_ROCK_SUBCOUNT == 0)
+                {
+                    // Add a movable rock layer above the substrate
+                    ColoredPhysicalModel coloredModel;
+                    BasicPhysics::CShape shape;
+
+                    RockGenerator rockGenerator;
+                    rockGenerator.GetRandomRockModel(&coloredModel.model.modelId, &shape);
+
+                    // TODO randomly generated from the rock generator
+                    coloredModel.color = vec::vec4(0.60f, 0.70f, 0.60f, 1.0f);
+
+                    // TODO configurable
+                    // TODO randomly generated masses.
+                    float height = tile->heightmap[i + j * subTileSize];
+                    vec::vec2 realPos = vec::vec2((float)pos.x, (float)pos.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i + MathOps::Rand(), (float)j + MathOps::Rand());
+                    coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height + 2.0f), 30.0f);
+
+                    effect->rockEffect.rocks.push_back(coloredModel);
+                    physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
+                }
+            }
+        }
+    }
+
+    if (effect->hasRockEffect)
+    {
+        Logger::Log("Loaded ", effect->rockEffect.rocks.size(), " randomly-generated rocks in the rock field.");
+    }
+}
+
 void TerrainEffectManager::UnloadGrassEffect(vec::vec2i pos)
 {
 	if (effectData[pos]->hasGrassEffect)
@@ -309,6 +382,19 @@ void TerrainEffectManager::UnloadRoadEffect(vec::vec2i pos)
 	}
 }
 
+void TerrainEffectManager::UnloadRockEffect(vec::vec2i pos)
+{
+    if (effectData[pos]->hasRockEffect)
+    {
+        for (const ColoredPhysicalModel& model : effectData[pos]->rockEffect.rocks)
+        {
+            // TODO -- we should not regenerate rigid bodies for rocky areas, but they (like cities) should go in a persistent store.
+            // I'm leaving that off until I start random city generation. That will likely also entail refactoring in this class...
+            physics->DynamicsWorld->removeRigidBody(model.model.rigidBody);
+        }
+    }
+}
+
 bool TerrainEffectManager::LoadSubTileEffects(vec::vec2i pos, SubTile* tile)
 {
 	if (effectData.find(pos) != effectData.end())
@@ -320,6 +406,7 @@ bool TerrainEffectManager::LoadSubTileEffects(vec::vec2i pos, SubTile* tile)
 	EffectData* effect = new EffectData();
 	LoadGrassEffect(pos, effect, tile);
 	LoadRoadEffect(pos, effect, tile);
+    LoadRockEffect(pos, effect, tile);
 
 	effectData[pos] = effect;
 	return true;
@@ -414,6 +501,16 @@ void TerrainEffectManager::RenderSubTileEffects(const vec::vec2i pos, const vec:
 
 		glDrawArrays(GL_LINES, 0, effectData[pos]->roadEffect.travellers.positions.size());
 	}
+    
+    // Render rocks in rocky areas
+    if (effectData[pos]->hasRockEffect)
+    {
+        for (const ColoredPhysicalModel& model : effectData[pos]->rockEffect.rocks)
+        {
+            vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.model.rigidBody);
+            modelManager->RenderModel(projectionMatrix, model.model.modelId, mvMatrix, model.color, false);
+        }
+    }
 }
 
 void TerrainEffectManager::CleanupSubTileEffects(vec::vec2i pos, bool log)
@@ -421,6 +518,7 @@ void TerrainEffectManager::CleanupSubTileEffects(vec::vec2i pos, bool log)
 	// Cleanup grass rendering data.
 	UnloadGrassEffect(pos);
 	UnloadRoadEffect(pos);
+    UnloadRockEffect(pos);
 	delete effectData[pos];
 
 	if (log)

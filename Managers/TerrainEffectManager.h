@@ -3,10 +3,13 @@
 #include <set>
 #include <map>
 #include <GL/glew.h>
+#include "Data\Model.h"
 #include "Data\TerrainTile.h"
 #include "Managers\ShaderManager.h"
+#include "Managers\ModelManager.h"
 #include "Math\Vec.h"
 #include "Utils\Vertex.h"
+#include "BasicPhysics.h"
 
 struct GrassEffect
 {
@@ -30,6 +33,11 @@ struct RoadEffect
 	std::vector<vec::vec2i> roadPositions;
 };
 
+struct RockEffect
+{
+    std::vector<ColoredPhysicalModel> rocks;
+};
+
 struct EffectData
 {
 	bool hasGrassEffect;
@@ -37,6 +45,9 @@ struct EffectData
 
 	bool hasRoadEffect;
 	RoadEffect roadEffect;
+
+    bool hasRockEffect;
+    RockEffect rockEffect;
 };
 
 struct GrassProgram
@@ -59,6 +70,9 @@ struct RoadProgram
 class TerrainEffectManager
 {
     ShaderManager* shaderManager;
+    ModelManager* modelManager;
+    BasicPhysics* physics;
+
     int subTileSize; // In pixels
 
 	GrassProgram grassProgram;
@@ -78,10 +92,13 @@ class TerrainEffectManager
 	void LoadRoadEffect(vec::vec2i pos, EffectData* effect, SubTile* tile);
 	void UnloadRoadEffect(vec::vec2i pos);
 
+    void LoadRockEffect(vec::vec2i pos, EffectData* effect, SubTile* subTile);
+    void UnloadRockEffect(vec::vec2i pos);
+
 	void CleanupSubTileEffects(vec::vec2i pos, bool log);
 
 public:
-	TerrainEffectManager(ShaderManager* shaderManager, int subTileSize);
+	TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, int subTileSize);
 
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();
