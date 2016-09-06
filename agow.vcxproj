@@ -122,6 +122,10 @@
     <ClInclude Include="RockGenerator.h" />
     <ClInclude Include="Scenery.h" />
     <ClInclude Include="Statistics.h" />
+    <ClInclude Include="TerrainEffects\GrassEffect.h" />
+    <ClInclude Include="TerrainEffects\RoadEffect.h" />
+    <ClInclude Include="TerrainEffects\RockEffect.h" />
+    <ClInclude Include="TerrainEffects\TerrainEffect.h" />
     <ClInclude Include="Utils\Constants.h" />
     <ClInclude Include="Utils\ConversionUtils.h" />
     <ClInclude Include="Utils\ImageUtils.h" />
@@ -160,6 +164,9 @@
     <ClCompile Include="RockGenerator.cpp" />
     <ClCompile Include="Scenery.cpp" />
     <ClCompile Include="Statistics.cpp" />
+    <ClCompile Include="TerrainEffects\GrassEffect.cpp" />
+    <ClCompile Include="TerrainEffects\RoadEffect.cpp" />
+    <ClCompile Include="TerrainEffects\RockEffect.cpp" />
     <ClCompile Include="Utils\Constants.cpp" />
     <ClCompile Include="Utils\ConversionUtils.cpp" />
     <ClCompile Include="Utils\ImageUtils.cpp" />

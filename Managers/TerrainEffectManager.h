@@ -8,62 +8,22 @@
 #include "Managers\ShaderManager.h"
 #include "Managers\ModelManager.h"
 #include "Math\Vec.h"
+#include "TerrainEffects\GrassEffect.h"
+#include "TerrainEffects\RoadEffect.h"
+#include "TerrainEffects\RockEffect.h"
+#include "TerrainEffects\TerrainEffect.h"
 #include "Utils\Vertex.h"
 #include "BasicPhysics.h"
 
-struct GrassEffect
+struct TerrainEffectData
 {
-	GLuint vao;
-	GLuint positionBuffer;
-	GLuint colorBuffer;
+    TerrainEffect* effect;
+    void* effectData;
 
-	universalVertices grassStalks;
-	std::vector<vec::vec3> grassOffsets;
-};
-
-struct RoadEffect
-{
-	SubTile* tile;
-
-	GLuint vao;
-	GLuint positionBuffer;
-	GLuint colorBuffer;
-
-	universalVertices travellers;
-	std::vector<vec::vec2i> roadPositions;
-};
-
-struct RockEffect
-{
-    std::vector<ColoredPhysicalModel> rocks;
-};
-
-struct EffectData
-{
-	bool hasGrassEffect;
-	GrassEffect grassEffect;
-
-	bool hasRoadEffect;
-	RoadEffect roadEffect;
-
-    bool hasRockEffect;
-    RockEffect rockEffect;
-};
-
-struct GrassProgram
-{
-	GLuint programId;
-
-	GLuint projMatrixLocation;
-	GLuint mvMatrixLocation;
-};
-
-struct RoadProgram
-{
-	GLuint programId;
-
-	GLuint projMatrixLocation;
-	GLuint mvMatrixLocation;
+    TerrainEffectData(TerrainEffect* effect, void* effectData)
+        : effect(effect), effectData(effectData)
+    {
+    }
 };
 
 // Defines effects for each sub tile of terrain.
@@ -75,30 +35,13 @@ class TerrainEffectManager
 
     int subTileSize; // In pixels
 
-	GrassProgram grassProgram;
-	RoadProgram roadProgram;
+    std::vector<TerrainEffect*> effects;
+    std::map<vec::vec2i, std::vector<TerrainEffectData*>, vec::vec2iComparer> subtileEffectData;
 
-    std::map<vec::vec2i, EffectData*, vec::vec2iComparer> effectData;
-	
-	bool GetNearbyCheckOne(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
-	bool GetNearbyCheckTwo(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
-	bool GetNearbyCheckThree(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
-	bool GetNearbyCheckFour(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
-	vec::vec2i GetNearbyType(SubTile* tile, const vec::vec2i pos, const int terrainType) const;
-
-	void LoadGrassEffect(vec::vec2i pos, EffectData* effect, SubTile* tile);
-	void UnloadGrassEffect(vec::vec2i pos);
-
-	void LoadRoadEffect(vec::vec2i pos, EffectData* effect, SubTile* tile);
-	void UnloadRoadEffect(vec::vec2i pos);
-
-    void LoadRockEffect(vec::vec2i pos, EffectData* effect, SubTile* subTile);
-    void UnloadRockEffect(vec::vec2i pos);
-
-	void CleanupSubTileEffects(vec::vec2i pos, bool log);
+    void CleanupSubTileEffects(vec::vec2i pos, bool log);
 
 public:
-	TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, int subTileSize);
+    TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, int subTileSize);
 
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();
@@ -106,13 +49,13 @@ public:
     // Loads a single tile.
     bool LoadSubTileEffects(vec::vec2i pos, SubTile* tile);
     
-	// Simulates the effects for the loaded tile.
-	void Simulate(const vec::vec2i pos, float elapsedSeconds);
+    // Simulates the effects for the loaded tile.
+    void Simulate(const vec::vec2i pos, float elapsedSeconds);
 
     // Renders a tile's effects *The tile must have been loaded ahead-of-time.*
     void RenderSubTileEffects(const vec::vec2i pos, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix);
 
-	void UnloadSubTileEffects(vec::vec2i pos);
+    void UnloadSubTileEffects(vec::vec2i pos);
     virtual ~TerrainEffectManager();
 };
 

@@ -87,6 +87,15 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Events.cpp" />
+    <ClCompile Include="TerrainEffects\GrassEffect.cpp">
+      <Filter>TerrainEffects</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainEffects\RoadEffect.cpp">
+      <Filter>TerrainEffects</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainEffects\RockEffect.cpp">
+      <Filter>TerrainEffects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -194,6 +203,18 @@
     <ClInclude Include="Data\CallbackTypes.h">
       <Filter>Data</Filter>
     </ClInclude>
+    <ClInclude Include="TerrainEffects\GrassEffect.h">
+      <Filter>TerrainEffects</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainEffects\RoadEffect.h">
+      <Filter>TerrainEffects</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainEffects\RockEffect.h">
+      <Filter>TerrainEffects</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainEffects\TerrainEffect.h">
+      <Filter>TerrainEffects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Managers">
@@ -210,6 +231,9 @@
     </Filter>
     <Filter Include="Data">
       <UniqueIdentifier>{1600f07c-2e58-4290-940f-2a892e595dc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TerrainEffects">
+      <UniqueIdentifier>{0aaa81e7-e0da-4de5-aac8-6e5678c0b944}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
