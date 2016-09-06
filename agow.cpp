@@ -45,7 +45,7 @@ agow::agow()
       regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
       scenery(),
       player(), // TODO configurable
-	  gearScientist("James Blanton", "Giver of yer gear.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE),
+      gearScientist("James Blanton", "Giver of yer gear.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE),
       intellScientist("Aaron Krinst", "Giver of yer data.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 0.20f, 1.0f, 0.70f), NPC::INVULNERABLE),
       generalMilitary("Barry Ingleson", "Nominal strategy director.", NPC::Shape::CUBOID, vec::vec4(1.0f, 0.10f, 0.0f, 0.90f), NPC::INVULNERABLE),
       sergeantMilitary("Oliver Yttrisk", "Battle assistant extraordinaire.", NPC::Shape::CUBOID, vec::vec4(1.0f, 0.50f, 0.0f, 0.50f), NPC::INVULNERABLE)
@@ -103,16 +103,16 @@ void agow::LogGraphicsSettings()
 
     GLint maxTextureUnits, maxUniformBlockSize;
     GLint maxVertexUniformBlocks, maxFragmentUniformBlocks;
-	GLint maxTextureSize;
+    GLint maxTextureSize;
     glGetIntegerv(GL_MAX_TEXTURE_UNITS, &maxTextureUnits);
     glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &maxVertexUniformBlocks);
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &maxFragmentUniformBlocks);
     glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBlockSize);
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
     Logger::Log("Max Texture Units: ", ", Max Uniform Size: ", (maxUniformBlockSize/1024), " kB");
     Logger::Log("Max Vertex Uniform Blocks: ", maxVertexUniformBlocks, ", Max Fragment Uniform Blocks: ", maxFragmentUniformBlocks);
-	Logger::Log("Max Texture Size: ", maxTextureSize);
+    Logger::Log("Max Texture Size: ", maxTextureSize);
 }
 
 void agow::UpdatePerspective(unsigned int width, unsigned int height)
@@ -226,11 +226,11 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_TERRAIN;
     }
 
-	Logger::Log("NPC model loading...");
-	if (!NPC::LoadNpcModels(&modelManager))
-	{
+    Logger::Log("NPC model loading...");
+    if (!NPC::LoadNpcModels(&modelManager))
+    {
         return Constants::Status::BAD_MODEL;
-	}
+    }
 
     gearScientist.LoadGraphics(&fontManager);
     intellScientist.LoadGraphics(&fontManager);
@@ -368,6 +368,7 @@ void agow::Update(float currentGameTime, float frameTime)
 void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
 {
     vec::mat4 projectionMatrix = Constants::PerspectiveMatrix * viewMatrix;
+    vec::mat4 rotationOnlyMatrix = Constants::PerspectiveMatrix * player.GetViewOrientation().asMatrix();
 
     // Clear the screen (and depth buffer) before any rendering begins.
     const GLfloat color[] = { 0, 0, 0, 1 };
@@ -376,7 +377,7 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     glClearBufferfv(GL_DEPTH, 0, &one);
 
     // Render the scenery
-    scenery.Render(projectionMatrix);
+    scenery.Render(rotationOnlyMatrix);
 
     // Render our ground, and any derivative items from that.
     regionManager.RenderRegions(projectionMatrix);
@@ -388,7 +389,7 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
         modelManager.RenderModel(projectionMatrix, testCubes[i].modelId, mvMatrix, false);
     }
 
-	// Render the key NPCs
+    // Render the key NPCs
     gearScientist.Render(&fontManager, &modelManager, projectionMatrix);
     intellScientist.Render(&fontManager, &modelManager, projectionMatrix);
     generalMilitary.Render(&fontManager, &modelManager, projectionMatrix);

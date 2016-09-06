@@ -11,11 +11,11 @@
 class Scenery : public ICallback<EventType>
 {
     // Sky cube
-    GLuint skyCubeProgram;
-    GLuint viewMatrixLocation;
+    GLuint starProgram;
+    GLuint projMatrixLocation;
     GLuint flavorColorLocation;
 
-    GLuint skyCubeVao;
+    GLuint starVao;
 
     float flavorColorStrength;
     vec::vec3 flavorColor;
@@ -25,7 +25,7 @@ public:
     Scenery();
 
     bool Initialize(ShaderManager& shaderManager);
-    void Render(vec::mat4& viewMatrix);
+    void Render(vec::mat4& projectionMatrix);
 
     // Used for sky coloration changes.
     virtual void Callback(EventType eventType, void* callbackSpecificData) override;

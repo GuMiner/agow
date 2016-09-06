@@ -12,20 +12,20 @@ Region::Region(vec::vec2i pos, TerrainManager* terrainManager, int subdivisions)
 
 vec::vec2i Region::GetPos() const
 {
-	return pos;
+    return pos;
 }
 
 void Region::EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::vector<vec::vec2i>* tilesToLoadHeightmapsFor)
 {
-	for (const vec::vec2i& tilePos : *tilesToLoadHeightmapsFor)
-	{
-		vec::vec2i localPos = tilePos - (pos * TerrainManager::Subdivisions);
-		bool inRegion = (localPos.x >= 0 && localPos.y >= 0 && localPos.x < TerrainManager::Subdivisions && localPos.y < TerrainManager::Subdivisions);
-		if (inRegion && loadedHeightmaps.find(localPos) == loadedHeightmaps.end())
-		{
-			loadedHeightmaps[localPos] = CreateHeightmap(tilePos, regionTile->subtiles[localPos], dynamicsWorld);
-		}
-	}
+    for (const vec::vec2i& tilePos : *tilesToLoadHeightmapsFor)
+    {
+        vec::vec2i localPos = tilePos - (pos * TerrainManager::Subdivisions);
+        bool inRegion = (localPos.x >= 0 && localPos.y >= 0 && localPos.x < TerrainManager::Subdivisions && localPos.y < TerrainManager::Subdivisions);
+        if (inRegion && loadedHeightmaps.find(localPos) == loadedHeightmaps.end())
+        {
+            loadedHeightmaps[localPos] = CreateHeightmap(tilePos, regionTile->subtiles[localPos], dynamicsWorld);
+        }
+    }
 }
 
 btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDynamicsWorld* dynamicsWorld)
@@ -36,8 +36,8 @@ btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDyn
 
     // Position the heightfield so that it's not repositioned incorrectly.
     btTransform heightfieldPos;
-	heightfieldPos.setIdentity();
-	heightfieldPos.setOrigin(btVector3(
+    heightfieldPos.setIdentity();
+    heightfieldPos.setOrigin(btVector3(
         (float)(tilePos.x + 0.5f) * PhysicsConfig::TerrainSize / TerrainManager::Subdivisions,
         (float)(tilePos.y + 0.5f) * PhysicsConfig::TerrainSize / TerrainManager::Subdivisions, 450.0f - 2.0f));
 
@@ -48,8 +48,8 @@ btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDyn
     heightmap->setFriction(0.50f); // TODO configurable.
     heightmap->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::HEIGHTMAP));
 
-	dynamicsWorld->addRigidBody(heightmap);
-	return heightmap;
+    dynamicsWorld->addRigidBody(heightmap);
+    return heightmap;
 }
 
 float Region::GetPointHeight(const vec::vec2i tilePos, const vec::vec2i fullPos) const
@@ -65,7 +65,7 @@ float Region::GetPointHeight(const vec::vec2i tilePos, const vec::vec2i fullPos)
 
 void Region::Simulate(TerrainManager* terrainManager, vec::vec2i tilePos, float elapsedSeconds)
 {
-	terrainManager->Simulate(pos, tilePos - (pos * TerrainManager::Subdivisions), elapsedSeconds);
+    terrainManager->Simulate(pos, tilePos - (pos * TerrainManager::Subdivisions), elapsedSeconds);
 }
 
 void Region::RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const
@@ -78,15 +78,15 @@ void Region::RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, co
 
 void Region::CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld)
 {
-	terrainManager->UnloadTerrainTile(pos);
-	for (std::pair<const vec::vec2i, btRigidBody*> heightmap : loadedHeightmaps)
-	{
-		dynamicsWorld->removeRigidBody(heightmap.second);
+    terrainManager->UnloadTerrainTile(pos);
+    for (std::pair<const vec::vec2i, btRigidBody*> heightmap : loadedHeightmaps)
+    {
+        dynamicsWorld->removeRigidBody(heightmap.second);
         delete heightmap.second->getUserPointer();
-		delete heightmap.second->getCollisionShape();
-		delete heightmap.second->getMotionState();
-		delete heightmap.second;
-	}
+        delete heightmap.second->getCollisionShape();
+        delete heightmap.second->getMotionState();
+        delete heightmap.second;
+    }
 }
 
 Region::~Region()

@@ -15,17 +15,17 @@ class RegionManager
     TerrainManager terrainManager;
     std::map<vec::vec2i, Region*, vec::vec2iComparer> loadedRegions;
 
-	// Each region is subdivided into 100 tiles.
-	std::vector<vec::vec2i> visibleTiles;
+    // Each region is subdivided into 100 tiles.
+    std::vector<vec::vec2i> visibleTiles;
 
     // Extents we can actually transverse in the tiles.
     vec::vec2i min;
     vec::vec2i max;
-	int tileViewDistance;
+    int tileViewDistance;
 
-	vec::vec2i lastCenterTile;
-	vec::vec2i GetCurrentCenterTile(const vec::vec3& position) const;
-	void ComputeVisibleTiles(vec::vec2i centerTile, std::vector<vec::vec2i>* visibleTiles) const;
+    vec::vec2i lastCenterTile;
+    vec::vec2i GetCurrentCenterTile(const vec::vec3& position) const;
+    void ComputeVisibleTiles(vec::vec2i centerTile, std::vector<vec::vec2i>* visibleTiles) const;
 
 public:
     RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance);
@@ -35,7 +35,7 @@ public:
     float GetPointHeight(btDynamicsWorld* dynamicsWorld, const vec::vec2 point);
 
     void UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorld* dynamicsWorld);
-	void SimulateVisibleRegions(float gameTime, float elapsedSeconds);
+    void SimulateVisibleRegions(float gameTime, float elapsedSeconds);
     void RenderRegions(const vec::mat4& projectionMatrix);
 
     void CleanupPhysics(btDynamicsWorld* dynamicsWorld);

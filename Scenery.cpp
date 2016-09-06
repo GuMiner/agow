@@ -14,18 +14,18 @@ Scenery::Scenery()
 bool Scenery::Initialize(ShaderManager& shaderManager)
 {
     // Sky program.
-    if (!shaderManager.CreateShaderProgram("skyCubeRender", &skyCubeProgram))
+    if (!shaderManager.CreateShaderProgram("starRender", &starProgram))
     {
         Logger::Log("Failure creating the sky cube shader program!");
         return false;
     }
 
-    viewMatrixLocation = glGetUniformLocation(skyCubeProgram, "viewMatrix");
-    flavorColorLocation = glGetUniformLocation(skyCubeProgram, "flavorColor");
+    projMatrixLocation = glGetUniformLocation(starProgram, "projMatrix");
+    flavorColorLocation = glGetUniformLocation(starProgram, "flavorColor");
 
     // We need the VAO to actually render without sending any vertex data to the shader, which handles the stars.
-    glGenVertexArrays(1, &skyCubeVao);
-    glBindVertexArray(skyCubeVao);
+    glGenVertexArrays(1, &starVao);
+    glBindVertexArray(starVao);
 
     return true;
 }
@@ -36,21 +36,21 @@ void Scenery::UpdateSkyColoration(vec::vec3 skyColor, float strength)
     flavorColorStrength = strength;
 }
 
-void Scenery::Render(vec::mat4& viewMatrix)
+void Scenery::Render(vec::mat4& projectionMatrix)
 {
     // Render the sky
-    glUseProgram(skyCubeProgram);
-    glBindVertexArray(skyCubeVao);
-
+    glUseProgram(starProgram);
+    glBindVertexArray(starVao);
+    
     glUniform4f(flavorColorLocation, flavorColor.x, flavorColor.y, flavorColor.z, flavorColorStrength);
-    glUniformMatrix4fv(viewMatrixLocation, 1, GL_TRUE, viewMatrix);
+    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, projectionMatrix);
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 Scenery::~Scenery()
 {
-    glDeleteVertexArrays(1, &skyCubeVao);
+    glDeleteVertexArrays(1, &starVao);
 }
 
 void Scenery::Callback(EventType eventType, void* callbackSpecificData)
@@ -63,8 +63,8 @@ void Scenery::Callback(EventType eventType, void* callbackSpecificData)
     else if (eventType == EventType::SKY_FLAVOR_RANDOM_COLOR_CHANGE)
     {
         // Used for fancy effects, not for in-game 'mood' determinations. TODO configurable.
-        vec::vec3 randomColor = vec::vec3(0.70f + 0.20f * MathOps::Rand(), 0.70f + 0.20f * MathOps::Rand(), 0.70f + 0.20f * MathOps::Rand());
-        float strength = 0.60f + MathOps::Rand() * 2.0f;
+        vec::vec3 randomColor = vec::vec3(0.50f + 0.90f * MathOps::Rand(), 0.50f + 0.90f * MathOps::Rand(), 0.50f + 0.90f * MathOps::Rand());
+        float strength = 1.0f;
         UpdateSkyColoration(randomColor, strength);
     }
 }

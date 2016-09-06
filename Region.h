@@ -9,22 +9,22 @@
 // Defines how to display our visible game region.
 class Region
 {
-	vec::vec2i pos;
+    vec::vec2i pos;
     int subdivisions;
 
     TerrainTile* regionTile;
-	std::map<vec::vec2i, btRigidBody*, vec::vec2iComparer> loadedHeightmaps;
+    std::map<vec::vec2i, btRigidBody*, vec::vec2iComparer> loadedHeightmaps;
 
     btRigidBody* CreateHeightmap(vec::vec2i tilePos, SubTile *subTile, btDynamicsWorld* dynamicsWorld);
-	 
+     
 public:
     Region(vec::vec2i pos,  TerrainManager* terrainManager, int subdivisions);
-	vec::vec2i GetPos() const;
+    vec::vec2i GetPos() const;
 
-	void EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::vector<vec::vec2i>* tilesToLoadHeightmapsFor);
+    void EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::vector<vec::vec2i>* tilesToLoadHeightmapsFor);
 
     float GetPointHeight(const vec::vec2i tilePos, const vec::vec2i fullPos) const;
-	void Simulate(TerrainManager* terrainManager, vec::vec2i tilePos, float elapsedSeconds);
+    void Simulate(TerrainManager* terrainManager, vec::vec2i tilePos, float elapsedSeconds);
     void RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const;
 
     void CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld);
