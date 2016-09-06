@@ -11,7 +11,8 @@ struct RoadEffectData
     GLuint colorBuffer;
 
     universalVertices travellers;
-    std::vector<vec::vec2i> roadPositions;
+    std::vector<vec::vec2> positions;
+    std::vector<vec::vec2> velocities;
 
     RoadEffectData(SubTile* tile)
         : tile(tile)
@@ -28,11 +29,8 @@ class RoadEffect : public TerrainEffect
     GLuint projMatrixLocation;
     GLuint mvMatrixLocation;
 
-    bool GetNearbyCheckOne(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
-    bool GetNearbyCheckTwo(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
-    bool GetNearbyCheckThree(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
-    bool GetNearbyCheckFour(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const;
-    vec::vec2i GetNearbyType(SubTile* tile, const vec::vec2i pos, const int terrainType) const;
+    // Moves the specified traveller, returning the height of the ground the traveller is now above.
+    float MoveTraveller(const vec::vec2i subtileId, RoadEffectData* roadEffect, int travellerId, float elapsedSeconds);
 
 public:
     RoadEffect(int subTileSize);

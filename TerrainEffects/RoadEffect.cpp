@@ -21,149 +21,6 @@ bool RoadEffect::LoadBasics(ShaderManager* shaderManager)
     return true;
 }
 
-bool RoadEffect::GetNearbyCheckOne(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const
-{
-    if (pos.x != 0)
-    {
-        if (tile->type[(pos.x - 1) + pos.y * subTileSize] == terrainType)
-        {
-            *result = pos + vec::vec2i(-1, 0);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool RoadEffect::GetNearbyCheckTwo(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const
-{
-    if (pos.y != 0)
-    {
-        if (tile->type[pos.x + (pos.y - 1) * subTileSize] == terrainType)
-        {
-            *result = pos + vec::vec2i(0, -1);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool RoadEffect::GetNearbyCheckThree(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const
-{
-    if (pos.x != subTileSize - 1)
-    {
-        if (tile->type[(pos.x + 1) + pos.y * subTileSize] == terrainType)
-        {
-            *result = pos + vec::vec2i(1, 0);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool RoadEffect::GetNearbyCheckFour(SubTile* tile, const vec::vec2i pos, const int terrainType, vec::vec2i* result) const
-{
-    if (pos.y != subTileSize - 1)
-    {
-        if (tile->type[pos.x + (pos.y + 1) * subTileSize] == terrainType)
-        {
-            *result = pos + vec::vec2i(0, 1);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-vec::vec2i RoadEffect::GetNearbyType(SubTile* tile, const vec::vec2i pos, const int terrainType) const
-{
-    vec::vec2i result(-1, -1);
-    bool foundNearbyType = false;
-
-    int checkOrder = MathOps::Rand(0, 8);
-
-    switch (checkOrder)
-    {
-    case 0:
-        if (GetNearbyCheckOne(tile, pos, terrainType, &result) || GetNearbyCheckTwo(tile, pos, terrainType, &result)
-            || GetNearbyCheckThree(tile, pos, terrainType, &result) || GetNearbyCheckFour(tile, pos, terrainType, &result))
-        {
-            break;
-        }
-
-        break;
-    case 1:
-        if (GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result)
-            || GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result))
-        {
-            break;
-        }
-
-        break;
-    case 2:
-        if (GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result)
-            || GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result))
-        {
-            break;
-        }
-
-        break;
-    case 3:
-        if (GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result)
-            || GetNearbyCheckOne(tile, pos, terrainType, &result) || GetNearbyCheckFour(tile, pos, terrainType, &result))
-        {
-            break;
-        }
-
-        break;
-    case 4:
-        if (GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result)
-            || GetNearbyCheckThree(tile, pos, terrainType, &result) || GetNearbyCheckTwo(tile, pos, terrainType, &result))
-        {
-            break;
-        }
-
-        break;
-    case 5:
-        if (GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result)
-            || GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result))
-        {
-            break;
-        }
-
-        break;
-    case 6:
-        if (GetNearbyCheckThree(tile, pos, terrainType, &result) || GetNearbyCheckFour(tile, pos, terrainType, &result)
-            || GetNearbyCheckOne(tile, pos, terrainType, &result) || GetNearbyCheckTwo(tile, pos, terrainType, &result))
-        {
-            break;
-        }
-
-        break;
-    case 7:
-        if (GetNearbyCheckFour(tile, pos, terrainType, &result) || GetNearbyCheckOne(tile, pos, terrainType, &result)
-            || GetNearbyCheckTwo(tile, pos, terrainType, &result) || GetNearbyCheckThree(tile, pos, terrainType, &result))
-        {
-            break;
-        }
-
-        break;
-    default:
-        if (GetNearbyCheckThree(tile, pos, terrainType, &result) || GetNearbyCheckTwo(tile, pos, terrainType, &result)
-            || GetNearbyCheckOne(tile, pos, terrainType, &result) || GetNearbyCheckFour(tile, pos, terrainType, &result))
-        {
-            break;
-        }
-
-        break;
-    }
-
-
-    return result;
-}
-
 bool RoadEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* tile)
 {
     bool hasRoadEffect = false;
@@ -182,33 +39,31 @@ bool RoadEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
 
                 if (roadCounter % ROAD_SUBCOUNT == 0)
                 {
-                    vec::vec2i nearbyRoad = GetNearbyType(tile, vec::vec2i(i, j), TerrainTypes::ROADS);
-                    if (nearbyRoad.x != -1)
+                    if (!hasRoadEffect)
                     {
-                        if (!hasRoadEffect)
-                        {
-                            hasRoadEffect = true;
-                            roadEffect = new RoadEffectData(tile);
-                        }
-
-                        float height = tile->heightmap[i + j * subTileSize];
-                        float height2 = tile->heightmap[nearbyRoad.x + nearbyRoad.y * subTileSize];
-                        vec::vec2i realLastPos = subtileId * 0.10f + nearbyRoad;
-                        vec::vec2i realPos = subtileId * 0.10f + vec::vec2i(i, j);
-
-                        // TODO configurable
-                        vec::vec3 bottomColor = vec::vec3(0.0f, 0.50f, MathOps::Rand() * 0.20f + 0.80f);
-                        vec::vec3 topColor = vec::vec3(0.40f + 0.60f * MathOps::Rand(), 0.0f, 0.20f + MathOps::Rand() * 0.40f);
-                        vec::vec3 bottomPos = vec::vec3((float)realPos.x, (float)realPos.y, height + 0.5f);
-                        vec::vec3 topPos = vec::vec3((float)realLastPos.x, (float)realLastPos.y, height2 + 0.5f);
-
-                        // Add grass
-                        roadEffect->travellers.positions.push_back(bottomPos);
-                        roadEffect->travellers.positions.push_back(topPos);
-                        roadEffect->travellers.colors.push_back(bottomColor);
-                        roadEffect->travellers.colors.push_back(topColor);
-                        roadEffect->roadPositions.push_back(realPos);
+                        hasRoadEffect = true;
+                        roadEffect = new RoadEffectData(tile);
                     }
+
+                    float height = tile->heightmap[i + j * subTileSize];
+                    vec::vec2i realPos = subtileId * 0.10f + vec::vec2i(i, j);
+
+                    // TODO configurable
+                    vec::vec3 bottomColor = vec::vec3(0.0f, 0.50f, MathOps::Rand() * 0.20f + 0.80f);
+                    vec::vec3 topColor = vec::vec3(0.40f + 0.60f * MathOps::Rand(), 0.0f, 0.20f + MathOps::Rand() * 0.40f);
+                    vec::vec3 position = vec::vec3((float)realPos.x, (float)realPos.y, height + 0.5f);
+                    vec::vec2 velocity = vec::vec2(MathOps::Rand(1.0f), MathOps::Rand(1.0f)) * 40.0f;
+
+                    vec::vec3 endPosition = position + vec::normalize(vec::vec3(velocity.x, velocity.y, 0.0f));
+
+                    // Add road travelers
+                    roadEffect->travellers.positions.push_back(position);
+                    roadEffect->travellers.positions.push_back(endPosition);
+                    roadEffect->travellers.colors.push_back(bottomColor);
+                    roadEffect->travellers.colors.push_back(topColor);
+
+                    roadEffect->positions.push_back(vec::vec2(position.x, position.y));
+                    roadEffect->velocities.push_back(velocity);
                 }
             }
         }
@@ -239,29 +94,92 @@ void RoadEffect::UnloadEffect(void* effectData)
     delete roadEffect;
 }
 
+float RoadEffect::MoveTraveller(const vec::vec2i subtileId, RoadEffectData* roadEffect, int i, float elapsedSeconds)
+{
+    roadEffect->positions[i] += (roadEffect->velocities[i] * elapsedSeconds);
+
+    // This logic causes a slight pause when a boundary is hit, which looks logical.
+    bool hitEdgeBoundary = false;
+    vec::vec2i subTilePos = vec::vec2i(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId * 0.10f;
+    if (subTilePos.x < 0 || subTilePos.x >= subTileSize)
+    {
+        roadEffect->positions[i] -= (roadEffect->velocities[i] * elapsedSeconds);
+        roadEffect->velocities[i].x *= -1.0f;
+        hitEdgeBoundary = true;
+    }
+    
+    if (subTilePos.y < 0 || subTilePos.y >= subTileSize)
+    {
+        roadEffect->positions[i] -= (roadEffect->velocities[i] * elapsedSeconds);
+        roadEffect->velocities[i].y *= -1.0f;
+        hitEdgeBoundary = true;
+    }
+
+    subTilePos = vec::vec2i(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId * 0.10f;
+    subTilePos.x = std::max(std::min(subTilePos.x, subTileSize - 1), 0);
+    subTilePos.y = std::max(std::min(subTilePos.y, subTileSize - 1), 0);
+
+    if (!hitEdgeBoundary)
+    {
+        // See if we went off a road. If so, correct.
+        if (roadEffect->tile->type[subTilePos.x + subTilePos.y * subTileSize] != TerrainTypes::ROADS)
+        {
+            vec::vec2i offRoad = subTilePos;
+            roadEffect->positions[i] -= (roadEffect->velocities[i] * elapsedSeconds);
+
+            // Whichever coordinates were different, we bounce. This isn't strictly correct, as if we went through a corner of a pixel, we shouldn't bounce one axis.
+            // However, the subsequent step (angular distortion) is very incorrect (or correct, depending on your viewpoint)
+            bool angleXDistortion = false;
+            subTilePos = vec::vec2i(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId * 0.10f;
+            if (subTilePos.x != offRoad.x)
+            {
+                roadEffect->velocities[i].x *= -1.0f;
+                angleXDistortion = true;
+            }
+
+            bool angleYDistortion = false;
+            if (subTilePos.y != offRoad.y)
+            {
+                roadEffect->velocities[i].y *= -1.0f;
+                angleYDistortion = true;
+            }
+
+            // TODO configurable
+            // Distort axis (to promote moving *away* and prevent collisions) but keep the speed the same.
+            // Do nothing if both distortions are requested.
+            float factor = 1.5f;
+            if (angleXDistortion)
+            {
+                float length = vec::length(roadEffect->velocities[i]);
+                roadEffect->velocities[i].y *= factor;
+                roadEffect->velocities[i] = vec::normalize(roadEffect->velocities[i]) * length;
+            }
+            else if (angleYDistortion)
+            {
+                float length = vec::length(roadEffect->velocities[i]);
+                roadEffect->velocities[i].x *= factor;
+                roadEffect->velocities[i] = vec::normalize(roadEffect->velocities[i]) * length;
+            }
+        }
+    }
+
+    
+    return roadEffect->tile->heightmap[subTilePos.x + subTilePos.y * subTileSize];
+}
+
 void RoadEffect::Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds)
 {
     RoadEffectData* roadEffect = (RoadEffectData*)effectData;
     auto& travellers = roadEffect->travellers.positions;
-    auto& roadPositions = roadEffect->roadPositions;
     for (unsigned int i = 0; i < travellers.size() / 2; i++)
     {
-        vec::vec2i nearbyRoad = GetNearbyType(roadEffect->tile, roadPositions[i], TerrainTypes::ROADS);
-        if (nearbyRoad.x != -1)
-        {
-            float height = roadEffect->tile->heightmap[nearbyRoad.x + nearbyRoad.y * subTileSize];
-            float height2 = roadEffect->tile->heightmap[roadPositions[i].x + roadPositions[i].y * subTileSize];
-            vec::vec2i realLastPos = subtileId * 0.10f + nearbyRoad;
-            vec::vec2i realPos = subtileId * 0.10f + roadPositions[i];
+        float height = MoveTraveller(subtileId, roadEffect, i, elapsedSeconds);
 
-            vec::vec3 bottomPos = vec::vec3((float)realLastPos.x, (float)realLastPos.y, height + 0.5f);
-            vec::vec3 topPos = vec::vec3((float)realPos.x, (float)realPos.y, height2 + 0.5f);
+        vec::vec3 position = vec::vec3(roadEffect->positions[i].x, roadEffect->positions[i].y, height + 0.5f);
+        vec::vec3 endPosition = position + vec::normalize(vec::vec3(roadEffect->velocities[i].x, roadEffect->velocities[i].y, 0.0f));
 
-            travellers[i * 2] = bottomPos;
-            travellers[i * 2 + 1] = topPos;
-
-            roadPositions[i] = nearbyRoad;
-        }
+        travellers[i * 2] = position;
+        travellers[i * 2 + 1] = endPosition;
     }
 
     glBindVertexArray(roadEffect->vao);
@@ -270,6 +188,7 @@ void RoadEffect::Simulate(const vec::vec2i subtileId, void* effectData, float el
 
 void RoadEffect::Render(void* effectData, const vec::mat4 & projectionMatrix, const vec::mat4 & mvMatrix)
 {
+    // TODO configurable
     glLineWidth(3.0f);
     RoadEffectData* roadEffect = (RoadEffectData*)effectData;
     glUseProgram(programId);
