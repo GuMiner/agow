@@ -96,6 +96,9 @@
     <ClCompile Include="TerrainEffects\RockEffect.cpp">
       <Filter>TerrainEffects</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainEffects\TreeEffect.cpp">
+      <Filter>TerrainEffects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -213,6 +216,9 @@
       <Filter>TerrainEffects</Filter>
     </ClInclude>
     <ClInclude Include="TerrainEffects\TerrainEffect.h">
+      <Filter>TerrainEffects</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainEffects\TreeEffect.h">
       <Filter>TerrainEffects</Filter>
     </ClInclude>
   </ItemGroup>

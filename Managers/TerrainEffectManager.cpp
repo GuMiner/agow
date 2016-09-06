@@ -4,6 +4,10 @@
 #include <stb\stb_image.h>
 #include "TerrainManager.h"
 #include "Math\MathOps.h"
+#include "TerrainEffects\GrassEffect.h"
+#include "TerrainEffects\RoadEffect.h"
+#include "TerrainEffects\RockEffect.h"
+#include "TerrainEffects\TreeEffect.h"
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
 
@@ -14,6 +18,7 @@ TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelMa
     effects.push_back((TerrainEffect*)new GrassEffect(subTileSize));
     effects.push_back((TerrainEffect*)new RockEffect(modelManager, physics, subTileSize));
     effects.push_back((TerrainEffect*)new RoadEffect(subTileSize));
+    effects.push_back((TerrainEffect*)new TreeEffect(subTileSize));
 }
 
 bool TerrainEffectManager::LoadBasics()
