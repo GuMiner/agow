@@ -1,6 +1,7 @@
 #include "Math\MathOps.h"
 #include "Utils\Logger.h"
 #include "TreeEffect.h"
+#include "TreeGenerator.h"
 
 TreeEffect::TreeEffect(int subTileSize)
     : subTileSize(subTileSize)
@@ -35,6 +36,8 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
 {
     bool hasTreeEffect = false;
     TreeEffectData* treeEffect = nullptr;
+    TreeGenerator treeGenerator;
+    std::vector<vec::vec3> leaves;
 
     // Scan the image for tree pixels.
     for (int i = 0; i < subTileSize; i++)
@@ -59,13 +62,17 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
                 vec::vec3 bottomPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height);
                 vec::vec3 topPos = bottomPos + vec::vec3(0, 0, 1.0f);
 
-                // Add tree trunks.
-                treeEffect->treeTrunks.vertices.positions.push_back(bottomPos);
-                treeEffect->treeTrunks.vertices.positions.push_back(topPos);
-                treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
-                treeEffect->treeTrunks.vertices.colors.push_back(topColor);
-                treeEffect->treeTrunks.vertices.ids.push_back(MathOps::Rand(3, 20)); // Starts at 1
-                treeEffect->treeTrunks.vertices.ids.push_back(MathOps::Rand(3, 20));
+                GenerationResults results = treeGenerator.GenerateTree(bottomPos, &treeEffect->treeTrunks.vertices.positions, nullptr, &leaves);
+                for (unsigned int i = 0; i < results.branches; i++)
+                {
+                    // Add tree trunks.
+                    //treeEffect->treeTrunks.vertices.positions.push_back(bottomPos);
+                    //treeEffect->treeTrunks.vertices.positions.push_back(topPos);
+                    treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
+                    treeEffect->treeTrunks.vertices.colors.push_back(topColor);
+                    treeEffect->treeTrunks.vertices.ids.push_back(MathOps::Rand(3, 20)); // Starts at 1
+                    treeEffect->treeTrunks.vertices.ids.push_back(MathOps::Rand(3, 20));
+                }
             }
         }
     }

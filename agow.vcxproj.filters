@@ -99,6 +99,7 @@
     <ClCompile Include="TerrainEffects\TreeEffect.cpp">
       <Filter>TerrainEffects</Filter>
     </ClCompile>
+    <ClCompile Include="TreeGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -221,6 +222,7 @@
     <ClInclude Include="TerrainEffects\TreeEffect.h">
       <Filter>TerrainEffects</Filter>
     </ClInclude>
+    <ClInclude Include="TreeGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Managers">

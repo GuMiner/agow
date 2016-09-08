@@ -304,6 +304,13 @@ void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused
             {
                 alive = false;
             }
+
+            // TODO remove 
+            if (event.key.code == sf::Keyboard::I)
+            {
+                vec::vec3 pos = player.GetViewPosition();
+                std::cout << "[" << pos.x << " " << pos.y << " " << pos.z << "]" << std::endl;
+            }
         }
         else if (event.type == sf::Event::MouseButtonPressed)
         {
