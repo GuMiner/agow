@@ -1,6 +1,7 @@
 #pragma once
 #include "Utils\Vertex.h"
 #include "TerrainEffect.h"
+#include "TreeGenerator.h"
 
 struct VertexData
 {
@@ -31,6 +32,7 @@ class TreeEffect : public TerrainEffect
 
     TreeProgram trunkProgram;
     TreeProgram leafProgram;
+    TreeGenerator treeGenerator;
 
 public:
     TreeEffect(int subTileSize);

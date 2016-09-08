@@ -60,7 +60,7 @@ void TreeGenerator::GenerateAttractionPoints(TreeType type, float radius, float 
     for (unsigned int i = 0; points->size() <= pointCount && i < maxIterations; i++)
     {
         // Potentially generate a random point within the vincinity of the shape (cube of [-radius, -radius, 0], [radius, radius, shapeHeight])
-        vec::vec3 point = vec::vec3(MathOps::Rand(), MathOps::Rand(), MathOps::Rand());
+        vec::vec3 point = vec::vec3(MathOps::Rand() * 2.0f - 1.0f, MathOps::Rand() * 2.0f - 1.0f, MathOps::Rand() * 2.0f - 1.0f);
         if (IsPointWithinShape(type, point))
         {
             points->push_back(point * vec::vec3(radius * 2.0f - radius, radius * 2.0f - radius, shapeHeight) + vec::vec3(0, 0, trunkHeight));
@@ -133,10 +133,10 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
     GenerateAttractionPoints(type, radius, height, &attractionPoints);
 
     // TODO configurable
-    float minDistance = 0.10f;
+    float minDistance = 0.05f;
     float maxDistance = 0.50f;
 
-    float branchLength = 0.10f;
+    float branchLength = 0.02f;
     float branchClosenessLimit = 0.01f;
 
     // At this point all the leaves are from -radius to +radius, 0 to height.
@@ -200,7 +200,7 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
             if (branches[i].grew)
             {
                 vec::vec3 averageDirection = vec::normalize(branches[i].growDirection);
-                newBranches.push_back(Branch(&branches[i], branches[i].pos + averageDirection * branchLength, averageDirection));
+                newBranches.push_back(Branch(&branches[i], branches[i].pos + branches[i].startDirection * branchLength, averageDirection));
 
                 branches[i].growDirection = branches[i].startDirection;
                 branches[i].grew = false;
@@ -230,5 +230,5 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
         trunkLines->push_back(branches[i].pos + branches[i].startDirection * branchLength + pos);
     }
 
-    return GenerationResults(leavesAdded, branches.size());
+    return GenerationResults(type, attractionPoints.size(), leavesAdded, branches.size());
 }

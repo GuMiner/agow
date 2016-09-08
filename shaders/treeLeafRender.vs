@@ -12,5 +12,6 @@ uniform mat4 mvMatrix;
 void main(void)
 {
 	fs_color = vec4(color, 1.0f);
+    gl_PointSize = 3.0f;
     gl_Position = projMatrix * mvMatrix * vec4(position.x, position.y, position.z, 1.0f);
 }

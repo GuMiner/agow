@@ -30,36 +30,36 @@ struct Leaf
     }
 };
 
+enum TreeType
+{
+    SPHERE_SPARSE,
+    SPHERE_DENSE,
+    POINTY_SPARSE,
+    POINTY_DENSE,
+    OVAL_SPARSE,
+    OVAL_DENSE,
+    SIDE_OVAL_SPARSE,
+    SIDE_OVAL_DENSE,
+    RECT_SPARSE,
+    RECT_DENSE,
+    COUNT
+};
+
 struct GenerationResults
 {
+    TreeType type;
+    unsigned int attractionPoints;
     unsigned int leaves;
     unsigned int branches;
 
-    GenerationResults(unsigned int leaves, unsigned int branches)
-        : leaves(leaves), branches(branches)
+    GenerationResults(TreeType type, unsigned int attractionPoints, unsigned int leaves, unsigned int branches)
+        : type(type), attractionPoints(attractionPoints), leaves(leaves), branches(branches)
     {
     }
 };
 
 class TreeGenerator
 {
-public:
-    enum TreeType
-    {
-        SPHERE_SPARSE,
-        SPHERE_DENSE,
-        POINTY_SPARSE,
-        POINTY_DENSE,
-        OVAL_SPARSE,
-        OVAL_DENSE,
-        SIDE_OVAL_SPARSE,
-        SIDE_OVAL_DENSE,
-        RECT_SPARSE,
-        RECT_DENSE,
-        COUNT
-    };
-
-private:
     bool IsDenseType(TreeType type);
 
     // Checks if the point is within a shape (0 to 1 in all dimensions).

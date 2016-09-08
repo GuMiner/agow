@@ -1,7 +1,6 @@
 #include "Math\MathOps.h"
 #include "Utils\Logger.h"
 #include "TreeEffect.h"
-#include "TreeGenerator.h"
 
 TreeEffect::TreeEffect(int subTileSize)
     : subTileSize(subTileSize)
@@ -36,8 +35,6 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
 {
     bool hasTreeEffect = false;
     TreeEffectData* treeEffect = nullptr;
-    TreeGenerator treeGenerator;
-    std::vector<vec::vec3> leaves;
 
     // Scan the image for tree pixels.
     for (int i = 0; i < subTileSize; i++)
@@ -62,16 +59,21 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
                 vec::vec3 bottomPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height);
                 vec::vec3 topPos = bottomPos + vec::vec3(0, 0, 1.0f);
 
-                GenerationResults results = treeGenerator.GenerateTree(bottomPos, &treeEffect->treeTrunks.vertices.positions, nullptr, &leaves);
+                GenerationResults results = treeGenerator.GenerateTree(bottomPos,
+                    &treeEffect->treeTrunks.vertices.positions,
+                    nullptr,
+                    &treeEffect->treeLeaves.vertices.positions);
                 for (unsigned int i = 0; i < results.branches; i++)
                 {
                     // Add tree trunks.
-                    //treeEffect->treeTrunks.vertices.positions.push_back(bottomPos);
-                    //treeEffect->treeTrunks.vertices.positions.push_back(topPos);
                     treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
                     treeEffect->treeTrunks.vertices.colors.push_back(topColor);
-                    treeEffect->treeTrunks.vertices.ids.push_back(MathOps::Rand(3, 20)); // Starts at 1
-                    treeEffect->treeTrunks.vertices.ids.push_back(MathOps::Rand(3, 20));
+                }
+
+                // Add tree leaves.
+                for (unsigned int i = 0; i < results.leaves; i++)
+                {
+                    treeEffect->treeLeaves.vertices.colors.push_back(vec::vec3(0.1f, 0.70f + MathOps::Rand() * 0.30f, 0.0f));
                 }
             }
         }
@@ -95,7 +97,8 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
         glGenBuffers(1, &treeEffect->treeLeaves.colorBuffer);
 
         Logger::Log("Parsed ", treeEffect->treeLeaves.vertices.positions.size() / 2, " tree leaves.");
-        // TODO add in leaves.
+        treeEffect->treeLeaves.vertices.TransferPositionToOpenGl(treeEffect->treeLeaves.positionBuffer);
+        treeEffect->treeLeaves.vertices.TransferColorToOpenGl(treeEffect->treeLeaves.colorBuffer);
 
         *effectData = treeEffect;
     }
@@ -126,8 +129,7 @@ void TreeEffect::Render(void* effectData, const vec::mat4& projectionMatrix, con
 {
     TreeEffectData* treeEffect = (TreeEffectData*)effectData;
 
-    // Render trunks. The fragment shader ensures the trunks aren't this large!
-    glLineWidth(20.0f);
+    // Render trunks.
     glUseProgram(trunkProgram.programId);
     glBindVertexArray(treeEffect->treeTrunks.vao);
 
@@ -135,7 +137,6 @@ void TreeEffect::Render(void* effectData, const vec::mat4& projectionMatrix, con
     glUniformMatrix4fv(trunkProgram.mvMatrixLocation, 1, GL_FALSE, mvMatrix);
 
     glDrawArrays(GL_LINES, 0, treeEffect->treeTrunks.vertices.positions.size());
-    glLineWidth(1.0f);
 
     // Render leaves.
     glUseProgram(leafProgram.programId);
@@ -144,5 +145,5 @@ void TreeEffect::Render(void* effectData, const vec::mat4& projectionMatrix, con
     glUniformMatrix4fv(leafProgram.projMatrixLocation, 1, GL_FALSE, projectionMatrix);
     glUniformMatrix4fv(leafProgram.mvMatrixLocation, 1, GL_FALSE, mvMatrix);
 
-    glDrawArrays(GL_LINES, 0, treeEffect->treeLeaves.vertices.positions.size());
+    glDrawArrays(GL_POINTS, 0, treeEffect->treeLeaves.vertices.positions.size());
 }
