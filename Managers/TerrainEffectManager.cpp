@@ -34,9 +34,9 @@ bool TerrainEffectManager::LoadBasics()
     return true;
 }
 
-bool TerrainEffectManager::LoadSubTileEffects(vec::vec2i pos, SubTile* tile)
+bool TerrainEffectManager::LoadSubTileEffects(vec::vec2i start, SubTile* tile)
 {
-    if (subtileEffectData.find(pos) != subtileEffectData.end())
+    if (subtileEffectData.find(start) != subtileEffectData.end())
     {
         // Already in cache.
         return true;
@@ -46,47 +46,47 @@ bool TerrainEffectManager::LoadSubTileEffects(vec::vec2i pos, SubTile* tile)
     for (auto iter = effects.begin(); iter != effects.end(); iter++)
     {
         void* effectData;
-        if ((*iter)->LoadEffect(pos, &effectData, tile))
+        if ((*iter)->LoadEffect(start, &effectData, tile))
         {
             tileEffects.push_back(new TerrainEffectData(*iter, effectData));
         }
     }
 
-    subtileEffectData[pos] = tileEffects;
+    subtileEffectData[start] = tileEffects;
     return true;
 }
 
-void TerrainEffectManager::Simulate(const vec::vec2i pos, float elapsedSeconds)
+void TerrainEffectManager::Simulate(const vec::vec2i start, float elapsedSeconds)
 {
-    if (subtileEffectData.find(pos) == subtileEffectData.end())
+    if (subtileEffectData.find(start) == subtileEffectData.end())
     {
-        Logger::LogWarn("Attempted to simulate terrain effects not loaded with [", pos.x, ", ", pos.y, "].");
+        Logger::LogWarn("Attempted to simulate terrain effects not loaded with [", start.x, ", ", start.y, "].");
         return;
     }
 
-    for (auto iter = subtileEffectData[pos].begin(); iter != subtileEffectData[pos].end(); iter++)
+    for (auto iter = subtileEffectData[start].begin(); iter != subtileEffectData[start].end(); iter++)
     {
-        (*iter)->effect->Simulate(pos, (*iter)->effectData, elapsedSeconds);
+        (*iter)->effect->Simulate(start, (*iter)->effectData, elapsedSeconds);
     }
 }
 
-void TerrainEffectManager::RenderSubTileEffects(const vec::vec2i pos, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix)
+void TerrainEffectManager::RenderSubTileEffects(const vec::vec2i start, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
 {
-    if (subtileEffectData.find(pos) == subtileEffectData.end())
+    if (subtileEffectData.find(start) == subtileEffectData.end())
     {
-        Logger::LogWarn("Attempted to render terrain effects not loaded with [", pos.x, ", ", pos.y, "].");
+        Logger::LogWarn("Attempted to render terrain effects not loaded with [", start.x, ", ", start.y, "].");
         return;
     }
 
-    for (auto iter = subtileEffectData[pos].begin(); iter != subtileEffectData[pos].end(); iter++)
+    for (auto iter = subtileEffectData[start].begin(); iter != subtileEffectData[start].end(); iter++)
     {
-        (*iter)->effect->Render((*iter)->effectData, projectionMatrix, mvMatrix);
+        (*iter)->effect->Render((*iter)->effectData, perspectiveMatrix, viewMatrix, modelMatrix);
     }
 }
 
-void TerrainEffectManager::CleanupSubTileEffects(vec::vec2i pos, bool log)
+void TerrainEffectManager::CleanupSubTileEffects(vec::vec2i start, bool log)
 {
-    for (auto iter = subtileEffectData[pos].begin(); iter != subtileEffectData[pos].end(); iter++)
+    for (auto iter = subtileEffectData[start].begin(); iter != subtileEffectData[start].end(); iter++)
     {
         (*iter)->effect->UnloadEffect((*iter)->effectData);
         delete (*iter);
@@ -94,14 +94,14 @@ void TerrainEffectManager::CleanupSubTileEffects(vec::vec2i pos, bool log)
 
     if (log)
     {
-        Logger::Log("Unloaded effects ", pos.x, ", ", pos.y, ".");
+        Logger::Log("Unloaded effects ", start.x, ", ", start.y, ".");
     }
 }
 
-void TerrainEffectManager::UnloadSubTileEffects(vec::vec2i pos)
+void TerrainEffectManager::UnloadSubTileEffects(vec::vec2i start)
 {
-    CleanupSubTileEffects(pos, true);
-    subtileEffectData.erase(pos);
+    CleanupSubTileEffects(start, true);
+    subtileEffectData.erase(start);
 }
 
 TerrainEffectManager::~TerrainEffectManager()

@@ -387,7 +387,7 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
     scenery.Render(rotationOnlyMatrix);
 
     // Render our ground, and any derivative items from that.
-    regionManager.RenderRegions(projectionMatrix);
+    regionManager.RenderRegions(Constants::PerspectiveMatrix, viewMatrix);
 
     // Render all the moving objects
     for (unsigned int i = 0; i < testCubes.size(); i++)

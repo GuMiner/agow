@@ -39,5 +39,5 @@ public:
     virtual bool LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* tile) override;
     virtual void UnloadEffect(void* effectData) override;
     virtual void Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds) override;
-    virtual void Render(void* effectData, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix) override;
+    virtual void Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix) override;
 };

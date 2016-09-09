@@ -186,7 +186,7 @@ void RoadEffect::Simulate(const vec::vec2i subtileId, void* effectData, float el
     roadEffect->travellers.TransferPositionToOpenGl(roadEffect->positionBuffer);
 }
 
-void RoadEffect::Render(void* effectData, const vec::mat4 & projectionMatrix, const vec::mat4 & mvMatrix)
+void RoadEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
 {
     // TODO configurable
     glLineWidth(3.0f);
@@ -194,8 +194,8 @@ void RoadEffect::Render(void* effectData, const vec::mat4 & projectionMatrix, co
     glUseProgram(programId);
     glBindVertexArray(roadEffect->vao);
 
-    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, projectionMatrix);
-    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, mvMatrix);
+    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, perspectiveMatrix);
+    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, viewMatrix * modelMatrix);
 
     glDrawArrays(GL_LINES, 0, roadEffect->travellers.positions.size());
     glLineWidth(1.0f);

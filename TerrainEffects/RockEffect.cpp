@@ -111,12 +111,12 @@ void RockEffect::Simulate(const vec::vec2i subtileId, void * effectData, float e
 {
 }
 
-void RockEffect::Render(void * effectData, const vec::mat4 & projectionMatrix, const vec::mat4 & mvMatrix)
+void RockEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
 {
     RockEffectData* rockEffect = (RockEffectData*)effectData;
     for (const ColoredPhysicalModel& model : rockEffect->rocks)
     {
         vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.model.rigidBody);
-        modelManager->RenderModel(projectionMatrix, model.model.modelId, mvMatrix, model.color, false);
+        modelManager->RenderModel(perspectiveMatrix * viewMatrix, model.model.modelId, mvMatrix, model.color, false);
     }
 }

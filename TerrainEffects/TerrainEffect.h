@@ -17,5 +17,5 @@ public:
     virtual void Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds) = 0;
     
     // Renders an effect.
-    virtual void Render(void* effectData, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix) = 0;
+    virtual void Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix) = 0;
 };

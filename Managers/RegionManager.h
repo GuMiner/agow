@@ -36,7 +36,7 @@ public:
 
     void UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorld* dynamicsWorld);
     void SimulateVisibleRegions(float gameTime, float elapsedSeconds);
-    void RenderRegions(const vec::mat4& projectionMatrix);
+    void RenderRegions(const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix);
 
     void CleanupPhysics(btDynamicsWorld* dynamicsWorld);
     virtual ~RegionManager();

@@ -9,11 +9,16 @@ struct Branch
     vec::vec3 startDirection;
     
     vec::vec3 growDirection;
-    bool grew;
+    unsigned int grew;
 
     Branch(Branch* parent, vec::vec3 pos, vec::vec3 startDirection)
-        : parent(parent), pos(pos), startDirection(startDirection), growDirection(startDirection), grew(false)
+        : parent(parent), pos(pos), startDirection(startDirection), growDirection(startDirection), grew(0)
     {
+    }
+
+    vec::vec3 end() const
+    {
+        return pos + startDirection;
     }
 };
 
@@ -48,12 +53,11 @@ enum TreeType
 struct GenerationResults
 {
     TreeType type;
-    unsigned int attractionPoints;
     unsigned int leaves;
     unsigned int branches;
 
-    GenerationResults(TreeType type, unsigned int attractionPoints, unsigned int leaves, unsigned int branches)
-        : type(type), attractionPoints(attractionPoints), leaves(leaves), branches(branches)
+    GenerationResults(TreeType type, unsigned int leaves, unsigned int branches)
+        : type(type), leaves(leaves), branches(branches)
     {
     }
 };

@@ -25,7 +25,7 @@ public:
 
     float GetPointHeight(const vec::vec2i tilePos, const vec::vec2i fullPos) const;
     void Simulate(TerrainManager* terrainManager, vec::vec2i tilePos, float elapsedSeconds);
-    void RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& projectionMatrix) const;
+    void RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix) const;
 
     void CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld);
     virtual ~Region();

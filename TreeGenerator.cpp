@@ -1,6 +1,8 @@
 #include <algorithm>
+#include <chrono>
 #include <limits>
 #include "Math\MathOps.h"
+#include "Utils\Logger.h"
 #include "TreeGenerator.h"
 
 TreeGenerator::TreeGenerator()
@@ -55,12 +57,12 @@ void TreeGenerator::GenerateAttractionPoints(TreeType type, float radius, float 
     float trunkHeight = (0.11f + MathOps::Rand() * 0.22f) * height;
     float shapeHeight = height - trunkHeight; // Guaranteed to be positive.
 
-    unsigned int pointCount = IsDenseType(type) ? 1000 : 400;
+    unsigned int pointCount = IsDenseType(type) ? 800 : 40;
     unsigned int maxIterations = 2000;
     for (unsigned int i = 0; points->size() <= pointCount && i < maxIterations; i++)
     {
         // Potentially generate a random point within the vincinity of the shape (cube of [-radius, -radius, 0], [radius, radius, shapeHeight])
-        vec::vec3 point = vec::vec3(MathOps::Rand() * 2.0f - 1.0f, MathOps::Rand() * 2.0f - 1.0f, MathOps::Rand() * 2.0f - 1.0f);
+        vec::vec3 point = vec::vec3(MathOps::Rand() * 2.0f - 1.0f, MathOps::Rand() * 2.0f - 1.0f, MathOps::Rand());
         if (IsPointWithinShape(type, point))
         {
             points->push_back(point * vec::vec3(radius * 2.0f - radius, radius * 2.0f - radius, shapeHeight) + vec::vec3(0, 0, trunkHeight));
@@ -86,14 +88,15 @@ float TreeGenerator::GetMinLeafDistance(vec::vec3 point, std::vector<Leaf>* leaf
 void TreeGenerator::GrowTrunk(std::vector<Branch>* branches, std::vector<Leaf>* leafs, float branchLength, float leafDetectionDistance, float maxHeight)
 {
     Branch* lastBranch = nullptr;
-    branches->push_back(Branch(nullptr, vec::vec3(0, 0, 0), vec::vec3(0, 0, 1)));
-    bool lastBranchCloseEnough = GetMinLeafDistance((*branches)[branches->size() - 1].pos, leafs) < leafDetectionDistance;
+    branches->push_back(Branch(nullptr, vec::vec3(0, 0, 0), vec::vec3(0, 0, branchLength)));
+    bool lastBranchCloseEnough = GetMinLeafDistance((*branches)[branches->size() - 1].end(), leafs) < leafDetectionDistance;
     
     // Grow until we're ready to add leaves or our trunk is the height of the tree!
     while (!lastBranchCloseEnough && (*branches)[branches->size() - 1].pos.z < maxHeight)
     {
         Branch* parent = &((*branches)[branches->size() - 1]);
-        branches->push_back(Branch(parent, parent->pos + parent->startDirection * branchLength, parent->startDirection));
+        branches->push_back(Branch(parent, parent->end(), parent->startDirection));
+        lastBranchCloseEnough = GetMinLeafDistance((*branches)[branches->size() - 1].end(), leafs) < leafDetectionDistance;
     }
 }
 
@@ -127,17 +130,18 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
     std::vector<vec::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<vec::vec3>* leafPoints)
 {
     // TODO support trunk sizes by determining max parent height of branches.
+    auto startTime = std::chrono::system_clock::now();
 
     // Generate the tree at the origin
     std::vector<vec::vec3> attractionPoints;
     GenerateAttractionPoints(type, radius, height, &attractionPoints);
 
     // TODO configurable
-    float minDistance = 0.05f;
-    float maxDistance = 0.50f;
+    float minDistance = 0.30f;
+    float maxDistance = 0.60f;
 
-    float branchLength = 0.02f;
-    float branchClosenessLimit = 0.01f;
+    float branchLength = 0.10f;
+    float branchClosenessLimit = 0.001f;
 
     // At this point all the leaves are from -radius to +radius, 0 to height.
     std::vector<Leaf> leaves;
@@ -150,10 +154,14 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
     GrowTrunk(&branches, &leaves, branchLength, maxDistance, height);
 
     // Now we are ready to run the space colonization-based tree algorithm.
+    const int maxIterations = 2000;
+    
     unsigned int leavesAdded = 0;
     bool branchesAdded = true;
-    while (branchesAdded)
+    int iterations = 0;
+    for (; iterations < maxIterations && branchesAdded; iterations++)
     {
+        std::vector<unsigned int> leavesToRemove;
         for (unsigned int i = 0; i < leaves.size(); i++)
         {
             bool leafRemoved = false;
@@ -163,12 +171,12 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
             // Find the closest branch, remove the leaf if it is close enough.
             for (unsigned int j = 0; j < branches.size(); j++)
             {
-                float distance = vec::length(branches[j].pos - leaves[i].pos);
+                float distance = vec::length(branches[j].end() - leaves[i].pos);
                 if (distance < minDistance)
                 {
                     // The leaf is too close, so we remove it and add it to the known leaf points.
                     leafPoints->push_back(leaves[i].pos + pos);
-                    leaves.erase(leaves.begin() + i);
+                    leavesToRemove.push_back(i);
                     ++leavesAdded;
                     leafRemoved = true;
                     break;
@@ -187,23 +195,29 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
             // Tug the branch towards the leaf accordingly. Tug is *regardless of distance from branch*.
             if (!leafRemoved && leaves[i].closestBranch != nullptr)
             {
-                vec::vec3 direction = leaves[i].pos - leaves[i].closestBranch->pos;
-                leaves[i].closestBranch->growDirection += vec::normalize(direction);
-                leaves[i].closestBranch->grew = true;
+                vec::vec3 direction = leaves[i].pos - leaves[i].closestBranch->end();
+                leaves[i].closestBranch->growDirection += (vec::normalize(direction) * branchLength);
+                leaves[i].closestBranch->grew++;
             }
+        }
+
+        // Erase all leaves we decided to erase.
+        for (int i = leavesToRemove.size() - 1; i >= 0; i--)
+        {
+            leaves.erase(leaves.begin() + leavesToRemove[i]);
         }
 
         // Create new branches.
         std::vector<Branch> newBranches;
         for (unsigned int i = 0; i < branches.size(); i++)
         {
-            if (branches[i].grew)
+            if (branches[i].grew != 0)
             {
                 vec::vec3 averageDirection = vec::normalize(branches[i].growDirection);
-                newBranches.push_back(Branch(&branches[i], branches[i].pos + branches[i].startDirection * branchLength, averageDirection));
+                newBranches.push_back(Branch(&branches[i], branches[i].end(), averageDirection * branchLength * (float)(1 + branches[i].grew % 3)));
 
                 branches[i].growDirection = branches[i].startDirection;
-                branches[i].grew = false;
+                branches[i].grew = 0;
             }
         }
 
@@ -227,8 +241,11 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
     for (unsigned int i = 0; i < branches.size(); i++)
     {
         trunkLines->push_back(branches[i].pos + pos);
-        trunkLines->push_back(branches[i].pos + branches[i].startDirection * branchLength + pos);
+        trunkLines->push_back(branches[i].end() + pos);
     }
 
-    return GenerationResults(type, attractionPoints.size(), leavesAdded, branches.size());
+    auto endTime = std::chrono::system_clock::now();
+    std::chrono::duration<double> duration = endTime - startTime;
+    Logger::Log("Tree Gen: ", (int)(duration.count() * 1000000.0f), " us, A: ", attractionPoints.size(), " I: ", iterations, " L: ", leavesAdded, " B: ", branches.size());
+    return GenerationResults(type, leavesAdded, branches.size());
 }

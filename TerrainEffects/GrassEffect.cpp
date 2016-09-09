@@ -96,32 +96,32 @@ void GrassEffect::Simulate(const vec::vec2i subtileId, void* effectData, float e
     // This is still too slow. I need to randomly update not only specific elements, but specific grass segments per subtile.
     // Don't update all the grass at once, that's too slow. Just move a few elements.
     /*int minimizationFactor = 5 + (int)(MathOps::Rand() * 10);
-    for (int i = 0; i < effectData[pos]->grassEffect.grassOffsets.size() / 2; i++)
+    for (int i = 0; i < effectData[start]->grassEffect.grassOffsets.size() / 2; i++)
     {
     if (i % minimizationFactor == 0)
     {
     vec::vec3 upperOffset = vec::vec3(MathOps::Rand(), MathOps::Rand(), 0.0f);
-    effectData[pos]->grassEffect.grassStalks.positions[i * 2 + 1] =
-    (effectData[pos]->grassEffect.grassStalks.positions[i * 2 + 1]
-    - effectData[pos]->grassEffect.grassOffsets[i * 2 + 1]) + upperOffset;
-    effectData[pos]->grassEffect.grassOffsets[i * 2 + 1] = upperOffset;
+    effectData[start]->grassEffect.grassStalks.positions[i * 2 + 1] =
+    (effectData[start]->grassEffect.grassStalks.positions[i * 2 + 1]
+    - effectData[start]->grassEffect.grassOffsets[i * 2 + 1]) + upperOffset;
+    effectData[start]->grassEffect.grassOffsets[i * 2 + 1] = upperOffset;
     }
     }
 
     // Modify the grass image to result in a slight waviness of the grass.
-    glBindVertexArray(effectData[pos]->grassEffect.vao);
-    effectData[pos]->grassEffect.grassStalks.TransferPositionToOpenGl(effectData[pos]->grassEffect.positionBuffer);*/
+    glBindVertexArray(effectData[start]->grassEffect.vao);
+    effectData[start]->grassEffect.grassStalks.TransferPositionToOpenGl(effectData[start]->grassEffect.positionBuffer);*/
 }
 
-void GrassEffect::Render(void* effectData, const vec::mat4& projectionMatrix, const vec::mat4& mvMatrix)
+void GrassEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
 {
     GrassEffectData* grassEffect = (GrassEffectData*)effectData;
 
     glUseProgram(programId);
     glBindVertexArray(grassEffect->vao);
 
-    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, projectionMatrix);
-    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, mvMatrix);
+    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, perspectiveMatrix);
+    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, viewMatrix * modelMatrix);
 
     glDrawArrays(GL_LINES, 0, grassEffect->grassStalks.positions.size());
 }
