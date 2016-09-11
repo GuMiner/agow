@@ -11,6 +11,6 @@ uniform mat4 mvMatrix;
 // Renders grass stalks for GRASSLAND areas.
 void main(void)
 {
-	fs_color = vec4(color, 1.0f);
+	fs_color = vec4(color, 0.8f);
     gl_Position = projMatrix * mvMatrix * vec4(position.x, position.y, position.z, 1.0f);
 }

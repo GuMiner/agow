@@ -47,7 +47,7 @@ bool GrassEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* t
                 vec::vec3 bottomColor = vec::vec3(0.0f, 0.90f + MathOps::Rand() * 0.10f, 0.0f);
                 vec::vec3 topColor = vec::vec3(0.0f, 0.50f + MathOps::Rand() * 0.30f, 0.20f + MathOps::Rand() * 0.60f);
                 vec::vec3 bottomPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height);
-                vec::vec3 topPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height + 0.15f + 1.70f * MathOps::Rand());
+                vec::vec3 topPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height + 0.15f + 1.00f * MathOps::Rand());
 
                 // Add grass
                 vec::vec3 lowerOffset = vec::vec3(0.0f);
@@ -117,6 +117,7 @@ void GrassEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, c
 {
     GrassEffectData* grassEffect = (GrassEffectData*)effectData;
 
+    glLineWidth(3.0f);
     glUseProgram(programId);
     glBindVertexArray(grassEffect->vao);
 
@@ -124,4 +125,5 @@ void GrassEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, c
     glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, viewMatrix * modelMatrix);
 
     glDrawArrays(GL_LINES, 0, grassEffect->grassStalks.positions.size());
+    glLineWidth(1.0f);
 }

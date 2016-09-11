@@ -182,6 +182,12 @@ bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
                         int yReal = y + j * GetSubTileSize();
 
                         types[x + y * GetSubTileSize()] = terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 2];
+
+                        // Perform per-tile height modifications
+                        if (types[x + y * GetSubTileSize()] == TerrainTypes::ROADS)
+                        {
+                            heightmap[x + y * subSize] -= (0.50f / 900.0f);
+                        }
                     }
                 }
 

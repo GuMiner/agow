@@ -440,7 +440,7 @@ Constants::Status agow::Run()
         clockStartTime = clock.getElapsedTime();
         viewMatrix = player.GetViewOrientation().asMatrix() * MatrixOps::Translate(-player.GetViewPosition());
 
-        float frameTime = frameClock.restart().asSeconds();
+        float frameTime = std::min(frameClock.restart().asSeconds(), 0.06f);
         HandleEvents(window, alive, focusPaused, escapePaused);
         
         // Run the game and render if not paused.
