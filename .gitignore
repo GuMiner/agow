@@ -5,6 +5,7 @@
 *.bin
 *.xml
 rasters/
+cache/data
 
 # User-specific files
 *.suo

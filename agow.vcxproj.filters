@@ -100,6 +100,12 @@
       <Filter>TerrainEffects</Filter>
     </ClCompile>
     <ClCompile Include="TreeGenerator.cpp" />
+    <ClCompile Include="Cache\TreeCache.cpp">
+      <Filter>Cache</Filter>
+    </ClCompile>
+    <ClCompile Include="Cache\TerrainCache.cpp">
+      <Filter>Cache</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -223,16 +229,16 @@
       <Filter>TerrainEffects</Filter>
     </ClInclude>
     <ClInclude Include="TreeGenerator.h" />
+    <ClInclude Include="Cache\TerrainCache.h">
+      <Filter>Cache</Filter>
+    </ClInclude>
+    <ClInclude Include="Cache\TreeCache.h">
+      <Filter>Cache</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Managers">
-      <UniqueIdentifier>{b6447a1e-2629-478f-aecb-140c021fff4d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Math">
-      <UniqueIdentifier>{cbf71823-f660-4218-9900-ffe8fbf5db9d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utils">
-      <UniqueIdentifier>{fc6e9ad3-a83f-4c84-be34-55f39d410ec9}</UniqueIdentifier>
+    <Filter Include="Cache">
+      <UniqueIdentifier>{5eb8df45-2c95-4222-805e-07e0e40259ac}</UniqueIdentifier>
     </Filter>
     <Filter Include="Config">
       <UniqueIdentifier>{6187b384-ee52-45d6-8001-5bcb50976e24}</UniqueIdentifier>
@@ -240,8 +246,17 @@
     <Filter Include="Data">
       <UniqueIdentifier>{1600f07c-2e58-4290-940f-2a892e595dc5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Managers">
+      <UniqueIdentifier>{b6447a1e-2629-478f-aecb-140c021fff4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{cbf71823-f660-4218-9900-ffe8fbf5db9d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="TerrainEffects">
       <UniqueIdentifier>{0aaa81e7-e0da-4de5-aac8-6e5678c0b944}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{fc6e9ad3-a83f-4c84-be34-55f39d410ec9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

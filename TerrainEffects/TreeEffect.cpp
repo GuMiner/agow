@@ -2,8 +2,8 @@
 #include "Utils\Logger.h"
 #include "TreeEffect.h"
 
-TreeEffect::TreeEffect(int subTileSize)
-    : subTileSize(subTileSize)
+TreeEffect::TreeEffect(const std::string& cacheFolder, int subTileSize)
+    : treeCache(cacheFolder, "trees"), subTileSize(subTileSize)
 {
 }
 
@@ -41,49 +41,79 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
     bool hasTreeEffect = false;
     TreeEffectData* treeEffect = nullptr;
 
-    // Scan the image for tree pixels.
-    for (int i = 0; i < subTileSize; i++)
+    bool isInCache = treeCache.IsInCache(subtileId);
+    TreeCacheData treeCacheData;
+    if (isInCache)
     {
-        for (int j = 0; j < subTileSize; j++)
+        // TODO this can also mean 'skip tree effect'.
+        TreeCacheData* pointer = &treeCacheData;
+        treeCache.LoadFromCache(subtileId, (void**)&pointer);
+        hasTreeEffect = treeCacheData.hasEffect;
+        if (hasTreeEffect)
         {
-            // TOOD configurable density
-            if (tile->type[i + j * subTileSize] == TerrainTypes::TREES && MathOps::Rand() > 0.90f)
+            treeEffect = new TreeEffectData();
+            treeEffect->treeTrunks.vertices.positions = std::move(treeCacheData.branches);
+            treeEffect->treeTrunks.vertices.colors = std::move(treeCacheData.branchColors);
+
+            treeEffect->treeLeaves.vertices.positions = std::move(treeCacheData.leaves);
+            treeEffect->treeLeaves.vertices.colors = std::move(treeCacheData.leafColors);
+        }
+    }
+    else
+    {
+        // Scan the image for tree pixels.
+        for (int i = 0; i < subTileSize; i++)
+        {
+            for (int j = 0; j < subTileSize; j++)
             {
-                if (!hasTreeEffect)
+                // TOOD configurable density
+                if (tile->type[i + j * subTileSize] == TerrainTypes::TREES && MathOps::Rand() > 0.90f)
                 {
-                    treeEffect = new TreeEffectData();
-                    hasTreeEffect = true;
-                }
-                
-                float height = tile->heightmap[i + j * subTileSize];
-                vec::vec2i realPos = subtileId * 0.10f + vec::vec2i(i, j);
+                    if (!hasTreeEffect)
+                    {
+                        treeEffect = new TreeEffectData();
+                        hasTreeEffect = true;
+                    }
 
-                // TODO configurable
-                vec::vec3 bottomColor = vec::vec3(0.57f, 0.20f + MathOps::Rand() * 0.10f, 0.10f);
-                vec::vec3 topColor = vec::vec3(0.57f, 0.20f + MathOps::Rand() * 0.30f, 0.10f + MathOps::Rand() * 0.40f);
-                vec::vec3 bottomPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height);
-                vec::vec3 topPos = bottomPos + vec::vec3(0, 0, 1.0f);
+                    float height = tile->heightmap[i + j * subTileSize];
+                    vec::vec2i realPos = subtileId * 0.10f + vec::vec2i(i, j);
 
-                // GenerationResults results = treeGenerator.GenerateTree(bottomPos,
-                //     &treeEffect->treeTrunks.vertices.positions, nullptr,
-                //     &treeEffect->treeLeaves.vertices.positions);
-                for (unsigned int i = 0; i < branches.size() / 2; i++) // results.branches
-                {
-                    // Add tree trunks.
-                    treeEffect->treeTrunks.vertices.positions.push_back(branches[i * 2] + bottomPos);
-                    treeEffect->treeTrunks.vertices.positions.push_back(branches[i * 2 + 1] + bottomPos);
-                    treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
-                    treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
-                }
+                    // TODO configurable
+                    vec::vec3 bottomColor = vec::vec3(0.57f, 0.20f + MathOps::Rand() * 0.10f, 0.10f);
+                    vec::vec3 topColor = vec::vec3(0.57f, 0.20f + MathOps::Rand() * 0.30f, 0.10f + MathOps::Rand() * 0.40f);
+                    vec::vec3 bottomPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height);
+                    vec::vec3 topPos = bottomPos + vec::vec3(0, 0, 1.0f);
 
-                // Add tree leaves.
-                for (unsigned int i = 0; i <  leaves.size(); i++) // results.leaves
-                {
-                    treeEffect->treeLeaves.vertices.positions.push_back(leaves[i] + bottomPos);
-                    treeEffect->treeLeaves.vertices.colors.push_back(vec::vec3(0.1f, 0.70f + MathOps::Rand() * 0.30f, 0.0f));
+                    // GenerationResults results = treeGenerator.GenerateTree(bottomPos,
+                    //     &treeEffect->treeTrunks.vertices.positions, nullptr,
+                    //     &treeEffect->treeLeaves.vertices.positions);
+                    for (unsigned int i = 0; i < branches.size() / 2; i++) // results.branches
+                    {
+                        // Add tree trunks.
+                        treeEffect->treeTrunks.vertices.positions.push_back(branches[i * 2] + bottomPos);
+                        treeEffect->treeTrunks.vertices.positions.push_back(branches[i * 2 + 1] + bottomPos);
+                        treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
+                        treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
+                    }
+
+                    // Add tree leaves.
+                    for (unsigned int i = 0; i < leaves.size(); i++) // results.leaves
+                    {
+                        treeEffect->treeLeaves.vertices.positions.push_back(leaves[i] + bottomPos);
+                        treeEffect->treeLeaves.vertices.colors.push_back(vec::vec3(0.1f, 0.70f + MathOps::Rand() * 0.30f, 0.0f));
+                    }
                 }
             }
         }
+
+        // Save our tree data to the cache to speed up loading the next time around.
+        TreeCacheInputData inputData(hasTreeEffect,
+            hasTreeEffect ? &(treeEffect->treeTrunks.vertices.positions) : nullptr,
+            hasTreeEffect ? &(treeEffect->treeTrunks.vertices.colors) : nullptr,
+            hasTreeEffect ? &(treeEffect->treeLeaves.vertices.positions) : nullptr,
+            hasTreeEffect ? &(treeEffect->treeLeaves.vertices.colors) : nullptr);
+
+        treeCache.SaveToCache(subtileId, &inputData);
     }
 
     if (hasTreeEffect)

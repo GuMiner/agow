@@ -18,7 +18,9 @@ TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelMa
     effects.push_back((TerrainEffect*)new GrassEffect(subTileSize));
     effects.push_back((TerrainEffect*)new RockEffect(modelManager, physics, subTileSize));
     effects.push_back((TerrainEffect*)new RoadEffect(subTileSize));
-    effects.push_back((TerrainEffect*)new TreeEffect(subTileSize));
+
+    // TODO configurable
+    effects.push_back((TerrainEffect*)new TreeEffect("cache/data", subTileSize));
 }
 
 bool TerrainEffectManager::LoadBasics()

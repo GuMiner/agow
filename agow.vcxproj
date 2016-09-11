@@ -91,6 +91,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BasicPhysics.h" />
+    <ClInclude Include="Cache\TerrainCache.h" />
+    <ClInclude Include="Cache\TreeCache.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Config\GraphicsConfig.h" />
     <ClInclude Include="Config\KeyBindingConfig.h" />
@@ -142,6 +144,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicPhysics.cpp" />
+    <ClCompile Include="Cache\TerrainCache.cpp" />
+    <ClCompile Include="Cache\TreeCache.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Config\GraphicsConfig.cpp" />
     <ClCompile Include="Config\KeyBindingConfig.cpp" />

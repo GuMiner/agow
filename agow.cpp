@@ -364,6 +364,7 @@ void agow::Update(float currentGameTime, float frameTime)
 
     // Update useful statistics that are fancier than the standard GUI
     statistics.UpdateRunTime(currentGameTime, frameTime);
+    statistics.UpateSector(regionManager.GetCurrentCenterTile(player.GetViewPosition()));
 
     // Update all events we have
     events.UpdateEvents(currentGameTime, frameTime);

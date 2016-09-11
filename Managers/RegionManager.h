@@ -24,13 +24,15 @@ class RegionManager
     int tileViewDistance;
 
     vec::vec2i lastCenterTile;
-    vec::vec2i GetCurrentCenterTile(const vec::vec3& position) const;
     void ComputeVisibleTiles(vec::vec2i centerTile, std::vector<vec::vec2i>* visibleTiles) const;
 
 public:
     RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, int tileSize, vec::vec2i min, vec::vec2i max, int tileViewDistance);
     bool InitializeGraphics();
     
+    // Returns the sector the user is currently in.
+    vec::vec2i GetCurrentCenterTile(const vec::vec3& position) const;
+
     // Returns the height of the point, in real units. If the point is out-of-bounds, returns 0 (min height).
     float GetPointHeight(btDynamicsWorld* dynamicsWorld, const vec::vec2 point);
 

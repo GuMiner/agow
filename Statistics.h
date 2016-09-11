@@ -9,25 +9,26 @@
 //  This information is drawn with the FontManager global font.
 class Statistics
 {
-    // Holds a reference to the font manager so we can update text sentences
     FontManager* fontManager;
 
-    public:
-        Statistics();
-        bool Initialize(FontManager* fontManager);
+    // Stats data
+    int currentFrameCounter;
+    float totalElapsedTime;
+    vec::vec2i lastSector;
 
-        void UpdateRunTime(float currentTime, float elapsedTime);
+    int textPixelHeight;
+    vec::mat4 textScale;
 
-        void RenderStats(vec::mat4& perspectiveMatrix);
+    // Overall Details
+    RenderableSentence fps;
+    RenderableSentence runTime;
+    RenderableSentence sector;
 
-    private:
-        int currentFrameCounter;
-        float totalElapsedTime;
-        
-        int textPixelHeight;
-        vec::mat4 textScale;
+public:
+    Statistics();
+    bool Initialize(FontManager* fontManager);
 
-        // Overall Details
-        RenderableSentence fps;
-        RenderableSentence runTime;
+    void UpdateRunTime(float currentTime, float elapsedTime);
+    void UpateSector(const vec::vec2i& sector);
+    void RenderStats(vec::mat4& perspectiveMatrix);
 };

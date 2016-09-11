@@ -1,4 +1,5 @@
 #pragma once
+#include "Cache\TreeCache.h"
 #include "Utils\Vertex.h"
 #include "TerrainEffect.h"
 #include "TreeGenerator.h"
@@ -30,6 +31,8 @@ class TreeEffect : public TerrainEffect
 {
     int subTileSize; // In pixels
 
+    TreeCache treeCache;
+
     TreeProgram trunkProgram;
     TreeProgram leafProgram;
     TreeGenerator treeGenerator;
@@ -38,7 +41,7 @@ class TreeEffect : public TerrainEffect
     std::vector<vec::vec3> branches;
 
 public:
-    TreeEffect(int subTileSize);
+    TreeEffect(const std::string& cacheFolder, int subTileSize);
     virtual bool LoadBasics(ShaderManager* shaderManager) override;
     virtual bool LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * tile) override;
     virtual void UnloadEffect(void* effectData) override;

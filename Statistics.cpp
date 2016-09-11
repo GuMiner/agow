@@ -4,13 +4,16 @@
 #include "Statistics.h"
 
 Statistics::Statistics()
-    : textPixelHeight(20), textScale(MatrixOps::Scale(0.02f, 0.02f, 0.02f)), currentFrameCounter(0), totalElapsedTime(0.0f)
+    : textPixelHeight(20), textScale(MatrixOps::Scale(0.02f, 0.02f, 0.02f)), currentFrameCounter(0), totalElapsedTime(0.0f), lastSector(-1, -1)
 {
     runTime.posRotMatrix = MatrixOps::Translate(-0.821f, -0.221f, -1.0f) * MatrixOps::Scale(0.015f, 0.015f, 0.015f);
     runTime.color = vec::vec3(0.8f, 0.8f, 0.8f);
 
     fps.posRotMatrix = MatrixOps::Translate(-0.821f, -0.121f, -1.0f) * MatrixOps::Scale(0.015f, 0.015f, 0.015f);
     fps.color = vec::vec3(0.0f, 1.0f, 0.0f);
+
+    sector.posRotMatrix = MatrixOps::Translate(-0.821f, -0.021f, -1.0f) * MatrixOps::Scale(0.015f, 0.015f, 0.015f);
+    sector.color = vec::vec3(1.0f, 1.0f, 0.0f);
 }
 
 bool Statistics::Initialize(FontManager* fontManager)
@@ -20,8 +23,21 @@ bool Statistics::Initialize(FontManager* fontManager)
     // Create the sentence objects to perform font manipulations on.
     runTime.sentenceId = fontManager->CreateNewSentence();
     fps.sentenceId = fontManager->CreateNewSentence();
+    sector.sentenceId = fontManager->CreateNewSentence();
 
     return true;
+}
+
+void Statistics::UpateSector(const vec::vec2i& sector)
+{
+    if (sector.x != lastSector.x || sector.y != lastSector.y)
+    {
+        lastSector = sector;
+
+        std::stringstream sectorString;
+        sectorString << "[" << sector.x << ", " << sector.y << "]";
+        fontManager->UpdateSentence(this->sector.sentenceId, sectorString.str(), textPixelHeight, this->sector.color);
+    }
 }
 
 void Statistics::UpdateRunTime(float currentTime, float elapsedTime)
@@ -53,7 +69,6 @@ void Statistics::UpdateRunTime(float currentTime, float elapsedTime)
         fpsStream << std::fixed;
         fpsStream << "FPS: " << fpsValue;
         fontManager->UpdateSentence(fps.sentenceId, fpsStream.str(), textPixelHeight, fps.color);
-
     }
 }
 
@@ -61,4 +76,5 @@ void Statistics::RenderStats(vec::mat4& perspectiveMatrix)
 {
     fontManager->RenderSentence(runTime.sentenceId, perspectiveMatrix, runTime.posRotMatrix);
     fontManager->RenderSentence(fps.sentenceId, perspectiveMatrix, fps.posRotMatrix);
+    fontManager->RenderSentence(sector.sentenceId, perspectiveMatrix, sector.posRotMatrix);
 }
