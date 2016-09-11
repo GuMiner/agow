@@ -141,8 +141,10 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
     float minDistance = 0.40f;
     float maxDistance = 0.80f;
 
-    float branchLength = 0.10f;
+    float branchLength = 0.15f;
     float branchClosenessLimit = 0.01f;
+
+    unsigned int branchLimit = 1500;
 
     // At this point all the leaves are from -radius to +radius, 0 to height.
     std::vector<Leaf> leaves;
@@ -160,7 +162,10 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
     unsigned int leavesAdded = 0;
     bool branchesAdded = true;
     int iterations = 0;
-    for (; iterations < maxIterations && branchesAdded; iterations++)
+    for (; iterations < maxIterations && 
+           branchesAdded &&
+           branches.size() < branchLimit;
+           iterations++)
     {
         std::vector<unsigned int> leavesToRemove;
         for (unsigned int i = 0; i < leaves.size(); i++)
