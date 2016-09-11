@@ -74,7 +74,7 @@ class TreeGenerator
     float GetMinLeafDistance(vec::vec3 point, std::vector<Leaf>* leafs);
     void GrowTrunk(std::vector<Branch>* branches, std::vector<Leaf>* leafs, float branchLength, float leafDetectionDistance, float maxHeight);
 
-    bool IsBranchWithinDistance(std::vector<Branch>* branches, vec::vec3 point, float distance);
+    bool IsBranchWithinDistance(std::vector<Branch>* branches, Branch branch, float distance);
 
 public:
     TreeGenerator();

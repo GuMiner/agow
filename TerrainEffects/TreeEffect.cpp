@@ -28,11 +28,6 @@ bool TreeEffect::LoadBasics(ShaderManager* shaderManager)
     leafProgram.projMatrixLocation = glGetUniformLocation(leafProgram.programId, "projMatrix");
     leafProgram.mvMatrixLocation = glGetUniformLocation(leafProgram.programId, "mvMatrix");
 
-    GenerationResults results = treeGenerator.GenerateTree(TreeType::SPHERE_DENSE, vec::vec3(0, 0, 0), 2, 4,
-        &branches,
-        nullptr,
-        &leaves);
-
     return true;
 }
 
@@ -84,22 +79,19 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
                     vec::vec3 bottomPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height);
                     vec::vec3 topPos = bottomPos + vec::vec3(0, 0, 1.0f);
 
-                    // GenerationResults results = treeGenerator.GenerateTree(bottomPos,
-                    //     &treeEffect->treeTrunks.vertices.positions, nullptr,
-                    //     &treeEffect->treeLeaves.vertices.positions);
-                    for (unsigned int i = 0; i < branches.size() / 2; i++) // results.branches
+                     GenerationResults results = treeGenerator.GenerateTree(bottomPos,
+                         &treeEffect->treeTrunks.vertices.positions, nullptr,
+                         &treeEffect->treeLeaves.vertices.positions);
+                    for (unsigned int i = 0; i < results.branches; i++) 
                     {
-                        // Add tree trunks.
-                        treeEffect->treeTrunks.vertices.positions.push_back(branches[i * 2] + bottomPos);
-                        treeEffect->treeTrunks.vertices.positions.push_back(branches[i * 2 + 1] + bottomPos);
+                        // Add tree trunk colors;
                         treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
                         treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
                     }
 
-                    // Add tree leaves.
-                    for (unsigned int i = 0; i < leaves.size(); i++) // results.leaves
+                    // Add tree leaf colors.
+                    for (unsigned int i = 0; i < results.leaves; i++) // 
                     {
-                        treeEffect->treeLeaves.vertices.positions.push_back(leaves[i] + bottomPos);
                         treeEffect->treeLeaves.vertices.colors.push_back(vec::vec3(0.1f, 0.70f + MathOps::Rand() * 0.30f, 0.0f));
                     }
                 }
@@ -167,7 +159,7 @@ void TreeEffect::Render(void* effectData, const vec::mat4& projectionMatrix, con
     TreeEffectData* treeEffect = (TreeEffectData*)effectData;
 
     // Render trunks.
-    glLineWidth(3.0f);
+    glLineWidth(2.0f);
     glUseProgram(trunkProgram.programId);
     glBindVertexArray(treeEffect->treeTrunks.vao);
 

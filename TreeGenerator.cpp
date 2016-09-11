@@ -57,7 +57,7 @@ void TreeGenerator::GenerateAttractionPoints(TreeType type, float radius, float 
     float trunkHeight = (0.11f + MathOps::Rand() * 0.22f) * height;
     float shapeHeight = height - trunkHeight; // Guaranteed to be positive.
 
-    unsigned int pointCount = IsDenseType(type) ? 800 : 40;
+    unsigned int pointCount = IsDenseType(type) ? 2000 : 1000;
     unsigned int maxIterations = 2000;
     for (unsigned int i = 0; points->size() <= pointCount && i < maxIterations; i++)
     {
@@ -100,11 +100,12 @@ void TreeGenerator::GrowTrunk(std::vector<Branch>* branches, std::vector<Leaf>* 
     }
 }
 
-bool TreeGenerator::IsBranchWithinDistance(std::vector<Branch>* branches, vec::vec3 point, float distance)
+bool TreeGenerator::IsBranchWithinDistance(std::vector<Branch>* branches, Branch branch, float distance)
 {
     for (unsigned int i = 0; i < branches->size(); i++)
     {
-        if (vec::length(point - (*branches)[i].pos) < distance)
+        if (vec::length(branch.pos - (*branches)[i].pos) < distance && 
+            vec::length(branch.end() - (*branches)[i].end()) < distance)
         {
             return true;
         }
@@ -119,8 +120,8 @@ GenerationResults TreeGenerator::GenerateTree(const vec::vec3& pos, std::vector<
     TreeType type = (TreeType)MathOps::Rand(0, (int)TreeType::COUNT);
     
     // TODO configurable
-    float radius = 0.5f + MathOps::Rand() * 2.0f;
-    float height = std::max(1.0f, radius + MathOps::Rand() * 5.0f - 1.0f);
+    float radius = 2.0f + MathOps::Rand() * 4.0f;
+    float height = std::max(3.0f, radius + MathOps::Rand() * 5.0f - 1.0f);
 
     return GenerateTree(type, pos, radius, height, trunkLines, trunkSizes, leafPoints);
 }
@@ -137,11 +138,11 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
     GenerateAttractionPoints(type, radius, height, &attractionPoints);
 
     // TODO configurable
-    float minDistance = 0.30f;
-    float maxDistance = 0.60f;
+    float minDistance = 0.40f;
+    float maxDistance = 0.80f;
 
     float branchLength = 0.10f;
-    float branchClosenessLimit = 0.001f;
+    float branchClosenessLimit = 0.01f;
 
     // At this point all the leaves are from -radius to +radius, 0 to height.
     std::vector<Leaf> leaves;
@@ -175,7 +176,7 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
                 if (distance < minDistance)
                 {
                     // The leaf is too close, so we remove it and add it to the known leaf points.
-                    leafPoints->push_back(leaves[i].pos + pos);
+                    leafPoints->push_back(branches[j].pos + MathOps::Rand() * (branches[j].end() - leaves[i].pos) + pos);
                     leavesToRemove.push_back(i);
                     ++leavesAdded;
                     leafRemoved = true;
@@ -225,7 +226,7 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
         branchesAdded = false;
         for (unsigned int i = 0; i < newBranches.size(); i++)
         {
-            if (IsBranchWithinDistance(&branches, newBranches[i].pos, branchClosenessLimit))
+            if (IsBranchWithinDistance(&branches, newBranches[i], branchClosenessLimit))
             {
                 continue;
             }

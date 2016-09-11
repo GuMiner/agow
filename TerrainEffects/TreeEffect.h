@@ -37,9 +37,6 @@ class TreeEffect : public TerrainEffect
     TreeProgram leafProgram;
     TreeGenerator treeGenerator;
 
-    std::vector<vec::vec3> leaves;
-    std::vector<vec::vec3> branches;
-
 public:
     TreeEffect(const std::string& cacheFolder, int subTileSize);
     virtual bool LoadBasics(ShaderManager* shaderManager) override;

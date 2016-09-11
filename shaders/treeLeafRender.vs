@@ -21,6 +21,6 @@ void main(void)
     float dist = distance(eyePos, vec4(0.0f, 0.0f, 0.0f, 1.0f));
     
     float attenuation = inversesqrt(constAtten + linearAtten * dist + quadAtten * dist * dist);
-    gl_PointSize = 100.0f * attenuation;
+    gl_PointSize = 60.0f * attenuation;
     gl_Position = projMatrix * mvMatrix * vec4(position.x, position.y, position.z, 1.0f);
 }
