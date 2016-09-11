@@ -106,6 +106,10 @@
     <ClCompile Include="Cache\TerrainCache.cpp">
       <Filter>Cache</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainEffects\SignEffect.cpp">
+      <Filter>TerrainEffects</Filter>
+    </ClCompile>
+    <ClCompile Include="SignGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -235,6 +239,7 @@
     <ClInclude Include="Cache\TreeCache.h">
       <Filter>Cache</Filter>
     </ClInclude>
+    <ClInclude Include="SignGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Cache">

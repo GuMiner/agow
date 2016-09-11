@@ -7,6 +7,7 @@
 #include "TerrainEffects\GrassEffect.h"
 #include "TerrainEffects\RoadEffect.h"
 #include "TerrainEffects\RockEffect.h"
+#include "TerrainEffects\SignEffect.h"
 #include "TerrainEffects\TreeEffect.h"
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
@@ -18,6 +19,7 @@ TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelMa
     effects.push_back((TerrainEffect*)new GrassEffect(subTileSize));
     effects.push_back((TerrainEffect*)new RockEffect(modelManager, physics, subTileSize));
     effects.push_back((TerrainEffect*)new RoadEffect(subTileSize));
+    effects.push_back((TerrainEffect*)new SignEffect(modelManager, physics, subTileSize));
 
     // TODO configurable
     effects.push_back((TerrainEffect*)new TreeEffect("cache/data", subTileSize));
