@@ -15,6 +15,7 @@
 #include "Utils\Constants.h"
 
 #include "BasicPhysics.h"
+#include "DialogPane.h"
 #include "NPC.h"
 #include "Player.h"
 #include "RockGenerator.h"
@@ -38,17 +39,18 @@ class agow
 
     // Game data
     BasicPhysics physics;
+    DialogPane dialogPane;
     Player player;
     Statistics statistics;
     Scenery scenery;
 
     Events events;
 
-	// Key NPCs
-	NPC gearScientist;
-	NPC intellScientist;
-	NPC generalMilitary;
-	NPC sergeantMilitary;
+    // Key NPCs
+    NPC gearScientist;
+    NPC intellScientist;
+    NPC generalMilitary;
+    NPC sergeantMilitary;
 
     // TEST DATA
     std::vector<PhysicalModel> testCubes;

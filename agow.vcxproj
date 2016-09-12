@@ -101,9 +101,11 @@
     <ClInclude Include="Data\ImageTexture.h" />
     <ClInclude Include="Data\Model.h" />
     <ClInclude Include="Data\RenderableSentence.h" />
+    <ClInclude Include="Data\StyleText.h" />
     <ClInclude Include="Data\TerrainTile.h" />
     <ClInclude Include="Data\TextDataTypes.h" />
     <ClInclude Include="Data\UserPhysics.h" />
+    <ClInclude Include="DialogPane.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="Managers\ConfigManager.h" />
     <ClInclude Include="Managers\FontManager.h" />
@@ -151,6 +153,7 @@
     <ClCompile Include="Config\GraphicsConfig.cpp" />
     <ClCompile Include="Config\KeyBindingConfig.cpp" />
     <ClCompile Include="Config\PhysicsConfig.cpp" />
+    <ClCompile Include="DialogPane.cpp" />
     <ClCompile Include="Events.cpp" />
     <ClCompile Include="Managers\ConfigManager.cpp" />
     <ClCompile Include="Managers\FontManager.cpp" />

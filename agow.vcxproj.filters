@@ -110,6 +110,7 @@
       <Filter>TerrainEffects</Filter>
     </ClCompile>
     <ClCompile Include="SignGenerator.cpp" />
+    <ClCompile Include="DialogPane.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -240,6 +241,10 @@
       <Filter>Cache</Filter>
     </ClInclude>
     <ClInclude Include="SignGenerator.h" />
+    <ClInclude Include="DialogPane.h" />
+    <ClInclude Include="Data\StyleText.h">
+      <Filter>Data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Cache">

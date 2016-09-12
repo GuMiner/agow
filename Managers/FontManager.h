@@ -10,13 +10,13 @@
 #include "Utils\Vertex.h"
 #include "ShaderManager.h"
 
-// Manages the in-game font. *Note that this only supports a single font.*
+// Manages the in-game font.
 class FontManager
 {
     // Maps characters to the TextInfo representing each character,
     std::map<int, TextInfo> fontData;
 
-    // Holds the font texture that is filled as necessary. This is bound to GL_TEXTURE0 for now, but probably should have it's own binding point.
+    // Holds the font texture that is filled as necessary.
     GLuint fontTexture;
     int width;
     int height;
@@ -34,7 +34,7 @@ class FontManager
     stbtt_fontinfo fontInfo;
     unsigned char *loadedFontFile;
 
-    const int verticesPerChar = 4;
+    const int VerticesPerChar = 4;
     void AddToFontTexture(CharInfo& charInfo);
     CharInfo& GetCharacterInfo(int fontPixelHeight, int character);
 
@@ -43,15 +43,21 @@ class FontManager
     std::map<int, SentenceInfo> sentences;
 
     int GetSentenceVertexCount(const std::string& sentence);
-    universalVertices AllocateSentenceVertices(const std::string& sentence, int pixelHeight, vec::vec3 textColor);
+    universalVertices AllocateSentenceVertices(const std::string& sentence, int pixelHeight, vec::vec3 textColor, float* pixelSize);
+
+    void ClearCharacterData(const SentenceInfo& sentenceInfo);
+    void DeleteSentence(const SentenceInfo& sentenceInfo);
 
 public:
     FontManager();
-    bool LoadFont(ShaderManager* shaderManager, const char *fontName);
+    bool LoadFont(ShaderManager* shaderManager, const char* fontName);
 
     int CreateNewSentence();
     void UpdateSentence(int sentenceId, const std::string& sentence, int pixelHeight, vec::vec3 textColor);
     void RenderSentence(int sentenceId, const vec::mat4& perpective, const vec::mat4& mvMatrix);
+    void DeleteSentence(int sentenceId);
+
+    float SimulateSentenceLength(const std::string& sentence, int pixelHeight);
 
     ~FontManager();
 };

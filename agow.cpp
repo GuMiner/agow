@@ -265,6 +265,12 @@ Constants::Status agow::LoadAssets()
         return status;
     }
 
+    Logger::Log("Loading dialog shaders...");
+    if (!dialogPane.LoadBasics(&fontManager, &shaderManager))
+    {
+        return Constants::Status::BAD_DIALOG;
+    }
+
     // TODO test code remove.
     events.AddPeriodicEvent(TypedCallback<EventType>(EventType::SKY_FLAVOR_RANDOM_COLOR_CHANGE, &scenery), 1.0f, false);
 
@@ -408,6 +414,8 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
 
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);
+
+    dialogPane.Render(Constants::PerspectiveMatrix);
 }
 
 Constants::Status agow::Run()

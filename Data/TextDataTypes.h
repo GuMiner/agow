@@ -49,4 +49,12 @@ struct SentenceInfo
     GLsizei characterCount;
     GLint *characterStartIndices;
     GLsizei *characterVertexCounts;
+
+    // Length in terms of pixels of texture (horizontal) consumed by the string.
+    float sentenceLength;
+
+    SentenceInfo()
+        : characterCount(0), characterStartIndices(nullptr), characterVertexCounts(nullptr), sentenceLength(0.0f)
+    {
+    }
 };
