@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "Math\MathOps.h"
+#include "Math\MatrixOps.h"
 #include "Math\VecOps.h"
 #include "BasicPhysics.h"
 #include "Camera.h"
@@ -23,6 +24,8 @@ void Camera::Initialize(btRigidBody* playerObject)
 
     vec::quaternion bodyRotation = BasicPhysics::GetBodyRotation(playerObject);
     cameraRotation = bodyRotation.conjugate() * vec::quaternion::fromAxisAngle(MathOps::Radians(centerPitch), vec::vec3(1, 0, 0));
+
+    lastMatrices.push_back(GetViewOrientation().asMatrix() * MatrixOps::Translate(-GetViewPosition()));
 }
 
 void Camera::Update(float elapsedTime)
@@ -35,7 +38,6 @@ void Camera::Update(float elapsedTime)
 
     cameraRotation = expectedRotation;
 
-    this->playerObject = playerObject;
     vec::vec3 pos = BasicPhysics::GetBodyPosition(playerObject);
     vec::quaternion orientation = GetViewOrientation();
 
@@ -46,8 +48,12 @@ void Camera::Update(float elapsedTime)
     vec::vec3 newCameraPos = pos - (upVector * 0.1f + forwardsVector * 3.5f);
     newCameraPos.z = std::max(newCameraPos.z, pos.z);
 
-    vec::vec3 difference = newCameraPos - cameraPos;
-    cameraPos += difference * 0.20f; // TODO configurable.
+    cameraPos = newCameraPos;
+    lastMatrices.push_back(GetViewOrientation().asMatrix() * MatrixOps::Translate(-GetViewPosition()));
+    if (lastMatrices.size() > 7)
+    {
+        lastMatrices.pop_front();
+    }
 }
 
 void Camera::Yaw(float factor)
@@ -71,5 +77,10 @@ const vec::vec3 Camera::GetViewPosition() const
 
 const vec::quaternion Camera::GetViewOrientation() const
 {
-    return cameraRotation;  
+    return cameraRotation;
+}
+
+const vec::mat4 Camera::GetViewMatrix() const
+{
+    return MatrixOps::Average(lastMatrices);
 }

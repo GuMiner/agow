@@ -12,28 +12,28 @@ BasicPhysics::BasicPhysics()
 
 void BasicPhysics::LoadBasicCollisionShapes()
 {
-	// TODO configurable
-	float height = 0.75;
-	float width = 0.50;
+    // TODO configurable
+    float height = 0.75;
+    float width = 0.50;
 
     CollisionShapes.clear();
-	CollisionShapes[CShape::NPC_CAPSULE] = new btCapsuleShape(width / 2.0f, height); // TODO other NPC shapes.
-	CollisionShapes[CShape::NPC_CUBOID] = new btBoxShape(btVector3(width, width, height));
-	
+    CollisionShapes[CShape::NPC_CAPSULE] = new btCapsuleShape(width / 2.0f, height); // TODO other NPC shapes.
+    CollisionShapes[CShape::NPC_CUBOID] = new btBoxShape(btVector3(width, width, height));
+    
     const int diamondPointCount = 8;
-	vec::vec3* diamondPoints = new vec::vec3[diamondPointCount];
-	diamondPoints[0] = vec::vec3(0.0f, 0.0f, -height);
-	diamondPoints[1] = vec::vec3(width / 2.0f, 0.0f, 0.0f);
-	diamondPoints[2] = vec::vec3(-width / 2.0f, 0.0f, 0.0f);
-	diamondPoints[3] = vec::vec3(0.0f, width / 2.0f, 0.0f);
-	diamondPoints[4] = vec::vec3(0.0f, -width / 2.0f, 0.0f);
-	diamondPoints[5] = vec::vec3(0.0f, 0.0f, height);
+    vec::vec3* diamondPoints = new vec::vec3[diamondPointCount];
+    diamondPoints[0] = vec::vec3(0.0f, 0.0f, -height);
+    diamondPoints[1] = vec::vec3(width / 2.0f, 0.0f, 0.0f);
+    diamondPoints[2] = vec::vec3(-width / 2.0f, 0.0f, 0.0f);
+    diamondPoints[3] = vec::vec3(0.0f, width / 2.0f, 0.0f);
+    diamondPoints[4] = vec::vec3(0.0f, -width / 2.0f, 0.0f);
+    diamondPoints[5] = vec::vec3(0.0f, 0.0f, height);
 
     diamondPoints[6] = vec::vec3(-width / 2.0f, 0.0f, -height);
     diamondPoints[7] = vec::vec3(0.0f, width / 2.0f, -height);
 
-	CollisionShapes[CShape::NPC_DIAMOND] = new btConvexHullShape((btScalar*)&diamondPoints[0], diamondPointCount, sizeof(vec::vec3));
-	delete[] diamondPoints;
+    CollisionShapes[CShape::NPC_DIAMOND] = new btConvexHullShape((btScalar*)&diamondPoints[0], diamondPointCount, sizeof(vec::vec3));
+    delete[] diamondPoints;
 
     // TODO these all should be configurable size values (TODO configurable).
     CollisionShapes[CShape::NPC_NEARFIELD_BUBBLE] = new btSphereShape(height * 4);
@@ -57,10 +57,11 @@ bool BasicPhysics::LoadPhysics(std::map<CShape, const std::vector<vec::vec3>*> s
     collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
     broadphaseCollisionDetector = new btDbvtBroadphase();
     constraintSolver = new btSequentialImpulseConstraintSolver();
-    
+
     DynamicsWorld = new btDiscreteDynamicsWorld(collisionDispatcher, broadphaseCollisionDetector,
         constraintSolver, collisionConfiguration);
 
+    // Taken from the vehicles demo.
     DynamicsWorld->setGravity(btVector3(0, 0, -9.80f));
     
     // Our basic collision shapes are hardcoded, and any model-based shapes are passed-in directly.
@@ -76,7 +77,7 @@ bool BasicPhysics::LoadPhysics(std::map<CShape, const std::vector<vec::vec3>*> s
 void BasicPhysics::Step(float timestep)
 {
     // Run our simulation!
-    DynamicsWorld->stepSimulation(timestep, 6);
+    DynamicsWorld->stepSimulation(timestep);
 
     // Check for interesting collisions.
     const int manifoldCount = collisionDispatcher->getNumManifolds();

@@ -33,6 +33,7 @@ public:
     const vec::vec2 GetTerrainPosition() const;
     const vec::vec3 GetViewPosition() const;
     const vec::quaternion GetViewOrientation() const;
+    const vec::mat4 GetViewMatrix() const;
 
     void Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos);      
 

@@ -85,6 +85,35 @@ vec::mat4 MatrixOps::Rotate(float angle, const vec::vec3& v)
     return Rotate(angle, v.x, v.y, v.z);
 }
 
+vec::mat4 MatrixOps::Average(vec::mat4 first, vec::mat4 second)
+{
+    vec::mat4 result;
+    result[0] = (first[0] + second[0]) / 2.0f;
+    result[1] = (first[1] + second[1]) / 2.0f;
+    result[2] = (first[2] + second[2]) / 2.0f;
+    result[3] = (first[3] + second[3]) / 2.0f;
+    return result;
+}
+
+vec::mat4 MatrixOps::Average(std::deque<vec::mat4> matrices)
+{
+    vec::mat4 result(vec::vec4(0.0f), vec::vec4(0.0f), vec::vec4(0.0f), vec::vec4(0.0f));
+    for (auto iter = matrices.cbegin(); iter != matrices.cend(); iter++)
+    {
+        result[0] += (*iter)[0];
+        result[1] += (*iter)[1];
+        result[2] += (*iter)[2];
+        result[3] += (*iter)[3];
+    }
+
+    result[0] /= (float)matrices.size();
+    result[1] /= (float)matrices.size();
+    result[2] /= (float)matrices.size();
+    result[3] /= (float)matrices.size();
+
+    return result;
+}
+
 // Pulled from 'The Mesa 3-D graphics library', gluInvertMatrix, refactored to integrate here.
 // Computes the inverse of the provided 4x4 matrix. *Assumes the matrix is invertable*
 void MatrixOps::Inverse(const vec::mat4& matrix, vec::mat4& result)

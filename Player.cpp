@@ -59,6 +59,11 @@ const vec::quaternion Player::GetViewOrientation() const
     return camera.GetViewOrientation();
 }
 
+const vec::mat4 Player::GetViewMatrix() const
+{
+    return camera.GetViewMatrix();
+}
+
 void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos)
 {
     // TODO make these offsets configurable.

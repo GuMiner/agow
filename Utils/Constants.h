@@ -22,7 +22,6 @@ public:
 
     static vec::mat4 PerspectiveMatrix;
 
-    // To support 144 Hz monitors.
     const static int MAX_FRAMERATE = 150;
 };
 

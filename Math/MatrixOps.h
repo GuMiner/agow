@@ -1,4 +1,5 @@
 #pragma once
+#include <deque>
 #include "Vec.h"
 
 // Performs matrix-specific math operations.
@@ -25,4 +26,8 @@ class MatrixOps
 
         // Computes the inverse of the provided matrix, filling it into the result.
         static void Inverse(const vec::mat4& matrix, vec::mat4& result);
+
+        // Averages two matrices togehter.
+        static vec::mat4 Average(vec::mat4 first, vec::mat4 second);
+        static vec::mat4 Average(std::deque<vec::mat4> matrices);
 };

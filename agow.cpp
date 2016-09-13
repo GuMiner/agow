@@ -328,6 +328,9 @@ void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused
 bool wasPressed = false;
 void agow::Update(float currentGameTime, float frameTime)
 {
+    // Update physics.
+    physics.Step(frameTime);
+
     player.Update(frameTime);
 
     gearScientist.Update(currentGameTime, frameTime);
@@ -374,9 +377,6 @@ void agow::Update(float currentGameTime, float frameTime)
 
     // Update all events we have
     events.UpdateEvents(currentGameTime, frameTime);
-
-    // Update physics.
-    physics.Step(frameTime);
 }
 
 void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
@@ -446,7 +446,7 @@ Constants::Status agow::Run()
     while (alive)
     {
         clockStartTime = clock.getElapsedTime();
-        viewMatrix = player.GetViewOrientation().asMatrix() * MatrixOps::Translate(-player.GetViewPosition());
+        viewMatrix = player.GetViewMatrix();
 
         float frameTime = std::min(frameClock.restart().asSeconds(), 0.06f);
         HandleEvents(window, alive, focusPaused, escapePaused);
