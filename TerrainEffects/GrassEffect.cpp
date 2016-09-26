@@ -10,7 +10,7 @@ GrassEffect::GrassEffect(int subTileSize)
 bool GrassEffect::LoadBasics(ShaderManager* shaderManager)
 {
     // Load our shader program to custom-render grass.
-    if (!shaderManager->CreateShaderProgram("grassRender", &programId))
+    if (!shaderManager->CreateShaderProgramWithGeometryShader("grassRender", &programId))
     {
         Logger::LogError("Failed to load the basic grass rendering shader; cannot continue.");
         return false;
@@ -46,12 +46,12 @@ bool GrassEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* t
                 // TODO configurable
                 vec::vec3 bottomColor = vec::vec3(0.0f, 0.90f + MathOps::Rand() * 0.10f, 0.0f);
                 vec::vec3 topColor = vec::vec3(0.0f, 0.50f + MathOps::Rand() * 0.30f, 0.20f + MathOps::Rand() * 0.60f);
-                vec::vec3 bottomPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height);
-                vec::vec3 topPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height + 0.15f + 1.00f * MathOps::Rand());
+                vec::vec3 bottomPos = vec::vec3((float)realPos.x + MathOps::Rand(1.0f), (float)realPos.y + MathOps::Rand(1.0f), height);
+                vec::vec3 topPos = bottomPos + vec::vec3(MathOps::Rand(0.20f), MathOps::Rand(0.20f), 0.15f + 0.50f * MathOps::Rand());
 
                 // Add grass
                 vec::vec3 lowerOffset = vec::vec3(0.0f);
-                vec::vec3 upperOffset = vec::vec3(std::cos(2 * Constants::PI / 2), std::sin(2 * Constants::PI / 2), 0.0f);
+                vec::vec3 upperOffset = vec::vec3(0.0f);
                 grassEffect->grassOffsets.push_back(lowerOffset);
                 grassEffect->grassOffsets.push_back(upperOffset);
 

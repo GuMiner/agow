@@ -8,7 +8,7 @@ struct StyleText
     {
         NORMAL,
         ITALICS,
-        BOLD,
+        MINI,
         UNDERLINED
     };
 

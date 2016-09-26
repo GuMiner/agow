@@ -20,6 +20,9 @@ class MatrixOps
         static vec::mat4 Scale(float x, float y, float z);
         static vec::mat4 Scale(const vec::vec3& v);
 
+        //Computes an xy shear matrix, leaving the z-axis the same. If x and y are zero, this is equal to the identity matrix.
+        static vec::mat4 Shear(float x, float y);
+
         // Computes an axis-angle rotation matrix.
         static vec::mat4 Rotate(float angle, float x, float y, float z);
         static vec::mat4 Rotate(float angle, const vec::vec3& v);

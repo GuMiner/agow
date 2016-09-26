@@ -60,6 +60,15 @@ vec::mat4 MatrixOps::Scale(const vec::vec3& v)
     return Scale(v.x, v.y, v.z);
 }
 
+vec::mat4 MatrixOps::Shear(float x, float y)
+{
+    return vec::mat4(
+        vec::vec4(1.0f, 0.0f, x, 0.0f),
+        vec::vec4(0.0f, 1.0f, y, 0.0f),
+        vec::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+        vec::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+}
+
 vec::mat4 MatrixOps::Rotate(float angle, float x, float y, float z)
 {
     vec::mat4 result;

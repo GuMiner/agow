@@ -11,7 +11,16 @@ bool DialogPane::LoadBasics(FontManager* fontManager, ShaderManager* shaderManag
 {
     this->fontManager = fontManager;
     
-    // TODO load graphics for dialog background shading.
+    /// Load in our shader for the dialog background
+    if (!shaderManager->CreateShaderProgram("dialogRender", &programId))
+    {
+        Logger::LogError("Bad dialog shader!");
+        return false;
+    }
+
+    glGenVertexArrays(1, &dialogVao);
+    glBindVertexArray(dialogVao);
+
     return true;
 }
 
@@ -87,6 +96,20 @@ void DialogPane::TrimToFit(StyleText text, std::vector<StyleText>* textLines)
     Logger::Log("Trimmed line into ", textLines->size(), " line(s).");
 }
 
+vec::mat4 DialogPane::GetEffectScale(StyleText::Effect effect)
+{
+    switch (effect)
+    {
+    case StyleText::MINI:
+        return MatrixOps::Scale(vec::vec3(0.016f));
+    case StyleText::ITALICS:
+        return MatrixOps::Scale(vec::vec3(0.018f)) * MatrixOps::Shear(0.0f, 1.0f);
+    default:
+    case StyleText::NORMAL:
+        return MatrixOps::Scale(vec::vec3(0.020f));
+    }
+}
+
 // Moves to the next section of text, either paging or moving to the next set.
 void DialogPane::Advance()
 {
@@ -114,12 +137,12 @@ void DialogPane::Advance()
             for (unsigned int j = 0; j < sublines.size(); j++)
             {
                 // Create a proper sentence in the position for display, given that MaxLines are displayed at a time and we page in blocks.
-                float yPos = ((float)((DialogPane::MaxLines - 1) - (j % DialogPane::MaxLines)) / (float)(DialogPane::MaxLines - 1)) * 0.60f;
-                float xPos = 0.20f;
+                float yPos = ((float)((DialogPane::MaxLines - 1) - (j % DialogPane::MaxLines)) / (float)(DialogPane::MaxLines - 1)) * 0.12f + 0.30f;
+                float xPos = 0.24f;
                 RenderableSentence sentence;
                 sentence.sentenceId = fontManager->CreateNewSentence();
                 sentence.color = sublines[j].color;
-                sentence.posRotMatrix = MatrixOps::Translate(-0.821f, -0.121f, -1.0f) * MatrixOps::Scale(0.015f, 0.015f, 0.015f);
+                sentence.posRotMatrix = MatrixOps::Translate(xPos, yPos, -1.0f) * GetEffectScale(sublines[j].effect);
 
                 fontManager->UpdateSentence(sentence.sentenceId, sublines[j].text, DialogPane::PixelHeight, sentence.color);
                 dialogText.push_back(sentence);
@@ -142,13 +165,21 @@ void DialogPane::Render(vec::mat4& perspectiveMatrix)
 {
     if (isVisible)
     {
+        // Render the dialog pane, which just draws a rectangle with stuffs.
+        glUseProgram(programId);
+        glBindVertexArray(dialogVao);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
         // Render the lines visible.
         int linesRendered = 0;
-        for (auto iter = dialogText.crbegin(); iter != dialogText.crend() && linesRendered < DialogPane::MaxLines; iter++, linesRendered++)
+        for (auto iter = dialogText.cbegin(); iter != dialogText.cend() && linesRendered < DialogPane::MaxLines; iter++, linesRendered++)
         {
             fontManager->RenderSentence(iter->sentenceId, perspectiveMatrix, iter->posRotMatrix);
         }
-
-        // TODO render dialog shader.
     }
+}
+
+DialogPane::~DialogPane()
+{
+    glDeleteVertexArrays(1, &dialogVao);
 }

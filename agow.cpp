@@ -285,7 +285,17 @@ Constants::Status agow::LoadAssets()
     StyleText styleText;
     styleText.color = vec::vec3(1.0f, 1.0f, 0.0f);
     styleText.effect = StyleText::Effect::NORMAL;
-    styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing.");
+    styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing.");
+    dialogPane.QueueText(styleText);
+
+    styleText.color = vec::vec3(1.0f, 0.0f, 1.0f);
+    styleText.effect = StyleText::Effect::MINI;
+    styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing.");
+    dialogPane.QueueText(styleText);
+
+    styleText.color = vec::vec3(0.0f, 1.0f, 1.0f);
+    styleText.effect = StyleText::Effect::ITALICS;
+    styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing.  but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing.");
     dialogPane.QueueText(styleText);
 
     // TODO test code remove.

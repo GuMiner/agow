@@ -2,6 +2,7 @@
 #include <string>
 #include <deque>
 #include <vector>
+#include <GL/glew.h>
 #include "Data\RenderableSentence.h"
 #include "Data\StyleText.h"
 #include "Managers\FontManager.h"
@@ -25,13 +26,15 @@ class DialogPane
 
     // Shader for rendering the dialog pane itself.
     GLuint programId;
-    GLuint projMatrixLocation;
+    GLuint dialogVao;
 
     // Trims a single line of style text to fit within the max sentence length as multiple lines.
     void TrimToFit(StyleText text, std::vector<StyleText>* textLines);
+    vec::mat4 GetEffectScale(StyleText::Effect effect);
 
 public:
     DialogPane();
+    ~DialogPane();
     bool LoadBasics(FontManager* fontManager, ShaderManager* shaderManager);
 
     // Adds new text for display.
