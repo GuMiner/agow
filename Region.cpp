@@ -63,6 +63,17 @@ float Region::GetPointHeight(const vec::vec2i tilePos, const vec::vec2i fullPos)
     return regionTile->subtiles[localPos]->heightmap[subtileOffset.x + subtileOffset.y * subTileSize];
 }
 
+int Region::GetPointType(const vec::vec2i tilePos, const vec::vec2i fullPos) const
+{
+    // Map to the correct subtile.
+    vec::vec2i localPos = tilePos - (pos * TerrainManager::Subdivisions);
+
+    // Map to the correct point within the subtile.
+    int subTileSize = (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions);
+    vec::vec2i subtileOffset = fullPos - (tilePos * subTileSize);
+    return (int)(regionTile->subtiles[localPos]->type[subtileOffset.x + subtileOffset.y * subTileSize]);
+}
+
 void Region::Simulate(TerrainManager* terrainManager, vec::vec2i tilePos, float elapsedSeconds)
 {
     terrainManager->Simulate(pos, tilePos - (pos * TerrainManager::Subdivisions), elapsedSeconds);

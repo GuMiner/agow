@@ -362,7 +362,7 @@ void agow::Update(float currentGameTime, float frameTime)
     // Update physics.
     physics.Step(frameTime);
 
-    player.Update(frameTime);
+    player.Update(frameTime, regionManager.GetPointTerrainType(physics.DynamicsWorld, player.GetTerrainPosition()));
 
     gearScientist.Update(currentGameTime, frameTime);
     intellScientist.Update(currentGameTime, frameTime);

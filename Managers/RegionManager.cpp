@@ -36,6 +36,25 @@ float RegionManager::GetPointHeight(btDynamicsWorld* dynamicsWorld, const vec::v
     return loadedRegions[region]->GetPointHeight(tileMap[0], vec::vec2i((int)point.x, (int)point.y));
 }
 
+int RegionManager::GetPointTerrainType(btDynamicsWorld* dynamicsWorld, const vec::vec2 point)
+{
+    vec::vec2i region = vec::vec2i((int)point.x, (int)point.y) / terrainManager.GetTileSize();
+    if (region.x * TerrainManager::Subdivisions < min.x || region.x * TerrainManager::Subdivisions > max.x || region.y * TerrainManager::Subdivisions < min.y || region.y * TerrainManager::Subdivisions > max.y)
+    {
+        Logger::LogWarn("Attempted to get the terrain type of a point outside the subtile boundaries: [", region.x * TerrainManager::Subdivisions, ", ", region.y * TerrainManager::Subdivisions, "].");
+        return TerrainTypes::LAKE;
+    }
+
+    // Load the region if it hasn't been loaded already.
+    if (loadedRegions.find(region) == loadedRegions.end())
+    {
+        loadedRegions[region] = new Region(region, &terrainManager, TerrainManager::Subdivisions);
+    }
+
+    vec::vec2i regionPos = vec::vec2i((int)point.x, (int)point.y) / (terrainManager.GetTileSize() / TerrainManager::Subdivisions);
+    return loadedRegions[region]->GetPointType(regionPos, vec::vec2i((int)point.x, (int)point.y));
+}
+
 vec::vec2i RegionManager::GetCurrentCenterTile(const vec::vec3& position) const
 {
     // Round down.

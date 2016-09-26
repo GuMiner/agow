@@ -36,6 +36,9 @@ public:
     // Returns the height of the point, in real units. If the point is out-of-bounds, returns 0 (min height).
     float GetPointHeight(btDynamicsWorld* dynamicsWorld, const vec::vec2 point);
 
+    // Returns the terrain type at the specified point. Returns LAKE if out of bounds.
+    int GetPointTerrainType(btDynamicsWorld* dynamicsWorld, const vec::vec2 point);
+
     void UpdateVisibleRegion(const vec::vec3& playerPosition, btDynamicsWorld* dynamicsWorld);
     void SimulateVisibleRegions(float gameTime, float elapsedSeconds);
     void RenderRegions(const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix);

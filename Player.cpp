@@ -1,12 +1,13 @@
 #include <iostream>
 #include "Config\PhysicsConfig.h"
+#include "Data\TerrainTile.h"
 #include "Math\MathOps.h"
 #include "Math\VecOps.h"
 #include "Map.h"
 #include "Player.h"
 
 Player::Player()
-    : lastMousePos(sf::Vector2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)), isOnGround(false) // TODO configurable camera.
+    : lastMousePos(sf::Vector2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT) // TODO configurable camera.
 {
 }
 
@@ -85,7 +86,7 @@ void Player::Render(ModelManager* modelManager, const vec::mat4& projectionMatri
     modelManager->RenderModel(projectionMatrix, physicalModel.modelId, mvMatrix, false);
 }
 
-void Player::Update(float frameTime)
+void Player::Update(float frameTime, int terrainTypeOn)
 {
     vec::quaternion travelRotation = BasicPhysics::GetBodyRotation(physicalModel.rigidBody).conjugate() * vec::quaternion::fromAxisAngle(MathOps::Radians(90), vec::vec3(0, 0, 1));
 
@@ -129,12 +130,15 @@ void Player::Update(float frameTime)
     }
 
     // TODO configurable (jump and force),
+
+    // Jump
     if (isOnGround && sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
     {
         physicalModel.rigidBody->applyCentralImpulse(VecOps::Convert(vec::vec3(0.0f, 0.0f, 200.0f)));
         isOnGround = false;
     }
 
+    // Camera off-center offset.
     if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
     {
         if (lastMousePos.x == -1)
@@ -161,6 +165,16 @@ void Player::Update(float frameTime)
     else
     {
         lastMousePos = sf::Vector2i(-1, -1);
+    }
+
+    // Limit player motion.
+    float speedLimitSqd = terrainTypeOn == TerrainTypes::ROADS ?
+        (Player::RoadSpeedLimit * Player::RoadSpeedLimit) : (Player::SpeedLimit * Player::SpeedLimit);
+
+    if (physicalModel.rigidBody->getLinearVelocity().length2() > speedLimitSqd)
+    {
+        btVector3 linearVelocity = physicalModel.rigidBody->getLinearVelocity();
+        physicalModel.rigidBody->setLinearVelocity(Player::SpeedLimit * linearVelocity.normalize());
     }
 
     camera.Update(frameTime);

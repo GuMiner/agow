@@ -24,6 +24,8 @@ public:
     void EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::vector<vec::vec2i>* tilesToLoadHeightmapsFor);
 
     float GetPointHeight(const vec::vec2i tilePos, const vec::vec2i fullPos) const;
+    int GetPointType(const vec::vec2i tilePos, const vec::vec2i fullPos) const;
+
     void Simulate(TerrainManager* terrainManager, vec::vec2i tilePos, float elapsedSeconds);
     void RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix) const;
 

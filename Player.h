@@ -13,6 +13,10 @@
 
 class Player : public ICallback<UserPhysics::ObjectType>
 {
+    // TODO configurable
+    const float SpeedLimit = 20.0f;
+    const float RoadSpeedLimit = 200.0f;
+
     // Where the viewer is currently oriented on-screen.
     Camera camera;
     PhysicalModel physicalModel;
@@ -20,6 +24,14 @@ class Player : public ICallback<UserPhysics::ObjectType>
     // Used for view rotation.
     sf::Vector2i lastMousePos;
     
+    enum MotionType
+    {
+        ON_FOOT,
+        MOTORCYCLE,
+        DRONES
+    };
+
+    MotionType motionType;
     bool isOnGround;
 
 public:
@@ -27,7 +39,7 @@ public:
     bool LoadPlayerModel(ModelManager* modelManager);
     void LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass);
     
-    void Update(float frameTime);
+    void Update(float frameTime, int terrainTypeOn);
     void Render(ModelManager* modelManager, const vec::mat4& projectionMatrix);
 
     const vec::vec2 GetTerrainPosition() const;
