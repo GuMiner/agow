@@ -11,9 +11,9 @@
 // Displays dialog text that NPCs speak.
 class DialogPane
 {
-    const int PixelHeight = 14;
+    const int PixelHeight = 20;
     const int MaxLines = 6;
-    const float MaxSentenceLength = 200; // Kinda arbitrary. See TextDataTypes.h
+    const float MaxSentenceLength = 25.0f; // on-screen viewpoint.
     FontManager* fontManager;
 
     std::deque<std::vector<StyleText>> dialogs;

@@ -282,6 +282,12 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_DIALOG;
     }
 
+    StyleText styleText;
+    styleText.color = vec::vec3(1.0f, 1.0f, 0.0f);
+    styleText.effect = StyleText::Effect::NORMAL;
+    styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing.");
+    dialogPane.QueueText(styleText);
+
     // TODO test code remove.
     events.AddPeriodicEvent(TypedCallback<EventType>(EventType::SKY_FLAVOR_RANDOM_COLOR_CHANGE, &scenery), 1.0f, false);
 
@@ -327,6 +333,10 @@ void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused
             {
                 vec::vec3 pos = player.GetViewPosition();
                 std::cout << "[" << pos.x << " " << pos.y << " " << pos.z << "]" << std::endl;
+            }
+            else if (event.key.code == sf::Keyboard::N)
+            {
+                dialogPane.Advance();
             }
         }
         else if (event.type == sf::Event::MouseButtonPressed)
