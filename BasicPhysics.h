@@ -21,8 +21,8 @@ public:
     {
         SMALL_CUBE,
         NPC_CAPSULE,
-		NPC_CUBOID,
-		NPC_DIAMOND,
+        NPC_CUBOID,
+        NPC_DIAMOND,
         NPC_NEARFIELD_BUBBLE,
         ROCK_OCTAHEDRON,
         ROCK_DODECAHEDRON,
@@ -39,7 +39,8 @@ public:
     btDiscreteDynamicsWorld *DynamicsWorld;
 
     BasicPhysics();
-    bool LoadPhysics(std::map<CShape, const std::vector<vec::vec3>*> shapePoints);
+    bool LoadPhysics();
+    void AddCollisionModels(std::map<CShape, const std::vector<vec::vec3>*> shapePoints);
     void Step(float timestep);
     void UnloadPhysics();
 

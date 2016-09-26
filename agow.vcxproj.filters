@@ -245,6 +245,9 @@
     <ClInclude Include="Data\StyleText.h">
       <Filter>Data</Filter>
     </ClInclude>
+    <ClInclude Include="TerrainEffects\SignEffect.h">
+      <Filter>TerrainEffects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Cache">

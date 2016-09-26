@@ -130,6 +130,7 @@
     <ClInclude Include="TerrainEffects\GrassEffect.h" />
     <ClInclude Include="TerrainEffects\RoadEffect.h" />
     <ClInclude Include="TerrainEffects\RockEffect.h" />
+    <ClInclude Include="TerrainEffects\SignEffect.h" />
     <ClInclude Include="TerrainEffects\TerrainEffect.h" />
     <ClInclude Include="TerrainEffects\TreeEffect.h" />
     <ClInclude Include="TreeGenerator.h" />

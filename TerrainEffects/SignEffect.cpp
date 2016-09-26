@@ -12,112 +12,93 @@ SignEffect::SignEffect(ModelManager* modelManager, BasicPhysics* physics, int su
 
 bool SignEffect::LoadBasics(ShaderManager* shaderManager)
 {
+    // No special shaders.
     return true;
 }
 
 bool SignEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * tile)
 {
-    // TODO implement.
-    return false;
+    bool hasSignEffect = false;
+    SignEffectData* signEfect = nullptr;
 
-    bool hasRockEffect = false;
-    SignEffectData* rockEffect = nullptr;
-
-    // Scan the image for rock pixels.
-    int rockCounter = 1;
-    const long ROCK_SUBCOUNT = 8;
-    const long MOVABLE_ROCK_SUBCOUNT = 16;
-    for (int i = 0; i < subTileSize; i++)
+    // Scan the image for the sign setting.
+    // A sign is a grass-dirt corner. TODO figure out real size.
+    // TODO handle signs stradling subtiles.****
+    for (int i = 1; i < subTileSize - 4; i++)
     {
-        for (int j = 0; j < subTileSize; j++)
+        for (int j = 1; j < subTileSize - 4; j++)
         {
-            if (tile->type[i + j * subTileSize] == TerrainTypes::ROCKS)
+            if (tile->type[i + j * subTileSize] == TerrainTypes::DIRTLAND)
             {
-                ++rockCounter;
-                if (rockCounter % ROCK_SUBCOUNT == 0)
+                // See if the upper-left is grass in x and y.
+                if (tile->type[(i - 1) + j * subTileSize] == TerrainTypes::GRASSLAND && tile->type[i + (j - 1) * subTileSize] == TerrainTypes::GRASSLAND)
                 {
-                    if (!hasRockEffect)
+                    // See if dirtland is in the next two followed by grassland.
+                    if (tile->type[(i + 1) + j * subTileSize] == TerrainTypes::DIRTLAND && tile->type[i + (j + 1) * subTileSize] == TerrainTypes::DIRTLAND)
                     {
-                        hasRockEffect = true;
-                        rockEffect = new SignEffectData();
+                        if (tile->type[(i + 2) + j * subTileSize] == TerrainTypes::DIRTLAND && tile->type[i + (j + 2) * subTileSize] == TerrainTypes::DIRTLAND)
+                        {
+                            // Valid sign! 
+                            if (!hasSignEffect)
+                            {
+                                hasSignEffect = true;
+                                signEfect = new SignEffectData();
+                            }
+
+                            // Add a barely-movable sign shape.
+                            ColoredPhysicalModel coloredModel;
+                            BasicPhysics::CShape shape;
+
+                            SignGenerator signGenerator;
+                            signGenerator.GetRandomSignModel(&coloredModel.model.modelId, &shape);
+
+                            // TODO configurable.
+                            coloredModel.color = vec::vec4(0.60f, 0.70f, 0.60f, 1.0f);
+
+                            // TODO configurable masses.
+                            float height = tile->heightmap[i + j * subTileSize] + 3.0f;
+                            vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i, (float)j);
+                            coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 100.0f);
+
+                            signEfect->signs.push_back(coloredModel);
+                            physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
+                        }
                     }
-
-                    // Add a non-movable rock substrate.
-                    ColoredPhysicalModel coloredModel;
-                    BasicPhysics::CShape shape;
-
-                    SignGenerator signGenerator;
-                    signGenerator.GetRandomSignModel(&coloredModel.model.modelId, &shape);
-
-                    // TODO randomly generated from the sign generator
-                    coloredModel.color = vec::vec4(0.60f, 0.70f, 0.60f, 1.0f);
-
-                    // TODO configurable
-                    // TODO randomly generated masses.
-                    float height = tile->heightmap[i + j * subTileSize];
-                    vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i + MathOps::Rand(), (float)j + MathOps::Rand());
-                    coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
-                    coloredModel.model.rigidBody->setActivationState(0);
-
-                    rockEffect->rocks.push_back(coloredModel);
-                    physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
-                }
-
-                if (rockCounter % MOVABLE_ROCK_SUBCOUNT == 0)
-                {
-                    // Add a movable rock layer above the substrate
-                    ColoredPhysicalModel coloredModel;
-                    BasicPhysics::CShape shape;
-
-                    SignGenerator signGenerator;
-                    signGenerator.GetRandomSignModel(&coloredModel.model.modelId, &shape);
-
-                    // TODO randomly generated from the rock generator
-                    coloredModel.color = vec::vec4(0.60f, 0.70f, 0.60f, 1.0f);
-
-                    // TODO configurable
-                    // TODO randomly generated masses.
-                    float height = tile->heightmap[i + j * subTileSize];
-                    vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i + MathOps::Rand(), (float)j + MathOps::Rand());
-                    coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height + 2.0f), 30.0f);
-                    coloredModel.model.rigidBody->setActivationState(0);
-                    rockEffect->rocks.push_back(coloredModel);
-                    physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
                 }
             }
         }
     }
 
-    if (hasRockEffect)
+    if (hasSignEffect)
     {
-        Logger::Log("Loaded ", rockEffect->rocks.size(), " randomly-generated rocks in the rock field.");
-        *effectData = rockEffect;
+        Logger::Log("Loaded ", signEfect->signs.size(), " signs in the subtile.");
+        *effectData = signEfect;
     }
 
-    return hasRockEffect;
+    return hasSignEffect;
 }
 
 void SignEffect::UnloadEffect(void * effectData)
 {
     SignEffectData* rockEffect = (SignEffectData*)effectData;
-    for (const ColoredPhysicalModel& model : rockEffect->rocks)
+    for (const ColoredPhysicalModel& model : rockEffect->signs)
     {
-        // TODO -- we should not regenerate rigid bodies for rocky areas, but they (like cities) should go in a persistent store.
-        // I'm leaving that off until I start random city generation. That will likely also entail refactoring in this class...
+        // TODO -- we should not regenerate signs, they should go in a persistent store.
         physics->DynamicsWorld->removeRigidBody(model.model.rigidBody);
     }
 
     delete rockEffect;
 }
 
-void SignEffect::Simulate(const vec::vec2i subtileId, void * effectData, float elapsedSeconds)
+void SignEffect::Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds)
 {
+    // No custom simulation.
 }
 
 void SignEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
 {
     SignEffectData* rockEffect = (SignEffectData*)effectData;
-    for (const ColoredPhysicalModel& model : rockEffect->rocks)
+    for (const ColoredPhysicalModel& model : rockEffect->signs)
     {
         vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.model.rigidBody);
         modelManager->RenderModel(perspectiveMatrix * viewMatrix, model.model.modelId, mvMatrix, model.color, false);

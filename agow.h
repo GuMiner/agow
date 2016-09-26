@@ -19,6 +19,7 @@
 #include "NPC.h"
 #include "Player.h"
 #include "RockGenerator.h"
+#include "SignGenerator.h"
 #include "Scenery.h"
 #include "Statistics.h"
 

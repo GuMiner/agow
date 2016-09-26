@@ -6,7 +6,7 @@
 
 struct SignEffectData
 {
-    std::vector<ColoredPhysicalModel> rocks;
+    std::vector<ColoredPhysicalModel> signs;
 };
 
 class SignEffect : public TerrainEffect

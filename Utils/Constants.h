@@ -22,6 +22,6 @@ public:
 
     static vec::mat4 PerspectiveMatrix;
 
-    const static int MAX_FRAMERATE = 150;
+    const static int MAX_FRAMERATE = 60;
 };
 

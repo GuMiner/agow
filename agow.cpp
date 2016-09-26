@@ -54,11 +54,16 @@ agow::agow()
 
 Constants::Status agow::LoadPhysics()
 {
-    RockGenerator rockGenerator;
-    if (!physics.LoadPhysics(rockGenerator.GetModelPoints(&modelManager)))
+    if (!physics.LoadPhysics())
     {
         return Constants::Status::BAD_PHYSICS;
     }
+
+    RockGenerator rockGenerator;
+    physics.AddCollisionModels(rockGenerator.GetModelPoints(&modelManager));
+
+    SignGenerator signGenerator;
+    physics.AddCollisionModels(signGenerator.GetModelPoints(&modelManager));
 
     // TODO configurable.
     vec::vec2 gearSciPos = Map::GetPoint(Map::POI::GEAR_SCIENTIST);
@@ -239,6 +244,12 @@ Constants::Status agow::LoadAssets()
 
     Logger::Log("Rock loading...");
     if (!RockGenerator::LoadModels(&modelManager))
+    {
+        return Constants::Status::BAD_MODEL;
+    }
+
+    Logger::Log("Sign loading...");
+    if (!SignGenerator::LoadModels(&modelManager))
     {
         return Constants::Status::BAD_MODEL;
     }
@@ -448,7 +459,9 @@ Constants::Status agow::Run()
         clockStartTime = clock.getElapsedTime();
         viewMatrix = player.GetViewMatrix();
 
-        float frameTime = std::min(frameClock.restart().asSeconds(), 0.06f);
+        // Unfortunately, SFML has every third frame do some weird extra work due to underlying optimizations by the graphics driver. This hack assumes we always run
+        //  at the correct rate, which is very wrong, but completely removes the jitter issue.
+        float frameTime = 1.0f / (float)Constants::MAX_FRAMERATE; // std::min(frameClock.restart().asSeconds(), 0.06f);
         HandleEvents(window, alive, focusPaused, escapePaused);
         
         // Run the game and render if not paused.

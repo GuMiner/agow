@@ -51,7 +51,7 @@ void BasicPhysics::LoadBasicCollisionShapes()
     delete[] playerPoints;
 }
 
-bool BasicPhysics::LoadPhysics(std::map<CShape, const std::vector<vec::vec3>*> shapePoints)
+bool BasicPhysics::LoadPhysics()
 {
     collisionConfiguration = new btDefaultCollisionConfiguration();
     collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
@@ -66,12 +66,17 @@ bool BasicPhysics::LoadPhysics(std::map<CShape, const std::vector<vec::vec3>*> s
     
     // Our basic collision shapes are hardcoded, and any model-based shapes are passed-in directly.
     LoadBasicCollisionShapes();
+
+    return true;
+}
+
+// Adds collsion models to the list of known collision shapes.
+void BasicPhysics::AddCollisionModels(std::map<CShape, const std::vector<vec::vec3>*> shapePoints)
+{
     for (std::pair<const CShape, const std::vector<vec::vec3>*> shapePointPair : shapePoints)
     {
         CollisionShapes[shapePointPair.first] = new btConvexHullShape((btScalar*)&(*shapePointPair.second)[0], shapePointPair.second->size(), sizeof(vec::vec3));
     }
-
-    return true;
 }
 
 void BasicPhysics::Step(float timestep)
