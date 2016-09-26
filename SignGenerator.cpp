@@ -9,14 +9,13 @@ SignGenerator::SignGenerator()
 
 bool SignGenerator::LoadModels(ModelManager* modelManager)
 {
-    // TODO sign models go here.
-    unsigned int modelId = modelManager->LoadModel("models/rocks/dodecahedron");
+    unsigned int modelId = modelManager->LoadModel("models/signs/stopSign");
     if (modelId == 0)
     {
         return false;
     }
 
-    signArchetypes.push_back(SignInternal(BasicPhysics::CShape::ROCK_DODECAHEDRON, modelId));
+    signArchetypes.push_back(SignInternal(BasicPhysics::CShape::SIGN_STOP, modelId));
 
     return true;
 }

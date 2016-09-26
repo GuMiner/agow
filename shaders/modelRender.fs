@@ -11,5 +11,5 @@ in vec2 uvPosition;
 void main(void)
 {
     // Scale each color of the provided object by the given color.
-    color = (texture2D(modelTexture, uvPosition) + vec4(selectionFactor, selectionFactor, selectionFactor, 0.0f)) * shadingColor;
+    color = (texture2D(modelTexture, vec2(uvPosition.x, 1.0f - uvPosition.y)) + vec4(selectionFactor, selectionFactor, selectionFactor, 0.0f)) * shadingColor;
 }

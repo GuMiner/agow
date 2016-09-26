@@ -32,6 +32,7 @@ public:
         ROCK_SPHERE_TWO,
         ROCK_SPHERE_THREE,
         ROCK_TETRAHEDRON,
+        SIGN_STOP,
         PLAYER
     };
 

@@ -56,9 +56,9 @@ bool SignEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * t
                             coloredModel.color = vec::vec4(0.60f, 0.70f, 0.60f, 1.0f);
 
                             // TODO configurable masses.
-                            float height = tile->heightmap[i + j * subTileSize] + 3.0f;
-                            vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i, (float)j);
-                            coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 100.0f);
+                            float height = tile->heightmap[i + j * subTileSize];
+                            vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)(i + 1), (float)(j + 1));
+                            coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
 
                             signEfect->signs.push_back(coloredModel);
                             physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
