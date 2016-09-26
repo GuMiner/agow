@@ -138,6 +138,24 @@ void main(void)
 		color.g *= 1.0f;
 		color.b *= factor;
 	}
+    else if (type == RIVER)
+    {
+        // Brighter and faster than LAKE
+        float speed = 10.0f;
+		float frequencyX = 2.25f;
+		float frequencyY = 1.40f;
+		
+		float scaleSpeedX = 0.45f;
+		float scaleSpeedY = 0.43f;
+		
+		float factorMin = 0.70;
+		float factorScale = 0.30f;
+		float factor = factorMin + factorScale * cos(fragment_position.x*frequencyX*cos(gameTime * scaleSpeedX) + gameTime*speed) * sin(fragment_position.y*frequencyY*sin(gameTime*scaleSpeedY) + gameTime*speed);
+		color = vec4(vec3(color) * scaleFactor * vec3(typeColor), 1.0);
+		color.r *= factor;
+		color.g *= 1.0f;
+		color.b *= factor;
+    }
 	else
 	{
 		color = vec4(vec3(color) * scaleFactor * vec3(typeColor), 1.0);
