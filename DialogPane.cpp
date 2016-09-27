@@ -179,6 +179,15 @@ void DialogPane::Render(vec::mat4& perspectiveMatrix)
     }
 }
 
+void DialogPane::Callback(EventType eventType, void* callbackSpecificData)
+{
+    if (eventType == EventType::ADD_DIALOG && callbackSpecificData != nullptr)
+    {
+        DialogData* dialogData = (DialogData*)callbackSpecificData;
+        QueueText(dialogData->dialogText);
+    }
+}
+
 DialogPane::~DialogPane()
 {
     glDeleteVertexArrays(1, &dialogVao);

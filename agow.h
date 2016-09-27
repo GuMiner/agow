@@ -16,6 +16,7 @@
 
 #include "BasicPhysics.h"
 #include "DialogPane.h"
+#include "Events.h"
 #include "NPC.h"
 #include "Player.h"
 #include "RockGenerator.h"

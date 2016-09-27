@@ -5,7 +5,6 @@
 #include "Managers\ShaderManager.h"
 #include "Math\Vec.h"
 #include "Utils\TypedCallback.h"
-#include "Events.h"
 
 // Renders long-range scenery to give an impression of an infinite world.
 class Scenery : public ICallback<EventType>

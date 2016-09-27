@@ -3,14 +3,16 @@
 #include <deque>
 #include <vector>
 #include <GL/glew.h>
+#include "Data\CallbackTypes.h"
 #include "Data\RenderableSentence.h"
 #include "Data\StyleText.h"
 #include "Managers\FontManager.h"
 #include "Managers\ShaderManager.h"
 #include "Math\Vec.h"
+#include "Utils\TypedCallback.h"
 
 // Displays dialog text that NPCs speak.
-class DialogPane
+class DialogPane : public ICallback<EventType>
 {
     const int PixelHeight = 20;
     const int MaxLines = 6;
@@ -45,5 +47,8 @@ public:
     void Advance();
 
     void Render(vec::mat4& perspectiveMatrix);
+
+    // Inherited via ICallback
+    virtual void Callback(EventType callingObject, void * callbackSpecificData) override;
 };
 
