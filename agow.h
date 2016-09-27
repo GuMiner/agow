@@ -8,6 +8,7 @@
 #include "Managers\FontManager.h"
 #include "Managers\ImageManager.h"
 #include "Managers\ModelManager.h"
+#include "Managers\NpcManager.h"
 #include "Managers\RegionManager.h"
 #include "Managers\ShaderManager.h"
 #include "Math\MathOps.h"
@@ -36,6 +37,7 @@ class agow
     FontManager fontManager;
     ImageManager imageManager;
     ModelManager modelManager;
+    NpcManager npcManager;
     RegionManager regionManager;
     ShaderManager shaderManager;
 
@@ -47,12 +49,6 @@ class agow
     Scenery scenery;
 
     Events events;
-
-    // Key NPCs
-    NPC gearScientist;
-    NPC intellScientist;
-    NPC generalMilitary;
-    NPC sergeantMilitary;
 
     // TEST DATA
     std::vector<PhysicalModel> testCubes;

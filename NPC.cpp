@@ -2,8 +2,8 @@
 #include "Math\MathOps.h"
 #include "Math\VecOps.h"
 #include "Utils\Logger.h"
+#include "DialogPane.h"
 #include "NPC.h"
-#include <iostream>
 
 std::map<NPC::Shape, unsigned int> NPC::models;
 
@@ -57,12 +57,16 @@ NPC::NPC(std::string name, std::string description, Shape shape, vec::vec4 color
       isSelected(false), showInteractionKeys(false), nearFieldCollisionLastFrame(false)
 {
     nameString.color = vec::vec3(1.0f) - vec::vec3(color.x, color.y, color.z);
+    interactionString.color = nameString.color * 1.10f;
 }
 
 void NPC::LoadGraphics(FontManager* fontManager)
 {
     nameString.sentenceId = fontManager->CreateNewSentence();
     fontManager->UpdateSentence(nameString.sentenceId, name, 22, nameString.color);
+
+    interactionString.sentenceId = fontManager->CreateNewSentence();
+    fontManager->UpdateSentence(interactionString.sentenceId, "Converse [C]", 22, interactionString.color);
 }
 
 void NPC::LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass)
@@ -81,6 +85,16 @@ void NPC::LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float
     physics.DynamicsWorld->addRigidBody(nearFieldBubble);
 }
 
+bool NPC::Converse(DialogPane* dialogPane)
+{
+    return false;
+}
+
+std::string  NPC::GetName() const
+{
+    return name;
+}
+
 void NPC::Update(float gameTime, float elapsedTime)
 {
     nameString.posRotMatrix =
@@ -88,6 +102,10 @@ void NPC::Update(float gameTime, float elapsedTime)
         BasicPhysics::GetBodyMatrix(physicalModel.rigidBody) * 
         MatrixOps::Scale(0.20f, 0.20f, 0.20f) * 
         MatrixOps::Rotate(90.0f, vec::vec3(1.0f, 0.0f, 0.0f));
+
+    interactionString.posRotMatrix = 
+        MatrixOps::Translate(vec::vec3(0.0f, 0.0f, -0.10f)) *
+        nameString.posRotMatrix;
 
     // This works as physics updates are last. TODO make this more deterministic.
     if (nearFieldCollisionLastFrame)
@@ -110,6 +128,11 @@ void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const vec
     modelManager->RenderModel(projectionMatrix, physicalModel.modelId, mvMatrix, color, isSelected);
     
     fontManager->RenderSentence(nameString.sentenceId, projectionMatrix, nameString.posRotMatrix);
+
+    if (showInteractionKeys)
+    {
+        fontManager->RenderSentence(interactionString.sentenceId, projectionMatrix, interactionString.posRotMatrix);
+    }
 }
 
 void NPC::UnloadNpcPhysics(BasicPhysics physics)

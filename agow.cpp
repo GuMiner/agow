@@ -43,12 +43,8 @@ agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       physics(), shaderManager(), imageManager(), modelManager(&imageManager),
       regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
-      scenery(),
-      player(), // TODO configurable
-      gearScientist("James Blanton", "Giver of yer gear.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE),
-      intellScientist("Aaron Krinst", "Giver of yer data.", NPC::Shape::DIAMOND, vec::vec4(0.0f, 0.20f, 1.0f, 0.70f), NPC::INVULNERABLE),
-      generalMilitary("Barry Ingleson", "Nominal strategy director.", NPC::Shape::CUBOID, vec::vec4(1.0f, 0.10f, 0.0f, 0.90f), NPC::INVULNERABLE),
-      sergeantMilitary("Oliver Yttrisk", "Battle assistant extraordinaire.", NPC::Shape::CUBOID, vec::vec4(1.0f, 0.50f, 0.0f, 0.50f), NPC::INVULNERABLE)
+      scenery(), npcManager(),
+      player() // TODO configurable
 {
 }
 
@@ -65,15 +61,7 @@ Constants::Status agow::LoadPhysics()
     SignGenerator signGenerator;
     physics.AddCollisionModels(signGenerator.GetModelPoints(&modelManager));
 
-    // TODO configurable.
-    vec::vec2 gearSciPos = Map::GetPoint(Map::POI::GEAR_SCIENTIST);
-    vec::vec2 intelSciPos = Map::GetPoint(Map::POI::INTELLIGENCE_SCIENTIST);
-    vec::vec2 generalMilPos = Map::GetPoint(Map::POI::GENERAL_MILITARY);
-    vec::vec2 sergeantMilPos = Map::GetPoint(Map::POI::SERGEANT_MILITARY);
-    gearScientist.LoadNpcPhysics(physics, vec::vec3(gearSciPos.x, gearSciPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, gearSciPos)), 100);
-    intellScientist.LoadNpcPhysics(physics, vec::vec3(intelSciPos.x, intelSciPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, intelSciPos)), 90);
-    generalMilitary.LoadNpcPhysics(physics, vec::vec3(generalMilPos.x, generalMilPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, generalMilPos)), 80);
-    sergeantMilitary.LoadNpcPhysics(physics, vec::vec3(sergeantMilPos.x, sergeantMilPos.y, 2 + regionManager.GetPointHeight(physics.DynamicsWorld, sergeantMilPos)), 65);
+    npcManager.LoadNpcPhysics(physics, &regionManager);
     
     vec::vec2 spawnPoint = Map::GetPoint(Map::PLAYER);
     player.LoadPlayerPhysics(physics, vec::vec3(spawnPoint.x, spawnPoint.y, 200), 70);
@@ -85,11 +73,7 @@ void agow::UnloadPhysics()
 {
     // Delete our test data.
     regionManager.CleanupPhysics(physics.DynamicsWorld);
-
-    gearScientist.UnloadNpcPhysics(physics);
-    intellScientist.UnloadNpcPhysics(physics);
-    generalMilitary.UnloadNpcPhysics(physics);
-    sergeantMilitary.UnloadNpcPhysics(physics);
+    npcManager.UnloadNpcPhysics(physics);
     player.UnloadPlayerPhysics(physics);
 
     for (const PhysicalModel& model : testCubes)
@@ -237,10 +221,8 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_MODEL;
     }
 
-    gearScientist.LoadGraphics(&fontManager);
-    intellScientist.LoadGraphics(&fontManager);
-    generalMilitary.LoadGraphics(&fontManager);
-    sergeantMilitary.LoadGraphics(&fontManager);
+    Logger::Log("Key NPC loading...");
+    npcManager.LoadGraphics(&fontManager);
 
     Logger::Log("Rock loading...");
     if (!RockGenerator::LoadModels(&modelManager))
@@ -338,7 +320,8 @@ void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused
                 alive = false;
             }
 
-            // TODO remove 
+            // TODO move to a common input handling area.
+            // TODO configurable.
             if (event.key.code == sf::Keyboard::I)
             {
                 vec::vec3 pos = player.GetViewPosition();
@@ -347,6 +330,10 @@ void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused
             else if (event.key.code == sf::Keyboard::N)
             {
                 dialogPane.Advance();
+            }
+            else if (event.key.code == sf::Keyboard::C)
+            {
+                npcManager.Converse(&events, &dialogPane);
             }
         }
         else if (event.type == sf::Event::MouseButtonPressed)
@@ -364,10 +351,7 @@ void agow::Update(float currentGameTime, float frameTime)
 
     player.Update(frameTime, regionManager.GetPointTerrainType(physics.DynamicsWorld, player.GetTerrainPosition()));
 
-    gearScientist.Update(currentGameTime, frameTime);
-    intellScientist.Update(currentGameTime, frameTime);
-    generalMilitary.Update(currentGameTime, frameTime);
-    sergeantMilitary.Update(currentGameTime, frameTime);
+    npcManager.Update(currentGameTime, frameTime);
     
     // TODO test code
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
@@ -434,11 +418,8 @@ void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
         modelManager.RenderModel(projectionMatrix, testCubes[i].modelId, mvMatrix, false);
     }
 
-    // Render the key NPCs
-    gearScientist.Render(&fontManager, &modelManager, projectionMatrix);
-    intellScientist.Render(&fontManager, &modelManager, projectionMatrix);
-    generalMilitary.Render(&fontManager, &modelManager, projectionMatrix);
-    sergeantMilitary.Render(&fontManager, &modelManager, projectionMatrix);
+    // Render the NPCs
+    npcManager.Render(&fontManager, &modelManager, projectionMatrix);
 
     // Player rendering
     player.Render(&modelManager, projectionMatrix);

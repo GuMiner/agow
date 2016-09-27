@@ -111,6 +111,9 @@
     </ClCompile>
     <ClCompile Include="SignGenerator.cpp" />
     <ClCompile Include="DialogPane.cpp" />
+    <ClCompile Include="Managers\NpcManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -247,6 +250,9 @@
     </ClInclude>
     <ClInclude Include="TerrainEffects\SignEffect.h">
       <Filter>TerrainEffects</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\NpcManager.h">
+      <Filter>Managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

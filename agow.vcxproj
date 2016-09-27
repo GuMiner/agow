@@ -111,6 +111,7 @@
     <ClInclude Include="Managers\FontManager.h" />
     <ClInclude Include="Managers\ImageManager.h" />
     <ClInclude Include="Managers\ModelManager.h" />
+    <ClInclude Include="Managers\NpcManager.h" />
     <ClInclude Include="Managers\RegionManager.h" />
     <ClInclude Include="Managers\ShaderManager.h" />
     <ClInclude Include="Managers\TerrainEffectManager.h" />
@@ -160,6 +161,7 @@
     <ClCompile Include="Managers\FontManager.cpp" />
     <ClCompile Include="Managers\ImageManager.cpp" />
     <ClCompile Include="Managers\ModelManager.cpp" />
+    <ClCompile Include="Managers\NpcManager.cpp" />
     <ClCompile Include="Managers\RegionManager.cpp" />
     <ClCompile Include="Managers\ShaderManager.cpp" />
     <ClCompile Include="Managers\TerrainEffectManager.cpp" />

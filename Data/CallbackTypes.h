@@ -19,4 +19,13 @@ struct SkyColorChange
 struct DialogData
 {
     StyleText dialogText;
+
+    DialogData()
+    {
+    }
+
+    DialogData(StyleText text)
+        : dialogText(text)
+    {
+    }
 };

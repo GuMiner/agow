@@ -15,4 +15,14 @@ struct StyleText
     std::string text;
     vec::vec3 color;
     Effect effect;
+
+    StyleText()
+    {
+    }
+
+    // Creates bland-system-level conversational text.
+    StyleText(std::string text, Effect effect)
+        : text(text), color(vec::vec3(0.0f, 1.0f, 0.0f)), effect(effect)
+    {
+    }
 };
