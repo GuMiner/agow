@@ -111,7 +111,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
 
     if (loadSubtiles && !terrainTiles[start]->loadedSubtiles)
     {
-        int subSize = GetSubTileSize() + 1;
+        int subSize = GetSubTileSize() + 1; // TODO increase to 2 to give a 1 px boundary around the *entire* image.
         for (int i = 0; i < TerrainManager::Subdivisions; i++)
         {
             for (int j = 0; j < TerrainManager::Subdivisions; j++)

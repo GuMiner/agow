@@ -165,6 +165,9 @@ Constants::Status agow::LoadGraphics()
     // Log graphics information for future reference
     LogGraphicsSettings();
 
+    // TODO configurable.
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     // Enable alpha blending
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

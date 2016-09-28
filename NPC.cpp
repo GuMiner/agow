@@ -87,6 +87,7 @@ void NPC::LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float
 
 bool NPC::Converse(DialogPane* dialogPane)
 {
+    // TODO -- this should integrate with the story graph (to setup next).
     return false;
 }
 
