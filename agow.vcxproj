@@ -90,7 +90,9 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AI\DecisionTree.h" />
     <ClInclude Include="BasicPhysics.h" />
+    <ClInclude Include="BuildingGenerator.h" />
     <ClInclude Include="Cache\TerrainCache.h" />
     <ClInclude Include="Cache\TreeCache.h" />
     <ClInclude Include="Camera.h" />
@@ -128,6 +130,7 @@
     <ClInclude Include="Scenery.h" />
     <ClInclude Include="SignGenerator.h" />
     <ClInclude Include="Statistics.h" />
+    <ClInclude Include="TerrainEffects\CityEffect.h" />
     <ClInclude Include="TerrainEffects\GrassEffect.h" />
     <ClInclude Include="TerrainEffects\RoadEffect.h" />
     <ClInclude Include="TerrainEffects\RockEffect.h" />
@@ -148,7 +151,9 @@
     <ClInclude Include="Player.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AI\DecisionTree.cpp" />
     <ClCompile Include="BasicPhysics.cpp" />
+    <ClCompile Include="BuildingGenerator.cpp" />
     <ClCompile Include="Cache\TerrainCache.cpp" />
     <ClCompile Include="Cache\TreeCache.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -178,6 +183,7 @@
     <ClCompile Include="Scenery.cpp" />
     <ClCompile Include="SignGenerator.cpp" />
     <ClCompile Include="Statistics.cpp" />
+    <ClCompile Include="TerrainEffects\CityEffect.cpp" />
     <ClCompile Include="TerrainEffects\GrassEffect.cpp" />
     <ClCompile Include="TerrainEffects\RoadEffect.cpp" />
     <ClCompile Include="TerrainEffects\RockEffect.cpp" />

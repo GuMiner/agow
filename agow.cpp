@@ -227,6 +227,12 @@ Constants::Status agow::LoadAssets()
     Logger::Log("Key NPC loading...");
     npcManager.LoadGraphics(&fontManager);
 
+    Logger::Log("Building loading...");
+    if (!BuildingGenerator::LoadBuilder("AI/buildingTree.txt"))
+    {
+        return Constants::Status::BAD_CONFIG;
+    }
+
     Logger::Log("Rock loading...");
     if (!RockGenerator::LoadModels(&modelManager))
     {

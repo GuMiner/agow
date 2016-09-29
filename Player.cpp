@@ -7,7 +7,8 @@
 #include "Player.h"
 
 Player::Player()
-    : lastMousePos(sf::Vector2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT) // TODO configurable camera.
+    : lastMousePos(sf::Vector2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT), // TODO configurable camera.
+      enemyKos(0), allyKos(0), civilianKos(0)
 {
 }
 

@@ -114,6 +114,13 @@
     <ClCompile Include="Managers\NpcManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
+    <ClCompile Include="AI\DecisionTree.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainEffects\CityEffect.cpp">
+      <Filter>TerrainEffects</Filter>
+    </ClCompile>
+    <ClCompile Include="BuildingGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -254,6 +261,13 @@
     <ClInclude Include="Managers\NpcManager.h">
       <Filter>Managers</Filter>
     </ClInclude>
+    <ClInclude Include="AI\DecisionTree.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainEffects\CityEffect.h">
+      <Filter>TerrainEffects</Filter>
+    </ClInclude>
+    <ClInclude Include="BuildingGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Cache">
@@ -276,6 +290,9 @@
     </Filter>
     <Filter Include="Utils">
       <UniqueIdentifier>{fc6e9ad3-a83f-4c84-be34-55f39d410ec9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI">
+      <UniqueIdentifier>{722ed4c4-2389-4dff-8aaa-5a9ea278bd4c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

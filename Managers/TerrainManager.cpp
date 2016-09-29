@@ -111,7 +111,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
 
     if (loadSubtiles && !terrainTiles[start]->loadedSubtiles)
     {
-        int subSize = GetSubTileSize() + 1; // TODO increase to 2 to give a 1 px boundary around the *entire* image.
+        int subSize = GetSubTileSize() + 1;
         for (int i = 0; i < TerrainManager::Subdivisions; i++)
         {
             for (int j = 0; j < TerrainManager::Subdivisions; j++)
@@ -223,7 +223,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
 
 bool TerrainManager::LoadTerrainTile(vec::vec2i start, TerrainTile** tile)
 {
-    // The +x and +y tiles must also be loaded to cache to properly generate subtile heightmaps and images.
+    // The +-x and +-y tiles must also be loaded to cache to properly generate subtile heightmaps and images.
     if (!LoadTileToCache(vec::vec2i(std::min(start.x + 1, max.x), start.y), false) ||
         !LoadTileToCache(vec::vec2i(start.x, std::min(start.y + 1, max.y)), false) ||
         !LoadTileToCache(start, true))

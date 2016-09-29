@@ -34,6 +34,10 @@ class Player : public ICallback<UserPhysics::ObjectType>
     MotionType motionType;
     bool isOnGround;
 
+    int enemyKos;
+    int civilianKos;
+    int allyKos;
+
 public:
     Player();
     bool LoadPlayerModel(ModelManager* modelManager);

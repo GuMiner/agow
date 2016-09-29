@@ -20,6 +20,7 @@
 #include "Events.h"
 #include "NPC.h"
 #include "Player.h"
+#include "BuildingGenerator.h"
 #include "RockGenerator.h"
 #include "SignGenerator.h"
 #include "Scenery.h"
