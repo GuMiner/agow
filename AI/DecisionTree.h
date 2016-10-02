@@ -212,8 +212,9 @@ public:
     {
         std::vector<T> nodeDataWalked;
 
+        bool requestedEnding = false;
         DecisionNode<T>* currentNode = rootNode;
-        while (!IsLeafNode(currentNode))
+        while (!requestedEnding && !IsLeafNode(currentNode))
         {
             if (currentNode->isValidEnding)
             {
@@ -223,7 +224,8 @@ public:
             switch (evaluator(currentNode->nodeData, currentNode->isValidEnding, currentNode->yesNode != nullptr, currentNode->noNode != nullptr))
             {
             case THIS_ITEM:
-                return currentNode->nodeData;
+                requestedEnding = true;
+                break;
             case YES_ITEM:
                 currentNode = currentNode->yesNode;
                 break;
@@ -234,7 +236,7 @@ public:
         }
 
         // Ensure we have added the data for the leaf node.
-        if (currentNode->isValidEnding)
+        if (currentNode->isValidEnding && !requestedEnding)
         {
             nodeDataWalked.push_back(currentNode->nodeData);
         }
@@ -244,12 +246,14 @@ public:
 
     void EraseNode(DecisionNode<T>* node)
     {
-        if (node != nullptr)
+        // TODO fix (very minor) memory leak. We have a leaves that can be used multiple times, so we need to keep track so we don't double delete them.
+        // 
+        /*if (node != nullptr)
         {
             EraseNode(node->yesNode);
             EraseNode(node->noNode);
             delete node;
-        }
+        }*/
     }
 
     ~DecisionTree()

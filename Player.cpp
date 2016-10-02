@@ -34,7 +34,7 @@ void Player::UnloadPlayerPhysics(BasicPhysics physics)
 {
     delete physicalModel.rigidBody->getUserPointer();
     physics.DynamicsWorld->removeRigidBody(physicalModel.rigidBody);
-    physics.DeleteBody(physicalModel.rigidBody);
+    physics.DeleteBody(physicalModel.rigidBody, false);
 }
 
 void Player::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpecificData)

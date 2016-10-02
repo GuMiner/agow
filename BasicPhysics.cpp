@@ -157,6 +157,19 @@ btRigidBody* BasicPhysics::GetStaticBody(const CShape shape, const btVector3& or
     return body;
 }
 
+btRigidBody* BasicPhysics::GetStaticBody(btCollisionShape* collisionShape, const btVector3& origin)
+{
+    btTransform pos;
+    pos.setIdentity();
+    pos.setOrigin(origin);
+
+    btDefaultMotionState *motionState = new btDefaultMotionState(pos);
+    btRigidBody::btRigidBodyConstructionInfo bodyInfo(0.0f, motionState, collisionShape);
+    btRigidBody* body = new btRigidBody(bodyInfo);
+    body->setUserPointer(nullptr);
+    return body;
+}
+
 btRigidBody* BasicPhysics::GetDynamicBody(const CShape shape, const btVector3& origin, const float mass)
 {
     btTransform pos;
@@ -167,6 +180,22 @@ btRigidBody* BasicPhysics::GetDynamicBody(const CShape shape, const btVector3& o
     CollisionShapes[shape]->calculateLocalInertia(mass, localInertia);
     btDefaultMotionState *motionState = new btDefaultMotionState(pos);
     btRigidBody::btRigidBodyConstructionInfo object(mass, motionState, CollisionShapes[shape], localInertia);
+    btRigidBody* newBody = new btRigidBody(object);
+    newBody->setFriction(0.50f); // TODO configurable.
+    newBody->setUserPointer(nullptr);
+    return newBody;
+}
+
+btRigidBody* BasicPhysics::GetDynamicBody(btCollisionShape* collisionShape, const btVector3& origin, const float mass)
+{
+    btTransform pos;
+    pos.setIdentity();
+    pos.setOrigin(origin);
+
+    btVector3 localInertia;
+    collisionShape->calculateLocalInertia(mass, localInertia);
+    btDefaultMotionState *motionState = new btDefaultMotionState(pos);
+    btRigidBody::btRigidBodyConstructionInfo object(mass, motionState, collisionShape, localInertia);
     btRigidBody* newBody = new btRigidBody(object);
     newBody->setFriction(0.50f); // TODO configurable.
     newBody->setUserPointer(nullptr);
@@ -221,11 +250,16 @@ vec::quaternion BasicPhysics::GetBodyRotation(const btRigidBody* body)
 
 void BasicPhysics::DeleteGhostObject(btRigidBody* ghostObject) const
 {
-    DeleteBody(ghostObject);
+    DeleteBody(ghostObject, false);
 }
 
-void BasicPhysics::DeleteBody(btRigidBody* body) const
+void BasicPhysics::DeleteBody(btRigidBody* body, bool eraseCollisionShape) const
 {
+    if (eraseCollisionShape)
+    {
+        delete body->getCollisionShape();
+    }
+
     delete body->getMotionState();
     delete body;
 }

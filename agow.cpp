@@ -79,7 +79,7 @@ void agow::UnloadPhysics()
     for (const PhysicalModel& model : testCubes)
     {
         physics.DynamicsWorld->removeRigidBody(model.rigidBody);
-        physics.DeleteBody(model.rigidBody);
+        physics.DeleteBody(model.rigidBody, false);
     }
 
     physics.UnloadPhysics();
@@ -227,10 +227,16 @@ Constants::Status agow::LoadAssets()
     Logger::Log("Key NPC loading...");
     npcManager.LoadGraphics(&fontManager);
 
-    Logger::Log("Building loading...");
-    if (!BuildingGenerator::LoadBuilder("AI/buildingTree.txt"))
+    Logger::Log("Building generator loading...");
+    if (!BuildingGenerator::LoadBuilder("AI/lowDensityBuildingTree.txt", "AI/highDensityBuildingTree.txt"))
     {
         return Constants::Status::BAD_CONFIG;
+    }
+
+    Logger::Log("Building model loading...");
+    if (!BuildingGenerator::LoadBuildingModels(&modelManager))
+    {
+        return Constants::Status::BAD_MODEL;
     }
 
     Logger::Log("Rock loading...");

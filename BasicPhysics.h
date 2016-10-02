@@ -49,6 +49,10 @@ public:
     btRigidBody* GetStaticBody(const CShape shape, const btVector3& origin);
     btRigidBody* GetDynamicBody(const CShape shape, const btVector3& origin, const float mass);
 
+    // Same as the above, but with a non-standard collision shape. Calling delete can automatically remove the collision shape.
+    btRigidBody* GetStaticBody(btCollisionShape* collisionShape,const btVector3& origin);
+    btRigidBody* GetDynamicBody(btCollisionShape* collisionShape,const btVector3& origin, const float mass);
+
     // An actual rigid body, but with collision interaction disabled.
     btRigidBody* GetGhostObject(const CShape shape, const btVector3& origin);
     
@@ -61,7 +65,7 @@ public:
     // Converts from Bullet geometry to our game geometry.
     static vec::mat4 GetBodyMatrix(const btRigidBody* body);
     static vec::quaternion GetBodyRotation(const btRigidBody* body);
-    void DeleteBody(btRigidBody* body) const;
+    void DeleteBody(btRigidBody* body, bool deleteCollisionShape) const;
     void DeleteGhostObject(btRigidBody* ghostObject) const;
 };
 

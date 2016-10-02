@@ -4,6 +4,7 @@
 #include <stb\stb_image.h>
 #include "TerrainManager.h"
 #include "Math\MathOps.h"
+#include "TerrainEffects\CityEffect.h"
 #include "TerrainEffects\GrassEffect.h"
 #include "TerrainEffects\RoadEffect.h"
 #include "TerrainEffects\RockEffect.h"
@@ -23,6 +24,7 @@ TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelMa
 
     // TODO configurable
     effects.push_back((TerrainEffect*)new TreeEffect("cache/data", subTileSize));
+    effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/data", subTileSize));
 }
 
 bool TerrainEffectManager::LoadBasics()

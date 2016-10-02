@@ -102,6 +102,7 @@ void RockEffect::UnloadEffect(void * effectData)
         // TODO -- we should not regenerate rigid bodies for rocky areas, but they (like cities) should go in a persistent store.
         // I'm leaving that off until I start random city generation. That will likely also entail refactoring in this class...
         physics->DynamicsWorld->removeRigidBody(model.model.rigidBody);
+        physics->DeleteBody(model.model.rigidBody, false);
     }
 
     delete rockEffect;

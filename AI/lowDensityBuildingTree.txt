@@ -43,7 +43,7 @@ models/buildings/segments/square 1.0 1.0 1.0 1 2
 squareSegmentSplitter pyramid flat false
 Allows the square building to have many roofs.
 
-squareSegmentSplitter2 turrent dome false
+squareSegmentSplitter2 turret dome false
 Allows the square building to have many roofs, part 2
 
 circleSegment dome pointy true
@@ -66,19 +66,19 @@ pyramid null null true
 models/buildings/tops/pyramid 1.0 1.0 1.0 1 1
 
 pyramidRect null null true
-models/buildings/tops/pyramidRect 1.0 1.0 1 1
+models/buildings/tops/pyramidRect 1.0 1.0 1.0 1 1
 
 flat null null true
-models/buildings/tops/flat 1.0 1.0 1 1
+models/buildings/tops/flat 1.0 1.0 1.0 1 1
 
 flatRect null null true
-models/buildings/tops/flatRect 1.0 1.0 1 1
+models/buildings/tops/flatRect 1.0 1.0 1.0 1 1
 
 turret null null true
-models/buildings/tops/turret 1.0 1.0 1 1
+models/buildings/tops/turret 1.0 1.0 1.0 1 1
 
 dome null null true
-models/buildings/tops/dome 1.0 1.0 1 1
+models/buildings/tops/dome 1.0 1.0 1.0 1 1
 
 pointy null null true
-models/buildings/tops/pointy 1.0 1.0 1 1
+models/buildings/tops/pointy 1.0 1.0 1.0 1 1

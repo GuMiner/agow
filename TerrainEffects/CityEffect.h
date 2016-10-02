@@ -1,22 +1,24 @@
 #pragma once
-#include "Cache\TreeCache.h"
-#include "Utils\Vertex.h"
-#pragma once
+#include <vector>
+#include "Data\Model.h"
+#include "Managers\ModelManager.h"
+#include "BasicPhysics.h"
 #include "TerrainEffect.h"
 
 struct CityEffectData
 {
-
+    std::vector<std::vector<ScaledPhysicalModel>> buildings;
 };
 
 class CityEffect : public TerrainEffect
 {
     int subTileSize; // In pixels
 
-
+    ModelManager* modelManager;
+    BasicPhysics* physics;
 
 public:
-    CityEffect(const std::string& cacheFolder, int subTileSize);
+    CityEffect(ModelManager* modelManager, BasicPhysics* physics, const std::string& cacheFolder, int subTileSize);
     virtual bool LoadBasics(ShaderManager* shaderManager) override;
     virtual bool LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * tile) override;
     virtual void UnloadEffect(void* effectData) override;

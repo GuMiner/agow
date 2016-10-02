@@ -242,6 +242,7 @@ unsigned int ModelManager::LoadModel(const char* rootFilename)
     std::string objString = combinationStream.str();
 
     TextureModel textureModel;
+    textureModel.name = std::string(rootFilename);
     textureModel.textureId = imageManager->AddImage(pngString.c_str());
     if (textureModel.textureId == 0)
     {
@@ -265,6 +266,20 @@ unsigned int ModelManager::LoadModel(const char* rootFilename)
 const TextureModel& ModelManager::GetModel(unsigned int id)
 {
     return models[id];
+}
+
+// Retrieves the model ID given the name used to load the model, 0 if not found.
+unsigned int ModelManager::GetModelId(std::string name) const
+{
+    for (auto iter = models.cbegin(); iter != models.cend(); iter++)
+    {
+        if (_stricmp(iter->second.name.c_str(), name.c_str()) == 0)
+        {
+            return iter->first;
+        }
+    }
+
+    return 0;
 }
 
 unsigned int ModelManager::GetCurrentModelCount() const

@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <vector>
 #include <Bullet\btBulletDynamicsCommon.h>
 #include <GL\glew.h>
@@ -8,6 +9,9 @@
 // Holds data from a loaded, indexed UV textured model.
 struct TextureModel
 {
+    // Name used to load the model.
+    std::string name;
+
     // Texture to apply to the model.
     GLuint textureId;
 
@@ -27,6 +31,14 @@ struct TextureModel
 
 struct PhysicalModel
 {
+    unsigned int modelId;
+    btRigidBody* rigidBody;
+};
+
+struct ScaledPhysicalModel
+{
+    // We scale drawing by this factor. The rigid body is assumed to already be scaled.
+    vec::vec3 scaleFactor;
     unsigned int modelId;
     btRigidBody* rigidBody;
 };

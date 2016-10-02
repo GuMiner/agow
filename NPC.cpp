@@ -139,7 +139,7 @@ void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const vec
 void NPC::UnloadNpcPhysics(BasicPhysics physics)
 {
     physics.DynamicsWorld->removeRigidBody(physicalModel.rigidBody);
-    physics.DeleteBody(physicalModel.rigidBody);
+    physics.DeleteBody(physicalModel.rigidBody, false);
 }
 
 NPC::~NPC()

@@ -27,6 +27,9 @@ class ModelManager
         // Retrieves a 3D model, returning the model ID.
         const TextureModel& GetModel(unsigned int id);
 
+        // Retrieves the model ID given the name used to load the model.
+        unsigned int GetModelId(std::string name) const;
+
         unsigned int GetCurrentModelCount() const;
 
         // Renders the specified model given by the ID.
