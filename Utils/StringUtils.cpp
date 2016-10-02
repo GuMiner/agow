@@ -90,6 +90,20 @@ void StringUtils::Split(const std::string& stringToSplit, char delimator, bool e
     }
 }
 
+// Removes comment lines from the string.
+void StringUtils::RemoveCommentLines(std::vector<std::string>& lines)
+{
+    for (unsigned int i = 0; i < lines.size(); i++)
+    {
+        std::string commentString = std::string(Comment);
+        if (StringUtils::StartsWith(lines[i], commentString))
+        {
+            lines.erase(lines.begin() + i);
+            i--;
+        }
+    }
+}
+
 // Splits a line into two parts and grabs the secondary part.
 bool StringUtils::SplitAndGrabSecondary(const std::string& line, std::string& secondary)
 {

@@ -1,0 +1,6 @@
+# Defines how to generate reasonably-shaped high-density buildings.
+# Data format:
+#  [string]   [float] [float]        [float]        [int]   [int]
+#  model_name zFactor minScaleFactor maxScaleFactor minLayers maxLayers
+
+# TODO

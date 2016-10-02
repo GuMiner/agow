@@ -22,6 +22,9 @@ public:
     // Splits a string into substrings, optionally including empty tokens if present.
     static void Split(const std::string& stringToSplit, char delimator, bool excludeEmpty, std::vector<std::string>& splitStrings);
 
+    // Removes comment lines from the string.
+    static void RemoveCommentLines(std::vector<std::string>& lines);
+
     // Splits a line into two parts and grabs the secondary part.
     static bool SplitAndGrabSecondary(const std::string& line, std::string& secondary);
 

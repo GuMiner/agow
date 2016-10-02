@@ -137,6 +137,7 @@ public:
 
         std::vector<std::string> lines;
         StringUtils::Split(file, StringUtils::Newline, true, lines);
+        StringUtils::RemoveCommentLines(lines);
 
         if (lines.size() % 2 != 0)
         {
@@ -160,17 +161,20 @@ public:
 
             bool typeDeserializeResult = false;
             SerializedNode<T> node;
-            node.nodeData = typeDeserializer(lines[i * 2 + 1], &typeDeserializeResult);
-            if (typeDeserializeResult == false)
-            {
-                Logger::LogError("Could not deserialize the decision tree type-specific data: ", filename, ". line: ", lines[i * 2 + 1], ".");
-                return false;
-            }
-
             node.thisNodeName = segments[0];
             node.yesNodeName = segments[1];
             node.noNodeName = segments[2];
             node.isValidEnding = (_stricmp(segments[3].c_str(), "true") == 0);
+
+            if (node.isValidEnding)
+            {
+                node.nodeData = typeDeserializer(lines[i * 2 + 1], &typeDeserializeResult);
+                if (typeDeserializeResult == false)
+                {
+                    Logger::LogError("Could not deserialize the decision tree type-specific data: ", filename, ". line: ", lines[i * 2 + 1], ".");
+                    return false;
+                }
+            }
 
             serializedNodes.push_back(node);
         }
