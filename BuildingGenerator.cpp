@@ -209,7 +209,8 @@ std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(
 
             *separationRadius = std::max(*separationRadius, boundingSphereRadius);
 
-            btVector3 buildingSegmentOrigin = btVector3(offset.x, offset.y, offset.z + currentHeight - aabbMin.z());
+            float delta = 0.1;
+            btVector3 buildingSegmentOrigin = btVector3(offset.x, offset.y, delta + offset.z + currentHeight - aabbMin.z());
             if (i == 0)
             {
                 // The building base is static.
@@ -224,7 +225,7 @@ std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(
             model.rigidBody->setActivationState(ISLAND_SLEEPING);
 
             resultingSegments.push_back(model);
-            currentHeight += aabbMax.z() - aabbMin.z();
+            currentHeight += (delta + aabbMax.z() - aabbMin.z());
             --layers;
         }
     }

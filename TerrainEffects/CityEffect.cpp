@@ -119,30 +119,40 @@ bool CityEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
             cityEffect = new CityEffectData();
         }
 
-        int buildingXPos = std::get<0>(*iter) + 5;
-        int buildingYPos = std::get<1>(*iter) + 5;
-
-        // Get a building.
-        float separationRadius;
-        float height = tile->heightmap[buildingXPos + buildingYPos * subTileSize];// -0.50f; // Ground inset, TODO configurable.
-        vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)buildingXPos, (float)buildingYPos);
-        vec::vec3 offset((float)realPos.x, (float)realPos.y, height);
-        Building building;
-        building.segments = buildingGenerator.GetRandomLowDensityBuilding(offset, &separationRadius);
-        building.color = vec::vec4(MathOps::Rand(), MathOps::Rand(), MathOps::Rand(), 0.50f + MathOps::Rand() / 2.0f);
-
-        // Move the building to be where the city part is.
-        // TODO also randomly color the building.
-        for (unsigned int i = 0; i < building.segments.size(); i++)
+        int buildingXPos = std::get<0>(*iter);
+        int buildingYPos = std::get<1>(*iter);
+        int regionSize = std::get<2>(*iter);
+        for (int m = 0; m < regionSize / 11; m++)
         {
-            physics->DynamicsWorld->addRigidBody(building.segments[i].rigidBody);
-        }
+            for (int n = 0; n < regionSize / 11; n++)
+            {
+                int xPos = buildingXPos + (1 + m) * 11;
+                int yPos = buildingYPos + (1 + n) * 11;
 
-        cityEffect->buildings.push_back(building);
-        if (cityEffect->buildings.size() == 5)
-        {
-            // Too many buildings!
-            break;
+                // Get a building.
+                float separationRadius;
+                float height = tile->heightmap[buildingXPos + buildingYPos * subTileSize];// -0.50f; // Ground inset, TODO configurable.
+                vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)xPos, (float)yPos);
+                vec::vec3 offset((float)realPos.x, (float)realPos.y, height);
+                Building building;
+                building.segments = buildingGenerator.GetRandomLowDensityBuilding(offset, &separationRadius);
+                building.color = vec::vec4(MathOps::Rand(), MathOps::Rand(), MathOps::Rand(), 0.50f + MathOps::Rand() / 2.0f);
+
+                // Move the building to be where the city part is.
+                // TODO also randomly color the building.
+                for (unsigned int i = 0; i < building.segments.size(); i++)
+                {
+                    //physics->DynamicsWorld->addRigidBody(building.segments[i].rigidBody);
+                }
+
+                cityEffect->buildings.push_back(building);
+                if (cityEffect->buildings.size() == 50)
+                {
+                    // Too many buildings!
+                    Logger::Log("Hit building limit at tile [", subtileId.x, " ", subtileId.y, "].");
+                    break;
+                }
+            }
         }
     }
 
@@ -164,7 +174,7 @@ void CityEffect::UnloadEffect(void* effectData)
     {
         for (unsigned int j = 0; j < cityEffect->buildings[i].segments.size(); j++)
         {
-            physics->DynamicsWorld->removeRigidBody(cityEffect->buildings[i].segments[j].rigidBody);
+            //physics->DynamicsWorld->removeRigidBody(cityEffect->buildings[i].segments[j].rigidBody);
             physics->DeleteBody(cityEffect->buildings[i].segments[j].rigidBody, true);
         }
     }

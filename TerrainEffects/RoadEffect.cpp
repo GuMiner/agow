@@ -169,6 +169,8 @@ float RoadEffect::MoveTraveller(const vec::vec2i subtileId, RoadEffectData* road
 
 void RoadEffect::Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds)
 {
+    return;
+
     RoadEffectData* roadEffect = (RoadEffectData*)effectData;
     auto& travellers = roadEffect->travellers.positions;
     for (unsigned int i = 0; i < travellers.size() / 2; i++)
