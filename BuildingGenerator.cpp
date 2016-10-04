@@ -44,11 +44,6 @@ BuildingDecisionData BuildingGenerator::DeserializeBuildingRule(std::string line
 
 DecisionTree<BuildingDecisionData>::Choice BuildingGenerator::RandomWalkEvaluator(BuildingDecisionData decisionData, bool isValidSegment, bool yesNodeNotNull, bool noNodeNotNull)
 {
-    if (isValidSegment)
-    {
-        Logger::Log(decisionData.modelName, " ", yesNodeNotNull, " ", noNodeNotNull);
-    }
-
     // We're randomly walking so we don't need any of the decision or validation data.
     if (yesNodeNotNull && noNodeNotNull)
     {
@@ -177,7 +172,7 @@ void BuildingGenerator::GetScaledModelPoints(std::vector<vec::vec3>& points, vec
 }
 
 // Returns a random low density building centered (XY) on the origin starting at Z == 0.
-std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(float* separationRadius)
+std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(vec::vec3 offset, float* separationRadius)
 {
     std::vector<ScaledPhysicalModel> resultingSegments;
 
@@ -197,7 +192,7 @@ std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(
             overallScale *= vec::vec3(scaleFactor);
 
             ScaledPhysicalModel model;
-            model.scaleFactor = overallScale * vec::vec3(buildingRule.zFactor, 1.0f, 1.0f);
+            model.scaleFactor = overallScale * vec::vec3(1.0f, 1.0f, buildingRule.zFactor);
             model.modelId = modelManager->GetModelId(buildingRule.modelName);
 
             std::vector<vec::vec3> scaledPoints;
@@ -214,7 +209,7 @@ std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(
 
             *separationRadius = std::max(*separationRadius, boundingSphereRadius);
 
-            btVector3 buildingSegmentOrigin = btVector3(0.0f, 0.0f, currentHeight - aabbMin.z());
+            btVector3 buildingSegmentOrigin = btVector3(offset.x, offset.y, offset.z + currentHeight - aabbMin.z());
             if (i == 0)
             {
                 // The building base is static.
@@ -225,6 +220,8 @@ std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(
                 // TODO configurable mass.
                 model.rigidBody = basicPhysics->GetDynamicBody(collisionShape, buildingSegmentOrigin, 400);
             }
+
+            model.rigidBody->setActivationState(ISLAND_SLEEPING);
 
             resultingSegments.push_back(model);
             currentHeight += aabbMax.z() - aabbMin.z();

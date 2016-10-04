@@ -361,9 +361,6 @@ void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused
 bool wasPressed = false;
 void agow::Update(float currentGameTime, float frameTime)
 {
-    // Update physics.
-    physics.Step(frameTime);
-
     player.Update(frameTime, regionManager.GetPointTerrainType(physics.DynamicsWorld, player.GetTerrainPosition()));
 
     npcManager.Update(currentGameTime, frameTime);
@@ -477,13 +474,16 @@ Constants::Status agow::Run()
 
         // Unfortunately, SFML has every third frame do some weird extra work due to underlying optimizations by the graphics driver. This hack assumes we always run
         //  at the correct rate, which is very wrong, but completely removes the jitter issue.
-        float frameTime = 1.0f / (float)Constants::MAX_FRAMERATE; // std::min(frameClock.restart().asSeconds(), 0.06f);
+        float frameTime = std::min(frameClock.restart().asSeconds(), 0.06f);
         HandleEvents(window, alive, focusPaused, escapePaused);
         
         // Run the game and render if not paused.
         if (!focusPaused && !escapePaused)
         {
             float gameTime = clock.getElapsedTime().asSeconds();
+            
+            // Update physics.
+            physics.Step(1.0f / (float)Constants::MAX_FRAMERATE);
             Update(gameTime, frameTime);
 
             Render(window, viewMatrix);
@@ -495,7 +495,10 @@ Constants::Status agow::Run()
 
         // Delay to run approximately at our maximum framerate.
         sf::Int64 sleepDelay = ((long)1e6 / Constants::MAX_FRAMERATE) - (long)(frameTime * 1e6);
-        sf::sleep(sf::microseconds(sleepDelay));
+        if (sleepDelay > 0)
+        {
+            sf::sleep(sf::microseconds(sleepDelay));
+        }
     }
 
     return Constants::Status::OK;

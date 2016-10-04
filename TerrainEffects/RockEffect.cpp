@@ -54,7 +54,7 @@ bool RockEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * t
                     float height = tile->heightmap[i + j * subTileSize];
                     vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i + MathOps::Rand(), (float)j + MathOps::Rand());
                     coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
-                    coloredModel.model.rigidBody->setActivationState(0);
+                    coloredModel.model.rigidBody->setActivationState(ISLAND_SLEEPING);
 
                     rockEffect->rocks.push_back(coloredModel);
                     physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
@@ -77,7 +77,7 @@ bool RockEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * t
                     float height = tile->heightmap[i + j * subTileSize];
                     vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i + MathOps::Rand(), (float)j + MathOps::Rand());
                     coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height + 2.0f), 30.0f);
-                    coloredModel.model.rigidBody->setActivationState(0);
+                    coloredModel.model.rigidBody->setActivationState(ISLAND_SLEEPING);
                     rockEffect->rocks.push_back(coloredModel);
                     physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
                 }

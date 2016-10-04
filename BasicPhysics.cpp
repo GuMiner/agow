@@ -57,13 +57,15 @@ bool BasicPhysics::LoadPhysics()
     collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
     broadphaseCollisionDetector = new btDbvtBroadphase();
     constraintSolver = new btSequentialImpulseConstraintSolver();
-
+    
     DynamicsWorld = new btDiscreteDynamicsWorld(collisionDispatcher, broadphaseCollisionDetector,
         constraintSolver, collisionConfiguration);
 
-    // Taken from the vehicles demo.
     DynamicsWorld->setGravity(btVector3(0, 0, -9.80f));
     
+    btContactSolverInfo& solverInfo = DynamicsWorld->getSolverInfo();
+    // solverInfo.m_numIterations = 2;
+
     // Our basic collision shapes are hardcoded, and any model-based shapes are passed-in directly.
     LoadBasicCollisionShapes();
 

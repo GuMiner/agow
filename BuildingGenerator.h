@@ -37,6 +37,6 @@ public:
     static bool LoadBuilder(std::string lowDensityFile, std::string highDensityFile);
 
     // Returns a random low density building centered (XY) on the origin starting at Z == 0.
-    std::vector<ScaledPhysicalModel> GetRandomLowDensityBuilding(float* separationRadius);
+    std::vector<ScaledPhysicalModel> GetRandomLowDensityBuilding(vec::vec3 offset, float* separationRadius);
 };
 

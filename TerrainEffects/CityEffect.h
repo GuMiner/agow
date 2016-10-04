@@ -5,9 +5,15 @@
 #include "BasicPhysics.h"
 #include "TerrainEffect.h"
 
+struct Building
+{
+    vec::vec4 color;
+    std::vector<ScaledPhysicalModel> segments;
+};
+
 struct CityEffectData
 {
-    std::vector<std::vector<ScaledPhysicalModel>> buildings;
+    std::vector<Building> buildings;
 };
 
 class CityEffect : public TerrainEffect
