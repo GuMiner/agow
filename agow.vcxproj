@@ -114,6 +114,7 @@
     <ClInclude Include="Data\UserPhysics.h" />
     <ClInclude Include="DialogPane.h" />
     <ClInclude Include="Events.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="Managers\ConfigManager.h" />
     <ClInclude Include="Managers\FontManager.h" />
     <ClInclude Include="Managers\ImageManager.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="Config\PhysicsConfig.cpp" />
     <ClCompile Include="DialogPane.cpp" />
     <ClCompile Include="Events.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Managers\ConfigManager.cpp" />
     <ClCompile Include="Managers\FontManager.cpp" />
     <ClCompile Include="Managers\ImageManager.cpp" />

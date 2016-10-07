@@ -121,6 +121,7 @@
       <Filter>TerrainEffects</Filter>
     </ClCompile>
     <ClCompile Include="BuildingGenerator.cpp" />
+    <ClCompile Include="Input.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -268,6 +269,7 @@
       <Filter>TerrainEffects</Filter>
     </ClInclude>
     <ClInclude Include="BuildingGenerator.h" />
+    <ClInclude Include="Input.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Cache">

@@ -22,17 +22,10 @@ bool ConversionUtils::LoadFloat(const std::string& line, float& floatingPoint)
     return !(!StringUtils::SplitAndGrabSecondary(line, tempInput) || !StringUtils::ParseFloatFromString(tempInput, floatingPoint));
 }
 
-// Loads in an SFML keyboard key.
-bool ConversionUtils::LoadKey(const std::string& line, sf::Keyboard::Key& key)
+// Loads in a keyboard key.
+bool ConversionUtils::LoadKey(const std::string& line, int& key)
 {
-    int keyInt;
-    if (!LoadInt(line, keyInt))
-    {
-        return false;
-    }
-
-    key = (sf::Keyboard::Key)keyInt;
-    return true;
+    return LoadInt(line, key);
 }
 
 // Loads in a 3-valued floating point vector.

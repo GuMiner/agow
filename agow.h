@@ -18,6 +18,7 @@
 #include "BasicPhysics.h"
 #include "DialogPane.h"
 #include "Events.h"
+#include "Input.h"
 #include "NPC.h"
 #include "Player.h"
 #include "BuildingGenerator.h"
@@ -61,17 +62,14 @@ class agow
     // Logs graphical settings so we have an idea of the OpenGL capabilities of the running machine.
     void LogGraphicsSettings();
 
-    // Updates the camera perspective when the screen width / height has changed.
-    void UpdatePerspective(unsigned int width, unsigned int height);
-
     // Handles GUI-based events, such as closing the application, resizing the window, etc.
-    void HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused, bool& escapePaused);
+    void HandleEvents(GLFWwindow* window, bool& focusPaused, bool& escapePaused);
     
     // Performs game updates.
     void Update(float currentGameTime, float frameTime);
 
     // Renders the scene.
-    void Render(sf::RenderWindow& window, vec::mat4& viewMatrix);
+    void Render(GLFWwindow* window, vec::mat4& viewMatrix);
 
 public:
     // Used just for data storage.

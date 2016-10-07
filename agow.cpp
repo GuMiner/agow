@@ -3,8 +3,7 @@
 #include <sstream>
 #include <thread>
 #include <GL/glew.h>
-#include <SFML/OpenGL.hpp>
-#include <SFML/Graphics.hpp>
+#include <GLFW/glfw3.h>
 #include "Math\MatrixOps.h"
 #include "Utils\Logger.h"
 #include "Map.h"
@@ -13,26 +12,13 @@
 
 // Imports so that they're actually readable and not hidden away in a config file.
 #pragma comment(lib, "opengl32")
-
-#ifndef _DEBUG
-    #pragma comment(lib, "lib/glew32.lib")
-    #pragma comment(lib, "lib/sfml-audio")
-    #pragma comment(lib, "lib/sfml-system")
-    #pragma comment(lib, "lib/sfml-window")
-    #pragma comment(lib, "lib/sfml-graphics")
-    #pragma comment(lib, "lib/BulletCollision")
-    #pragma comment(lib, "lib/BulletDynamics")
-    #pragma comment(lib, "lib/LinearMath")
-#else
-    #pragma comment(lib, "lib/glew32d.lib")
-    #pragma comment(lib, "lib/sfml-audio-d")
-    #pragma comment(lib, "lib/sfml-system-d")
-    #pragma comment(lib, "lib/sfml-window-d")
-    #pragma comment(lib, "lib/sfml-graphics-d")
-    #pragma comment(lib, "lib/BulletCollision_Debug")
-    #pragma comment(lib, "lib/BulletDynamics_Debug")
-    #pragma comment(lib, "lib/LinearMath_Debug")
-#endif
+#pragma comment(lib, "lib/glfw3.lib")
+#pragma comment(lib, "lib/glew32.lib")
+#pragma comment(lib, "lib/sfml-audio")
+#pragma comment(lib, "lib/sfml-system")
+#pragma comment(lib, "lib/BulletCollision")
+#pragma comment(lib, "lib/BulletDynamics")
+#pragma comment(lib, "lib/LinearMath")
 
 // Static definitions.
 Constants agow::Constant;
@@ -104,28 +90,18 @@ void agow::LogGraphicsSettings()
     Logger::Log("Max Texture Size: ", maxTextureSize);
 }
 
-void agow::UpdatePerspective(unsigned int width, unsigned int height)
-{
-    // Letterboxing is done at the top and bottom.
-    float necessaryWidth = (float)height * Constants::ASPECT;
-    if (necessaryWidth > width)
-    {
-        // Letterbox the top and the bottom of the screen so that the aspect ratio is met
-        float effectiveHeight = (float)width / Constants::ASPECT;
-        float heightDelta = ((float)height - effectiveHeight) / 2.0f;
-        glViewport(0, (int)heightDelta, (GLsizei)width, (GLsizei)effectiveHeight);
-    }
-    else
-    {
-        // Letterbox the left and the right so that the aspect ratio is met.
-        float widthDelta = ((float)width - necessaryWidth) / 2.0f;
-        glViewport((GLint)widthDelta, (GLint)0, (GLsizei)necessaryWidth, (GLsizei)height);
-    }
-}
-
 // Performs initialization that can be done without a GPU context.
 Constants::Status agow::Initialize()
 {
+    Input::SetupErrorCallback();
+
+    // Setup GLFW
+    if (!glfwInit())
+    {
+        Logger::LogError("GLFW startup failure");
+        return Constants::Status::BAD_GLFW;
+    }
+
     Logger::Log("Loading graphics config file...");
     if (!graphicsConfig.ReadConfiguration())
     {
@@ -154,14 +130,6 @@ Constants::Status agow::Initialize()
 
 Constants::Status agow::LoadGraphics()
 {
-    // Setup GLEW
-    GLenum err = glewInit();
-    if (err != GLEW_OK)
-    {
-        Logger::LogError("GLEW startup failure: ", err, ".");
-        return Constants::Status::BAD_GLEW;
-    }
-
     // Log graphics information for future reference
     LogGraphicsSettings();
 
@@ -301,64 +269,31 @@ Constants::Status agow::LoadAssets()
     return Constants::Status::OK;
 }
 
-void agow::HandleEvents(sf::RenderWindow& window, bool& alive, bool& focusPaused, bool& escapePaused)
+void agow::HandleEvents(GLFWwindow* window, bool& focusPaused, bool& escapePaused)
 {
-    // Handle all events.
-    sf::Event event;
-    while (window.pollEvent(event))
-    {
-        if (event.type == sf::Event::Closed)
-        {
-            alive = false;
-        }
-        else if (event.type == sf::Event::LostFocus)
-        {
-            focusPaused = true;
-        }
-        else if (event.type == sf::Event::GainedFocus)
-        {
-            focusPaused = false;
-        }
-        else if (event.type == sf::Event::Resized)
-        {
-            UpdatePerspective(event.size.width, event.size.height);
-        }
-        else if (event.type == sf::Event::KeyReleased)
-        {
-            if (event.key.code == sf::Keyboard::Escape)
-            {
-                // The Escape key is the consistent pause / unpause
-                escapePaused = !escapePaused;
-            }
-            else if (event.key.code == sf::Keyboard::Q)
-            {
-                alive = false;
-            }
+    glfwPollEvents();
+    focusPaused = !Input::hasFocus;
+    escapePaused = Input::IsKeyTyped(GLFW_KEY_ESCAPE);
 
-            // TODO move to a common input handling area.
-            // TODO configurable.
-            if (event.key.code == sf::Keyboard::I)
-            {
-                vec::vec3 pos = player.GetViewPosition();
-                std::cout << "[" << pos.x << " " << pos.y << " " << pos.z << "]" << std::endl;
-            }
-            else if (event.key.code == sf::Keyboard::N)
-            {
-                dialogPane.Advance();
-            }
-            else if (event.key.code == sf::Keyboard::C)
-            {
-                npcManager.Converse(&events, &dialogPane);
-            }
-        }
-        else if (event.type == sf::Event::MouseButtonPressed)
-        {
-            // if (event.mouseButton.button == sf::Mouse::Left
-        }
+    // TODO move to more relevant areas.
+    // TODO configurable.
+    if (Input::IsKeyTyped(GLFW_KEY_I))
+    {
+        vec::vec3 pos = player.GetViewPosition();
+        std::cout << "[" << pos.x << " " << pos.y << " " << pos.z << "]" << std::endl;
+    }
+
+    if (Input::IsKeyTyped(GLFW_KEY_N))
+    {
+        dialogPane.Advance();
+    }
+
+    if (Input::IsKeyTyped(GLFW_KEY_C))
+    {
+        npcManager.Converse(&events, &dialogPane);
     }
 }
 
-bool wasPressed = false;
 void agow::Update(float currentGameTime, float frameTime)
 {
     player.Update(frameTime, regionManager.GetPointTerrainType(physics.DynamicsWorld, player.GetTerrainPosition()));
@@ -366,13 +301,13 @@ void agow::Update(float currentGameTime, float frameTime)
     npcManager.Update(currentGameTime, frameTime);
     
     // TODO test code
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+    if (Input::IsKeyPressed(GLFW_KEY_R))
     {
         player.Warp(&regionManager, physics.DynamicsWorld, player.GetTerrainPosition());
     }
 
     // TODO test code
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F) && !wasPressed)
+    if (Input::IsKeyTyped(GLFW_KEY_F))
     {
         // Fire a cube for collision tests.
         vec::vec3 pos = player.GetViewPosition() + 5.0f * player.GetViewOrientation().forwardVector();
@@ -388,11 +323,6 @@ void agow::Update(float currentGameTime, float frameTime)
         testCubes.push_back(model);
 
         physics.DynamicsWorld->addRigidBody(model.rigidBody);
-        wasPressed = true;
-    }
-    else if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F) && wasPressed)
-    {
-        wasPressed = false;
     }
 
     regionManager.UpdateVisibleRegion(player.GetViewPosition(), physics.DynamicsWorld);
@@ -406,7 +336,7 @@ void agow::Update(float currentGameTime, float frameTime)
     events.UpdateEvents(currentGameTime, frameTime);
 }
 
-void agow::Render(sf::RenderWindow& window, vec::mat4& viewMatrix)
+void agow::Render(GLFWwindow* window, vec::mat4& viewMatrix)
 {
     vec::mat4 projectionMatrix = Constants::PerspectiveMatrix * viewMatrix;
     vec::mat4 rotationOnlyMatrix = Constants::PerspectiveMatrix * player.GetViewOrientation().asMatrix();
@@ -446,10 +376,33 @@ Constants::Status agow::Run()
 {
     // 24 depth bits, 8 stencil bits, 8x AA, major version 4.
     Logger::Log("Graphics Initializing...");
-    sf::ContextSettings contextSettings = sf::ContextSettings(24, 8, 8, 4, 0);
+    
+    GLFWmonitor* monitor = GraphicsConfig::IsFullscreen ? glfwGetPrimaryMonitor() : nullptr;
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_DEPTH_BITS, 8);
+    glfwWindowHint(GLFW_STENCIL_BITS, 8);
+    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    sf::Uint32 style = GraphicsConfig::IsFullscreen ? sf::Style::Fullscreen : sf::Style::Titlebar | sf::Style::Resize | sf::Style::Close;
-    sf::RenderWindow window(sf::VideoMode(GraphicsConfig::ScreenWidth, GraphicsConfig::ScreenHeight), "Advanced Graphics-Open World", style, contextSettings);
+    GLFWwindow* window = glfwCreateWindow(GraphicsConfig::ScreenWidth, GraphicsConfig::ScreenHeight, "Advanced Graphics-Open World", monitor, nullptr);
+    if (!window)
+    {
+        Logger::LogError("Could not create the GLFW window!");
+        return Constants::Status::BAD_GLFW;
+    }
+
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
+    Input::Setup(window, GraphicsConfig::ScreenWidth, GraphicsConfig::ScreenHeight);
+
+    // Setup GLEW
+    GLenum err = glewInit();
+    if (err != GLEW_OK)
+    {
+        Logger::LogError("GLEW startup failure: ", err, ".");
+        return Constants::Status::BAD_GLEW;
+    }
 
     // Now that we have an OpenGL Context, load our graphics.
     Constants::Status firstTimeSetup = LoadGraphics();
@@ -463,19 +416,17 @@ Constants::Status agow::Run()
     sf::Clock clock;
     sf::Clock frameClock;
     sf::Time clockStartTime;
-    bool alive = true;
     bool focusPaused = false;
     bool escapePaused = false;
     vec::mat4 viewMatrix;
-    while (alive)
+    while (!glfwWindowShouldClose(window))
     {
         clockStartTime = clock.getElapsedTime();
         viewMatrix = player.GetViewMatrix();
 
-        // Unfortunately, SFML has every third frame do some weird extra work due to underlying optimizations by the graphics driver. This hack assumes we always run
-        //  at the correct rate, which is very wrong, but completely removes the jitter issue.
+        // TODO see if jitter still exists with GLFW.
         float frameTime = std::min(frameClock.restart().asSeconds(), 0.06f);
-        HandleEvents(window, alive, focusPaused, escapePaused);
+        HandleEvents(window, focusPaused, escapePaused);
         
         // Run the game and render if not paused.
         if (!focusPaused && !escapePaused)
@@ -487,10 +438,7 @@ Constants::Status agow::Run()
             Update(gameTime, frameTime);
 
             Render(window, viewMatrix);
-
-            // Display what we rendered.
-            UpdatePerspective(window.getSize().x, window.getSize().y);
-            window.display();
+            glfwSwapBuffers(window);
         }
 
         // Delay to run approximately at our maximum framerate.
@@ -501,12 +449,16 @@ Constants::Status agow::Run()
         }
     }
 
+    glfwDestroyWindow(window);
+    window = nullptr;
+
     return Constants::Status::OK;
 }
 
 void agow::Deinitialize()
 {
     UnloadPhysics();
+    glfwTerminate();
 }
 
 // Runs the main application.

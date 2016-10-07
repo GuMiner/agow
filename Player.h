@@ -1,6 +1,5 @@
 #pragma once
 #include <SFML\System.hpp>
-#include <SFML\Window.hpp>
 #include <Bullet\btBulletDynamicsCommon.h>
 #include "Config\KeyBindingConfig.h"
 #include "Data\UserPhysics.h"
@@ -22,7 +21,7 @@ class Player : public ICallback<UserPhysics::ObjectType>
     PhysicalModel physicalModel;
 
     // Used for view rotation.
-    sf::Vector2i lastMousePos;
+    vec::vec2i lastMousePos;
     
     enum MotionType
     {

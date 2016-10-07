@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <SFML\Window.hpp>
 #include "Managers\ConfigManager.h"
 
 class KeyBindingConfig : public ConfigManager
@@ -9,13 +8,13 @@ class KeyBindingConfig : public ConfigManager
     public:
         KeyBindingConfig(const char* configName);
 
-        static sf::Keyboard::Key MoveLeft;
-        static sf::Keyboard::Key MoveRight;
-        static sf::Keyboard::Key MoveForward;
-        static sf::Keyboard::Key MoveBackward;
+        static int MoveLeft;
+        static int MoveRight;
+        static int MoveForward;
+        static int MoveBackward;
 
-        static sf::Keyboard::Key MoveUp;
-        static sf::Keyboard::Key MoveDown;
+        static int MoveUp;
+        static int MoveDown;
     protected:
     private:
         virtual bool LoadConfigValues(std::vector<std::string>& lines);

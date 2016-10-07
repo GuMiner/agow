@@ -3,11 +3,12 @@
 #include "Data\TerrainTile.h"
 #include "Math\MathOps.h"
 #include "Math\VecOps.h"
+#include "Input.h"
 #include "Map.h"
 #include "Player.h"
 
 Player::Player()
-    : lastMousePos(sf::Vector2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT), // TODO configurable camera.
+    : lastMousePos(vec::vec2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT), // TODO configurable camera.
       enemyKos(0), allyKos(0), civilianKos(0)
 {
 }
@@ -95,13 +96,14 @@ void Player::Update(float frameTime, int terrainTypeOn)
     vec::vec3 forwardsVector = travelRotation.forwardVector();
     vec::vec3 sidewaysVector = VecOps::Cross(upVector, forwardsVector);
 
+    // TODO configurable.
     sidewaysVector = vec::normalize(sidewaysVector);
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+    if (Input::IsKeyPressed(GLFW_KEY_W))
     {
         physicalModel.rigidBody->applyCentralForce(VecOps::Convert(sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+    if (Input::IsKeyPressed(GLFW_KEY_S))
     {
         physicalModel.rigidBody->applyCentralForce(VecOps::Convert(-sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
     }
@@ -114,7 +116,7 @@ void Player::Update(float frameTime, int terrainTypeOn)
 
     forwardsVector = vec::normalize(forwardsVector);
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+    if (Input::IsKeyPressed(GLFW_KEY_A))
     {
         btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
         btQuaternion rotation = worldTransform.getRotation();
@@ -122,7 +124,7 @@ void Player::Update(float frameTime, int terrainTypeOn)
         worldTransform.setRotation(rotation);
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+    if (Input::IsKeyPressed(GLFW_KEY_D))
     {
         btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
         btQuaternion rotation = worldTransform.getRotation();
@@ -133,23 +135,23 @@ void Player::Update(float frameTime, int terrainTypeOn)
     // TODO configurable (jump and force),
 
     // Jump
-    if (isOnGround && sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+    if (isOnGround && Input::IsKeyPressed(GLFW_KEY_SPACE))
     {
         physicalModel.rigidBody->applyCentralImpulse(VecOps::Convert(vec::vec3(0.0f, 0.0f, 200.0f)));
         isOnGround = false;
     }
 
     // Camera off-center offset.
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
+    if (Input::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
     {
         if (lastMousePos.x == -1)
         {
-            lastMousePos = sf::Mouse::getPosition();
+            lastMousePos = Input::GetMousePos();
         }
         else
         {
-            sf::Vector2i newMousePos = sf::Mouse::getPosition();
-            sf::Vector2i deltaPos = lastMousePos - newMousePos;
+            vec::vec2i newMousePos = Input::GetMousePos();
+            vec::vec2i deltaPos = lastMousePos - newMousePos;
             lastMousePos = newMousePos;
 
             // Rotate the camera for x motion and y motion.
@@ -165,7 +167,7 @@ void Player::Update(float frameTime, int terrainTypeOn)
     }
     else
     {
-        lastMousePos = sf::Vector2i(-1, -1);
+        lastMousePos = vec::vec2i(-1, -1);
     }
 
     // Limit player motion.

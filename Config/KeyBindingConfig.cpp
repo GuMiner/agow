@@ -1,12 +1,12 @@
 #include "KeyBindingConfig.h"
 
 // TODO make these letters and do the mapping here.
-sf::Keyboard::Key KeyBindingConfig::MoveLeft;
-sf::Keyboard::Key KeyBindingConfig::MoveRight;
-sf::Keyboard::Key KeyBindingConfig::MoveForward;
-sf::Keyboard::Key KeyBindingConfig::MoveBackward;
-sf::Keyboard::Key KeyBindingConfig::MoveUp;
-sf::Keyboard::Key KeyBindingConfig::MoveDown;
+int KeyBindingConfig::MoveLeft;
+int KeyBindingConfig::MoveRight;
+int KeyBindingConfig::MoveForward;
+int KeyBindingConfig::MoveBackward;
+int KeyBindingConfig::MoveUp;
+int KeyBindingConfig::MoveDown;
 
 bool KeyBindingConfig::LoadConfigValues(std::vector<std::string>& configFileLines)
 {

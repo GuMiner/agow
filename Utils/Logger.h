@@ -10,7 +10,7 @@ class Logger : sf::NonCopyable
 {
 public:
     enum LogType { INFO, WARN, ERR };
-	static Logger *LogStream;
+    static Logger *LogStream;
 
     // Creates and logs the startup text
     Logger(const char* fileName);

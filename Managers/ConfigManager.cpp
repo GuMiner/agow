@@ -41,7 +41,7 @@ bool ConfigManager::ReadFloat(std::vector<std::string>& configFileLines, float& 
 
     return true;
 }
-bool ConfigManager::ReadKey(std::vector<std::string>& configFileLines, sf::Keyboard::Key& key, const char* errorMessage)
+bool ConfigManager::ReadKey(std::vector<std::string>& configFileLines, int& key, const char* errorMessage)
 {
     if (!ConversionUtils::LoadKey(configFileLines[++lineCounter], key))
     {
@@ -86,7 +86,7 @@ void ConfigManager::WriteFloat(const char* itemName, float& floatingPoint)
     outputLines.push_back(tempOutput.str());
 }
 
-void ConfigManager::WriteKey(const char* itemName, sf::Keyboard::Key& key)
+void ConfigManager::WriteKey(const char* itemName, int& key)
 {
     std::stringstream tempOutput;
     tempOutput << itemName << StringUtils::Space << (int)key;
