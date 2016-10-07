@@ -1,14 +1,14 @@
 #include <iostream>
+#include <glm\gtc\quaternion.hpp>
 #include "Config\PhysicsConfig.h"
 #include "Data\TerrainTile.h"
-#include "Math\MathOps.h"
-#include "Math\VecOps.h"
+#include "Math\PhysicsOps.h"
 #include "Input.h"
 #include "Map.h"
 #include "Player.h"
 
 Player::Player()
-    : lastMousePos(vec::vec2i(-1, -1)), camera(75, vec::vec2(-30, 30), vec::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT), // TODO configurable camera.
+    : lastMousePos(glm::ivec2(-1, -1)), camera(75, glm::vec2(-30, 30), glm::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT), // TODO configurable camera.
       enemyKos(0), allyKos(0), civilianKos(0)
 {
 }
@@ -19,9 +19,9 @@ bool Player::LoadPlayerModel(ModelManager* modelManager)
     return physicalModel.modelId != 0;
 }
 
-void Player::LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass)
+void Player::LoadPlayerPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass)
 {
-    physicalModel.rigidBody = physics.GetDynamicBody(BasicPhysics::CShape::PLAYER, VecOps::Convert(startingPosition), mass);
+    physicalModel.rigidBody = physics.GetDynamicBody(BasicPhysics::CShape::PLAYER, PhysicsOps::Convert(startingPosition), mass);
     physicalModel.rigidBody->forceActivationState(DISABLE_DEACTIVATION);
     physicalModel.rigidBody->setAngularFactor(0.0f);
     physicalModel.rigidBody->setFriction(2.0f); // TODO configurable.
@@ -46,28 +46,28 @@ void Player::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpe
     }
 }
 
-const vec::vec2 Player::GetTerrainPosition() const
+const glm::vec2 Player::GetTerrainPosition() const
 {
-    vec::vec3 bodyPos = BasicPhysics::GetBodyPosition(physicalModel.rigidBody);
-    return vec::vec2(bodyPos.x, bodyPos.y);
+    glm::vec3 bodyPos = BasicPhysics::GetBodyPosition(physicalModel.rigidBody);
+    return glm::vec2(bodyPos.x, bodyPos.y);
 }
 
-const vec::vec3 Player::GetViewPosition() const
+const glm::vec3 Player::GetViewPosition() const
 {
     return camera.GetViewPosition();
 }
 
-const vec::quaternion Player::GetViewOrientation() const
+const glm::quat Player::GetViewOrientation() const
 {
     return camera.GetViewOrientation();
 }
 
-const vec::mat4 Player::GetViewMatrix() const
+const glm::mat4 Player::GetViewMatrix() const
 {
     return camera.GetViewMatrix();
 }
 
-void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos)
+void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const glm::vec2 mapPos)
 {
     // TODO make these offsets configurable.
     float height = regionManager->GetPointHeight(world, mapPos);
@@ -82,30 +82,30 @@ void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const ve
     isOnGround = false;
 }
 
-void Player::Render(ModelManager* modelManager, const vec::mat4& projectionMatrix)
+void Player::Render(ModelManager* modelManager, const glm::mat4& projectionMatrix)
 {
-    vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(physicalModel.rigidBody);
+    glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(physicalModel.rigidBody);
     modelManager->RenderModel(projectionMatrix, physicalModel.modelId, mvMatrix, false);
 }
 
 void Player::Update(float frameTime, int terrainTypeOn)
 {
-    vec::quaternion travelRotation = BasicPhysics::GetBodyRotation(physicalModel.rigidBody).conjugate() * vec::quaternion::fromAxisAngle(MathOps::Radians(90), vec::vec3(0, 0, 1));
+    glm::quat travelRotation = glm::conjugate(BasicPhysics::GetBodyRotation(physicalModel.rigidBody)) * glm::rotate(glm::quat(), glm::radians(90.0f), glm::vec3(0, 0, 1));
 
-    vec::vec3 upVector = travelRotation.upVector();
-    vec::vec3 forwardsVector = travelRotation.forwardVector();
-    vec::vec3 sidewaysVector = VecOps::Cross(upVector, forwardsVector);
+    glm::vec3 upVector = PhysicsOps::UpVector(travelRotation);
+    glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(travelRotation);
+    glm::vec3 sidewaysVector = glm::cross(upVector, forwardsVector);
 
     // TODO configurable.
-    sidewaysVector = vec::normalize(sidewaysVector);
+    sidewaysVector = glm::normalize(sidewaysVector);
     if (Input::IsKeyPressed(GLFW_KEY_W))
     {
-        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
+        physicalModel.rigidBody->applyCentralForce(PhysicsOps::Convert(sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
     }
 
     if (Input::IsKeyPressed(GLFW_KEY_S))
     {
-        physicalModel.rigidBody->applyCentralForce(VecOps::Convert(-sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
+        physicalModel.rigidBody->applyCentralForce(PhysicsOps::Convert(-sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
     }
 
     forwardsVector.z = 0; // Moving forwards doesn't move you down in the Z-direction.
@@ -114,7 +114,7 @@ void Player::Update(float frameTime, int terrainTypeOn)
         forwardsVector.x = 0.01f; // Tiny nudge to avoid div/zero issues.
     }
 
-    forwardsVector = vec::normalize(forwardsVector);
+    forwardsVector = glm::normalize(forwardsVector);
 
     if (Input::IsKeyPressed(GLFW_KEY_A))
     {
@@ -137,7 +137,7 @@ void Player::Update(float frameTime, int terrainTypeOn)
     // Jump
     if (isOnGround && Input::IsKeyPressed(GLFW_KEY_SPACE))
     {
-        physicalModel.rigidBody->applyCentralImpulse(VecOps::Convert(vec::vec3(0.0f, 0.0f, 200.0f)));
+        physicalModel.rigidBody->applyCentralImpulse(PhysicsOps::Convert(glm::vec3(0.0f, 0.0f, 200.0f)));
         isOnGround = false;
     }
 
@@ -150,8 +150,8 @@ void Player::Update(float frameTime, int terrainTypeOn)
         }
         else
         {
-            vec::vec2i newMousePos = Input::GetMousePos();
-            vec::vec2i deltaPos = lastMousePos - newMousePos;
+            glm::ivec2 newMousePos = Input::GetMousePos();
+            glm::ivec2 deltaPos = lastMousePos - newMousePos;
             lastMousePos = newMousePos;
 
             // Rotate the camera for x motion and y motion.
@@ -167,7 +167,7 @@ void Player::Update(float frameTime, int terrainTypeOn)
     }
     else
     {
-        lastMousePos = vec::vec2i(-1, -1);
+        lastMousePos = glm::ivec2(-1, -1);
     }
 
     // Limit player motion.

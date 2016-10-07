@@ -1,4 +1,4 @@
-#include "Math\MathOps.h"
+#include <glm/gtc/random.hpp>
 #include "SignGenerator.h"
 
 std::vector<SignInternal> SignGenerator::signArchetypes;
@@ -20,9 +20,9 @@ bool SignGenerator::LoadModels(ModelManager* modelManager)
     return true;
 }
 
-std::map<BasicPhysics::CShape, const std::vector<vec::vec3>*> SignGenerator::GetModelPoints(ModelManager* modelManager)
+std::map<BasicPhysics::CShape, const std::vector<glm::vec3>*> SignGenerator::GetModelPoints(ModelManager* modelManager)
 {
-    std::map<BasicPhysics::CShape, const std::vector<vec::vec3>*> modelPoints;
+    std::map<BasicPhysics::CShape, const std::vector<glm::vec3>*> modelPoints;
     for (const SignInternal& signInternal : signArchetypes)
     {
         modelPoints[signInternal.shape] = &(modelManager->GetModel(signInternal.modelId).vertices.positions);
@@ -33,7 +33,7 @@ std::map<BasicPhysics::CShape, const std::vector<vec::vec3>*> SignGenerator::Get
 
 void SignGenerator::GetRandomSignModel(unsigned int* modelId, BasicPhysics::CShape* shape) const
 {
-    const SignInternal& signInternal = signArchetypes[MathOps::Rand(0, signArchetypes.size())];
+    const SignInternal& signInternal = signArchetypes[glm::linearRand(0, (int)signArchetypes.size() - 1)];
     *modelId = signInternal.modelId;
     *shape = signInternal.shape;
 }

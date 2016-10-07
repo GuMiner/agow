@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "Math\Vec.h"
+#include <glm\vec3.hpp>
 
 struct StyleText
 {
@@ -13,7 +13,7 @@ struct StyleText
     };
 
     std::string text;
-    vec::vec3 color;
+    glm::vec3 color;
     Effect effect;
 
     StyleText()
@@ -22,7 +22,7 @@ struct StyleText
 
     // Creates bland-system-level conversational text.
     StyleText(std::string text, Effect effect)
-        : text(text), color(vec::vec3(0.0f, 1.0f, 0.0f)), effect(effect)
+        : text(text), color(glm::vec3(0.0f, 1.0f, 0.0f)), effect(effect)
     {
     }
 };

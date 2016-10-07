@@ -1,4 +1,6 @@
 #include <sstream>
+#include <glm/gtc/matrix_transform.hpp>
+#include "Math\PhysicsOps.h"
 #include "Utils\Logger.h"
 #include "DialogPane.h"
 
@@ -96,17 +98,17 @@ void DialogPane::TrimToFit(StyleText text, std::vector<StyleText>* textLines)
     Logger::Log("Trimmed line into ", textLines->size(), " line(s).");
 }
 
-vec::mat4 DialogPane::GetEffectScale(StyleText::Effect effect)
+glm::mat4 DialogPane::GetEffectScale(StyleText::Effect effect)
 {
     switch (effect)
     {
     case StyleText::MINI:
-        return MatrixOps::Scale(vec::vec3(0.016f));
+        return glm::scale(glm::mat4(), glm::vec3(0.016f));
     case StyleText::ITALICS:
-        return MatrixOps::Scale(vec::vec3(0.018f)) * MatrixOps::Shear(0.0f, 1.0f);
+        return glm::scale(glm::mat4(), glm::vec3(0.018f)) * PhysicsOps::Shear(0.0f, 1.0f);
     default:
     case StyleText::NORMAL:
-        return MatrixOps::Scale(vec::vec3(0.020f));
+        return glm::scale(glm::mat4(), glm::vec3(0.020f));
     }
 }
 
@@ -142,7 +144,7 @@ void DialogPane::Advance()
                 RenderableSentence sentence;
                 sentence.sentenceId = fontManager->CreateNewSentence();
                 sentence.color = sublines[j].color;
-                sentence.posRotMatrix = MatrixOps::Translate(xPos, yPos, -1.0f) * GetEffectScale(sublines[j].effect);
+                sentence.posRotMatrix = glm::translate(glm::mat4(), glm::vec3(xPos, yPos, -1.0f)) * GetEffectScale(sublines[j].effect);
 
                 fontManager->UpdateSentence(sentence.sentenceId, sublines[j].text, DialogPane::PixelHeight, sentence.color);
                 dialogText.push_back(sentence);
@@ -161,7 +163,7 @@ void DialogPane::Advance()
     }
 }
 
-void DialogPane::Render(vec::mat4& perspectiveMatrix)
+void DialogPane::Render(glm::mat4& perspectiveMatrix)
 {
     if (isVisible)
     {

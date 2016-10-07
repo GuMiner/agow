@@ -5,7 +5,7 @@
 #include "AI\DecisionTree.h"
 #include "Data\Model.h"
 #include "Managers\ModelManager.h"
-#include "Math\Vec.h"
+#include <glm\vec3.hpp>
 #include "BasicPhysics.h"
 
 struct BuildingDecisionData
@@ -30,13 +30,13 @@ class BuildingGenerator
 
     ModelManager* modelManager;
     BasicPhysics* basicPhysics;
-    void GetScaledModelPoints(std::vector<vec::vec3>& points, vec::vec3 scaleFactor, unsigned int modelId);
+    void GetScaledModelPoints(std::vector<glm::vec3>& points, glm::vec3 scaleFactor, unsigned int modelId);
 public:
     BuildingGenerator(ModelManager* modelManager, BasicPhysics* basicPhysics);
     static bool LoadBuildingModels(ModelManager* modelManager);
     static bool LoadBuilder(std::string lowDensityFile, std::string highDensityFile);
 
     // Returns a random low density building centered (XY) on the origin starting at Z == 0.
-    std::vector<ScaledPhysicalModel> GetRandomLowDensityBuilding(vec::vec3 offset, float* separationRadius);
+    std::vector<ScaledPhysicalModel> GetRandomLowDensityBuilding(glm::vec3 offset, float* separationRadius);
 };
 

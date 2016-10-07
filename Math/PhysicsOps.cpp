@@ -1,28 +1,25 @@
-#include "MathOps.h"
-#include "MatrixOps.h"
 #include "PhysicsOps.h"
-#include "VecOps.h"
 
-vec::vec3 PhysicsOps::XY_PLANE_NORMAL;
-vec::vec3 PhysicsOps::YZ_PLANE_NORMAL;
-vec::vec3 PhysicsOps::XZ_PLANE_NORMAL;
+glm::vec3 PhysicsOps::XY_PLANE_NORMAL;
+glm::vec3 PhysicsOps::YZ_PLANE_NORMAL;
+glm::vec3 PhysicsOps::XZ_PLANE_NORMAL;
 
 // Determines if a given ray hits a given plane. Returns true and fills in the intersection factor ('t', where rs + t*ray = intersection point).
-bool PhysicsOps::HitsPlane(const vec::vec3& rayStart, const vec::vec3& ray, const vec::vec3& planeNormal, const vec::vec3& planePoint, float* intersectionFactor)
+bool PhysicsOps::HitsPlane(const glm::vec3& rayStart, const glm::vec3& ray, const glm::vec3& planeNormal, const glm::vec3& planePoint, float* intersectionFactor)
 {
-    float rayDotNormal = VecOps::Dot(ray, planeNormal);
+    float rayDotNormal = glm::dot(ray, planeNormal);
     if (rayDotNormal == 0)
     {
         return false;
     }
 
-    *intersectionFactor = VecOps::Dot(planePoint - rayStart, planeNormal) / rayDotNormal;
+    *intersectionFactor = glm::dot(planePoint - rayStart, planeNormal) / rayDotNormal;
     return true;
 }
 
-bool PhysicsOps::HitsPlane(const vec::vec3& rayStart, const vec::vec3& ray, Plane plane, const vec::vec3& planePoint, float* intersectionFactor)
+bool PhysicsOps::HitsPlane(const glm::vec3& rayStart, const glm::vec3& ray, Plane plane, const glm::vec3& planePoint, float* intersectionFactor)
 {
-    vec::vec3 actualPlane;
+    glm::vec3 actualPlane;
     switch (plane)
     {
     case Plane::XY:
@@ -40,53 +37,93 @@ bool PhysicsOps::HitsPlane(const vec::vec3& rayStart, const vec::vec3& ray, Plan
     return HitsPlane(rayStart, ray, actualPlane, planePoint, intersectionFactor);
 }
 
-bool PhysicsOps::WithinSquare(const vec::vec3& position, Plane plane, const vec::vec3& minPosition, const vec::vec3& maxPosition)
-{
-    switch (plane)
-    {
-    case Plane::XY:
-        return MathOps::WithinRange(vec::vec2(position.x, position.y),
-            vec::vec2(minPosition.x, minPosition.y), vec::vec2(maxPosition.x, maxPosition.y));
-    case Plane::YZ:
-        return MathOps::WithinRange(vec::vec2(position.y, position.z),
-            vec::vec2(minPosition.y, minPosition.z), vec::vec2(maxPosition.y, maxPosition.z));
-    case Plane::XZ:
-    default:
-        return MathOps::WithinRange(vec::vec2(position.x, position.z),
-            vec::vec2(minPosition.x, minPosition.z), vec::vec2(maxPosition.x, maxPosition.z));
-    }
-}
-
-bool PhysicsOps::HitsSphere(const vec::vec3& rayStart, const vec::vec3& ray, const vec::vec3& sphereCenter, float sphereRadius)
+bool PhysicsOps::HitsSphere(const glm::vec3& rayStart, const glm::vec3& ray, const glm::vec3& sphereCenter, float sphereRadius)
 {
     // After some work on paper, it ends up that you just need to calculate a determinant and ensure it is > 0
-    vec::vec3 rayOffset = rayStart - sphereCenter;
+    glm::vec3 rayOffset = rayStart - sphereCenter;
 
-    float first = pow(VecOps::Dot(ray, rayOffset), 2);
-    float second = VecOps::Dot(rayOffset, rayOffset) - pow(sphereRadius, 2);
+    float first = pow(glm::dot(ray, rayOffset), 2);
+    float second = glm::dot(rayOffset, rayOffset) - pow(sphereRadius, 2);
 
     return first >= second; // first - second >= 0
 }
 
 // Computes a ray from the current mouse position into the scene.
-vec::vec3 PhysicsOps::ScreenRay(vec::vec2 mouse, vec::vec2 screenSize, vec::mat4& perspectiveMatrix, vec::mat4& viewRotationMatrix)
+glm::vec3 PhysicsOps::ScreenRay(glm::vec2 mouse, glm::vec2 screenSize, glm::mat4& perspectiveMatrix, glm::mat4& viewRotationMatrix)
 {
     // Scale from -1.0 to 1.0, and invert Y
-    vec::vec2 deviceCoords = (mouse * 2.0f - screenSize) / screenSize;
+    glm::vec2 deviceCoords = (mouse * 2.0f - screenSize) / screenSize;
     deviceCoords.y = -deviceCoords.y;
 
     // Point the ray away from us.
-    vec::vec4 clippedRay = vec::vec4(deviceCoords.x, deviceCoords.y, -1.0f, 1.0f);
+    glm::vec4 clippedRay = glm::vec4(deviceCoords.x, deviceCoords.y, -1.0f, 1.0f);
 
     // Invert our projection and use the normal view matrix to end up with a world ray, which is exactly what we want.
-    vec::mat4 invPerspectiveMatrix;
-    MatrixOps::Inverse(perspectiveMatrix, invPerspectiveMatrix);
-    vec::vec4 eyeRay = clippedRay * invPerspectiveMatrix;
+    glm::mat4 invPerspectiveMatrix = glm::inverse(perspectiveMatrix);
+    glm::vec4 eyeRay = clippedRay * invPerspectiveMatrix;
     eyeRay[2] = -1.0f;
     eyeRay[3] = 0.0f;
 
-    vec::vec4 worldRay = eyeRay * viewRotationMatrix;
+    glm::vec4 worldRay = eyeRay * viewRotationMatrix;
 
-    vec::vec3 result = vec::vec3(worldRay[0], worldRay[1], worldRay[2]);
+    glm::vec3 result = glm::vec3(worldRay[0], worldRay[1], worldRay[2]);
     return normalize(result);
+}
+
+glm::mat4 PhysicsOps::Shear(float xAmount, float yAmount)
+{
+    return glm::mat4(
+        glm::vec4(1.0f, 0.0f, xAmount, 0.0f),
+        glm::vec4(0.0f, 1.0f, yAmount, 0.0f),
+        glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
+        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+}
+
+// Converts a GLM vector to a Bullet Physics vector.
+btVector3 PhysicsOps::Convert(glm::vec3 vector)
+{
+    return btVector3(vector.x, vector.y, vector.z);
+}
+
+glm::vec3 PhysicsOps::ForwardsVector(glm::quat quaternion)
+{
+    glm::quat DEFAULT_FORWARD_VECTOR;
+    DEFAULT_FORWARD_VECTOR.x = 0.0f;
+    DEFAULT_FORWARD_VECTOR.y = 0.0f;
+    DEFAULT_FORWARD_VECTOR.z = -1.0f;
+    DEFAULT_FORWARD_VECTOR.w = 0.0f;
+
+    glm::quat result = quaternion * DEFAULT_FORWARD_VECTOR * glm::conjugate(quaternion);
+    return glm::vec3(result.x, result.y, result.z);
+}
+
+glm::vec3 PhysicsOps::UpVector(glm::quat quaternion)
+{
+    glm::quat DEFAULT_UP_VECTOR;
+    DEFAULT_UP_VECTOR.x = 0.0f;
+    DEFAULT_UP_VECTOR.y = -1.0f;
+    DEFAULT_UP_VECTOR.z = 0.0f;
+    DEFAULT_UP_VECTOR.w = 0.0f;
+
+    glm::quat result = quaternion * DEFAULT_UP_VECTOR * glm::conjugate(quaternion);
+    return glm::vec3(result.x, result.y, result.z);
+}
+
+glm::mat4 PhysicsOps::Average(std::deque<glm::mat4> matrices)
+{
+    glm::mat4 result(glm::vec4(0.0f), glm::vec4(0.0f), glm::vec4(0.0f), glm::vec4(0.0f));
+    for (auto iter = matrices.cbegin(); iter != matrices.cend(); iter++)
+    {
+        result[0] += (*iter)[0];
+        result[1] += (*iter)[1];
+        result[2] += (*iter)[2];
+        result[3] += (*iter)[3];
+    }
+    
+    result[0] /= (float)matrices.size();
+    result[1] /= (float)matrices.size();
+    result[2] /= (float)matrices.size();
+    result[3] /= (float)matrices.size();
+
+    return result;
 }

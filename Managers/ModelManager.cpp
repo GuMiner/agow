@@ -53,7 +53,7 @@ bool ModelManager::ParseLine(const std::vector<std::string>& line, universalVert
             return false;
         }
 
-        vec::vec3 vector;
+        glm::vec3 vector;
         if (!StringUtils::ParseFloatFromString(line[1], vector.x) ||
             !StringUtils::ParseFloatFromString(line[2], vector.y) ||
             !StringUtils::ParseFloatFromString(line[3], vector.z))
@@ -73,7 +73,7 @@ bool ModelManager::ParseLine(const std::vector<std::string>& line, universalVert
             return false;
         }
 
-        vec::vec2 vector;
+        glm::vec2 vector;
         if (!StringUtils::ParseFloatFromString(line[1], vector.x) ||
             !StringUtils::ParseFloatFromString(line[2], vector.y))
         {
@@ -127,7 +127,7 @@ bool ModelManager::ParseLine(const std::vector<std::string>& line, universalVert
     return true;
 }
 
-bool ModelManager::LoadModel(const char* objFilename, universalVertices& vertices, int* rawPointCount, vec::vec3* minBounds, vec::vec3* maxBounds)
+bool ModelManager::LoadModel(const char* objFilename, universalVertices& vertices, int* rawPointCount, glm::vec3* minBounds, glm::vec3* maxBounds)
 {
     std::string fileString;
     if (!StringUtils::LoadStringFromFile(objFilename, fileString))
@@ -287,13 +287,13 @@ unsigned int ModelManager::GetCurrentModelCount() const
     return nextModelId;
 }
 
-void ModelManager::RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, bool selected)
+void ModelManager::RenderModel(const glm::mat4& projectionMatrix, unsigned int id, glm::mat4& mvMatrix, bool selected)
 {
-    RenderModel(projectionMatrix, id, mvMatrix, vec::vec4(1.0f), selected);
+    RenderModel(projectionMatrix, id, mvMatrix, glm::vec4(1.0f), selected);
 }
 
 // Renders the specified model given by the ID, using the given color.
-void ModelManager::RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, vec::vec4 shadingColor, bool selected)
+void ModelManager::RenderModel(const glm::mat4& projectionMatrix, unsigned int id, glm::mat4& mvMatrix, glm::vec4 shadingColor, bool selected)
 {
     glUseProgram(modelRenderProgram);
 
@@ -303,8 +303,8 @@ void ModelManager::RenderModel(const vec::mat4& projectionMatrix, unsigned int i
     glUniform1i(textureLocation, unit);
 
     glUniform4f(shadingColorLocation, shadingColor.x, shadingColor.y, shadingColor.z, shadingColor.w);
-    glUniformMatrix4fv(projLocation, 1, GL_FALSE, projectionMatrix);
-    glUniformMatrix4fv(mvLocation, 1, GL_FALSE, mvMatrix);
+    glUniformMatrix4fv(projLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+    glUniformMatrix4fv(mvLocation, 1, GL_FALSE, &mvMatrix[0][0]);
     glUniform1f(selectionFactorLocation, selected ? 0.40f : 0.0f);
 
     glBindVertexArray(vao);

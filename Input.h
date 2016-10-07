@@ -2,7 +2,7 @@
 #include <set>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "Math\Vec.h"
+#include <glm\vec3.hpp>
 
 class Input
 {
@@ -55,6 +55,6 @@ public:
     static bool IsMouseButtonPressed(int mouseButton);
     static bool IsMouseButtonClicked(int mouseButton);
 
-    static vec::vec2i GetMousePos();
+    static glm::ivec2 GetMousePos();
 };
 

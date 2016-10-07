@@ -1,4 +1,4 @@
-#include "Math\MathOps.h"
+#include <glm\gtc\random.hpp>
 #include "Utils\Logger.h"
 #include "RoadEffect.h"
 
@@ -21,7 +21,7 @@ bool RoadEffect::LoadBasics(ShaderManager* shaderManager)
     return true;
 }
 
-bool RoadEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* tile)
+bool RoadEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile)
 {
     bool hasRoadEffect = false;
     RoadEffectData* roadEffect = nullptr;
@@ -46,15 +46,15 @@ bool RoadEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
                     }
 
                     float height = tile->heightmap[i + j * subTileSize];
-                    vec::vec2i realPos = subtileId * 0.10f + vec::vec2i(i, j);
+                    glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j);
 
                     // TODO configurable
-                    vec::vec3 bottomColor = vec::vec3(0.0f, 0.50f, MathOps::Rand() * 0.20f + 0.80f);
-                    vec::vec3 topColor = vec::vec3(0.40f + 0.60f * MathOps::Rand(), 0.0f, 0.20f + MathOps::Rand() * 0.40f);
-                    vec::vec3 position = vec::vec3((float)realPos.x, (float)realPos.y, height + 0.5f);
-                    vec::vec2 velocity = vec::vec2(MathOps::Rand(1.0f), MathOps::Rand(1.0f)) * 40.0f;
+                    glm::vec3 bottomColor = glm::vec3(0.0f, 0.50f, glm::linearRand(0.0f, 0.20f) + 0.80f);
+                    glm::vec3 topColor = glm::vec3(0.40f + glm::linearRand(0.0f, 0.60f), 0.0f, 0.20f + glm::linearRand(0.0f, 0.40f));
+                    glm::vec3 position = glm::vec3((float)realPos.x, (float)realPos.y, height + 0.5f);
+                    glm::vec2 velocity = glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)) * 40.0f;
 
-                    vec::vec3 endPosition = position + vec::normalize(vec::vec3(velocity.x, velocity.y, 0.0f));
+                    glm::vec3 endPosition = position + glm::normalize(glm::vec3(velocity.x, velocity.y, 0.0f));
 
                     // Add road travelers
                     roadEffect->travellers.positions.push_back(position);
@@ -62,7 +62,7 @@ bool RoadEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
                     roadEffect->travellers.colors.push_back(bottomColor);
                     roadEffect->travellers.colors.push_back(topColor);
 
-                    roadEffect->positions.push_back(vec::vec2(position.x, position.y));
+                    roadEffect->positions.push_back(glm::vec2(position.x, position.y));
                     roadEffect->velocities.push_back(velocity);
                 }
             }
@@ -94,13 +94,13 @@ void RoadEffect::UnloadEffect(void* effectData)
     delete roadEffect;
 }
 
-float RoadEffect::MoveTraveller(const vec::vec2i subtileId, RoadEffectData* roadEffect, int i, float elapsedSeconds)
+float RoadEffect::MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* roadEffect, int i, float elapsedSeconds)
 {
     roadEffect->positions[i] += (roadEffect->velocities[i] * elapsedSeconds);
 
     // This logic causes a slight pause when a boundary is hit, which looks logical.
     bool hitEdgeBoundary = false;
-    vec::vec2i subTilePos = vec::vec2i(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId * 0.10f;
+    glm::ivec2 subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId / 10;
     if (subTilePos.x < 0 || subTilePos.x >= subTileSize)
     {
         roadEffect->positions[i] -= (roadEffect->velocities[i] * elapsedSeconds);
@@ -115,7 +115,7 @@ float RoadEffect::MoveTraveller(const vec::vec2i subtileId, RoadEffectData* road
         hitEdgeBoundary = true;
     }
 
-    subTilePos = vec::vec2i(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId * 0.10f;
+    subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId / 10;
     subTilePos.x = std::max(std::min(subTilePos.x, subTileSize - 1), 0);
     subTilePos.y = std::max(std::min(subTilePos.y, subTileSize - 1), 0);
 
@@ -124,13 +124,13 @@ float RoadEffect::MoveTraveller(const vec::vec2i subtileId, RoadEffectData* road
         // See if we went off a road. If so, correct.
         if (roadEffect->tile->type[subTilePos.x + subTilePos.y * subTileSize] != TerrainTypes::ROADS)
         {
-            vec::vec2i offRoad = subTilePos;
+            glm::ivec2 offRoad = subTilePos;
             roadEffect->positions[i] -= (roadEffect->velocities[i] * elapsedSeconds);
 
             // Whichever coordinates were different, we bounce. This isn't strictly correct, as if we went through a corner of a pixel, we shouldn't bounce one axis.
             // However, the subsequent step (angular distortion) is very incorrect (or correct, depending on your viewpoint)
             bool angleXDistortion = false;
-            subTilePos = vec::vec2i(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId * 0.10f;
+            subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId / 10;
             if (subTilePos.x != offRoad.x)
             {
                 roadEffect->velocities[i].x *= -1.0f;
@@ -150,15 +150,15 @@ float RoadEffect::MoveTraveller(const vec::vec2i subtileId, RoadEffectData* road
             float factor = 1.5f;
             if (angleXDistortion)
             {
-                float length = vec::length(roadEffect->velocities[i]);
+                float length = glm::length(roadEffect->velocities[i]);
                 roadEffect->velocities[i].y *= factor;
-                roadEffect->velocities[i] = vec::normalize(roadEffect->velocities[i]) * length;
+                roadEffect->velocities[i] = glm::normalize(roadEffect->velocities[i]) * length;
             }
             else if (angleYDistortion)
             {
-                float length = vec::length(roadEffect->velocities[i]);
+                float length = glm::length(roadEffect->velocities[i]);
                 roadEffect->velocities[i].x *= factor;
-                roadEffect->velocities[i] = vec::normalize(roadEffect->velocities[i]) * length;
+                roadEffect->velocities[i] = glm::normalize(roadEffect->velocities[i]) * length;
             }
         }
     }
@@ -167,7 +167,7 @@ float RoadEffect::MoveTraveller(const vec::vec2i subtileId, RoadEffectData* road
     return roadEffect->tile->heightmap[subTilePos.x + subTilePos.y * subTileSize];
 }
 
-void RoadEffect::Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds)
+void RoadEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds)
 {
     return;
 
@@ -177,8 +177,8 @@ void RoadEffect::Simulate(const vec::vec2i subtileId, void* effectData, float el
     {
         float height = MoveTraveller(subtileId, roadEffect, i, elapsedSeconds);
 
-        vec::vec3 position = vec::vec3(roadEffect->positions[i].x, roadEffect->positions[i].y, height + 0.5f);
-        vec::vec3 endPosition = position + vec::normalize(vec::vec3(roadEffect->velocities[i].x, roadEffect->velocities[i].y, 0.0f));
+        glm::vec3 position = glm::vec3(roadEffect->positions[i].x, roadEffect->positions[i].y, height + 0.5f);
+        glm::vec3 endPosition = position + glm::normalize(glm::vec3(roadEffect->velocities[i].x, roadEffect->velocities[i].y, 0.0f));
 
         travellers[i * 2] = position;
         travellers[i * 2 + 1] = endPosition;
@@ -188,7 +188,7 @@ void RoadEffect::Simulate(const vec::vec2i subtileId, void* effectData, float el
     roadEffect->travellers.TransferPositionToOpenGl(roadEffect->positionBuffer);
 }
 
-void RoadEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
+void RoadEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     // TODO configurable
     glLineWidth(3.0f);
@@ -196,8 +196,8 @@ void RoadEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, co
     glUseProgram(programId);
     glBindVertexArray(roadEffect->vao);
 
-    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, perspectiveMatrix);
-    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, viewMatrix * modelMatrix);
+    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, &perspectiveMatrix[0][0]);
+    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, &(viewMatrix * modelMatrix)[0][0]);
 
     glDrawArrays(GL_LINES, 0, roadEffect->travellers.positions.size());
     glLineWidth(1.0f);

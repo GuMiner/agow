@@ -3,12 +3,12 @@
 #include <deque>
 #include <vector>
 #include <GL/glew.h>
+#include <glm\mat4x4.hpp>
 #include "Data\CallbackTypes.h"
 #include "Data\RenderableSentence.h"
 #include "Data\StyleText.h"
 #include "Managers\FontManager.h"
 #include "Managers\ShaderManager.h"
-#include "Math\Vec.h"
 #include "Utils\TypedCallback.h"
 
 // Displays dialog text that NPCs speak.
@@ -32,7 +32,7 @@ class DialogPane : public ICallback<EventType>
 
     // Trims a single line of style text to fit within the max sentence length as multiple lines.
     void TrimToFit(StyleText text, std::vector<StyleText>* textLines);
-    vec::mat4 GetEffectScale(StyleText::Effect effect);
+    glm::mat4 GetEffectScale(StyleText::Effect effect);
 
 public:
     DialogPane();
@@ -46,7 +46,7 @@ public:
     // Moves to the next section of text, either paging or moving to the next set.
     void Advance();
 
-    void Render(vec::mat4& perspectiveMatrix);
+    void Render(glm::mat4& perspectiveMatrix);
 
     // Inherited via ICallback
     virtual void Callback(EventType callingObject, void * callbackSpecificData) override;

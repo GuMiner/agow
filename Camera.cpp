@@ -1,11 +1,11 @@
 #include <algorithm>
-#include "Math\MathOps.h"
-#include "Math\MatrixOps.h"
-#include "Math\VecOps.h"
+#include <glm\gtc\matrix_transform.hpp>
+#include <glm\gtc\quaternion.hpp>
+#include "Math\PhysicsOps.h"
 #include "BasicPhysics.h"
 #include "Camera.h"
 
-Camera::Camera(float centerPitch, vec::vec2 yawLimits, vec::vec2 pitchLimits)
+Camera::Camera(float centerPitch, glm::vec2 yawLimits, glm::vec2 pitchLimits)
     : centerPitch(centerPitch), yawLimits(yawLimits), pitchLimits(pitchLimits), currentYaw(0), currentPitch(0)
 {
 }
@@ -13,43 +13,43 @@ Camera::Camera(float centerPitch, vec::vec2 yawLimits, vec::vec2 pitchLimits)
 void Camera::Initialize(btRigidBody* playerObject)
 {
     this->playerObject = playerObject;
-    vec::vec3 pos = BasicPhysics::GetBodyPosition(playerObject);
-    vec::quaternion orientation = GetViewOrientation();
+    glm::vec3 pos = BasicPhysics::GetBodyPosition(playerObject);
+    glm::quat orientation = GetViewOrientation();
 
-    vec::vec3 forwardsVector = orientation.forwardVector();
-    vec::vec3 upVector = orientation.upVector();
+    glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(orientation);
+    glm::vec3 upVector = PhysicsOps::UpVector(orientation);
 
     // TODO configurable distance from the player.
     cameraPos = pos - (upVector * 0.1f + forwardsVector * 3.5f);
 
-    vec::quaternion bodyRotation = BasicPhysics::GetBodyRotation(playerObject);
-    cameraRotation = bodyRotation.conjugate() * vec::quaternion::fromAxisAngle(MathOps::Radians(centerPitch), vec::vec3(1, 0, 0));
+    glm::quat bodyRotation = BasicPhysics::GetBodyRotation(playerObject);
+    cameraRotation = glm::conjugate(bodyRotation) * glm::rotate(glm::quat(), glm::radians(centerPitch), glm::vec3(1, 0, 0));
 
-    lastMatrices.push_back(GetViewOrientation().asMatrix() * MatrixOps::Translate(-GetViewPosition()));
+    lastMatrices.push_back(glm::mat4_cast(GetViewOrientation()) * glm::translate(glm::mat4(), -GetViewPosition()));
 }
 
 void Camera::Update(float elapsedTime)
 {
     // Yaw and pitch rotate.
-    vec::quaternion bodyRotation = BasicPhysics::GetBodyRotation(playerObject);
-    vec::quaternion expectedRotation = bodyRotation.conjugate()
-        * vec::quaternion::fromAxisAngle(MathOps::Radians(centerPitch + currentPitch), vec::vec3(1, 0, 0))
-        * vec::quaternion::fromAxisAngle(MathOps::Radians(currentYaw), vec::vec3(0, 1, 0));
+    glm::quat bodyRotation = BasicPhysics::GetBodyRotation(playerObject);
+    glm::quat expectedRotation = glm::conjugate(bodyRotation)
+        * glm::rotate(glm::quat(), glm::radians(centerPitch + currentPitch), glm::vec3(1, 0, 0))
+        * glm::rotate(glm::quat(), glm::radians(currentYaw), glm::vec3(0, 1, 0));
 
     cameraRotation = expectedRotation;
 
-    vec::vec3 pos = BasicPhysics::GetBodyPosition(playerObject);
-    vec::quaternion orientation = GetViewOrientation();
+    glm::vec3 pos = BasicPhysics::GetBodyPosition(playerObject);
+    glm::quat orientation = GetViewOrientation();
 
-    vec::vec3 forwardsVector = orientation.forwardVector();
-    vec::vec3 upVector = orientation.upVector();
+    glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(orientation);
+    glm::vec3 upVector = PhysicsOps::UpVector(orientation);
 
     // TODO configurable distance from the player.
-    vec::vec3 newCameraPos = pos - (upVector * 0.1f + forwardsVector * 3.5f);
+    glm::vec3 newCameraPos = pos - (upVector * 0.1f + forwardsVector * 3.5f);
     newCameraPos.z = std::max(newCameraPos.z, pos.z);
 
     cameraPos = newCameraPos;
-    lastMatrices.push_back(GetViewOrientation().asMatrix() * MatrixOps::Translate(-GetViewPosition()));
+    lastMatrices.push_back(glm::mat4_cast(GetViewOrientation()) * glm::translate(glm::mat4(), -GetViewPosition()));
     if (lastMatrices.size() > 7)
     {
         lastMatrices.pop_front();
@@ -70,17 +70,17 @@ void Camera::Pitch(float factor)
     currentPitch = std::max(currentPitch, pitchLimits.x);
 }
 
-const vec::vec3 Camera::GetViewPosition() const
+const glm::vec3 Camera::GetViewPosition() const
 {
     return cameraPos;
 }
 
-const vec::quaternion Camera::GetViewOrientation() const
+const glm::quat Camera::GetViewOrientation() const
 {
     return cameraRotation;
 }
 
-const vec::mat4 Camera::GetViewMatrix() const
+const glm::mat4 Camera::GetViewMatrix() const
 {
-    return MatrixOps::Average(lastMatrices);
+    return PhysicsOps::Average(lastMatrices);
 }

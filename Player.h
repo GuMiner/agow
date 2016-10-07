@@ -1,11 +1,11 @@
 #pragma once
 #include <SFML\System.hpp>
 #include <Bullet\btBulletDynamicsCommon.h>
+#include <glm\vec3.hpp>
 #include "Config\KeyBindingConfig.h"
 #include "Data\UserPhysics.h"
 #include "Managers\RegionManager.h"
 #include "Managers\ModelManager.h"
-#include "Math\Vec.h"
 #include "Utils\TypedCallback.h"
 #include "BasicPhysics.h"
 #include "Camera.h"
@@ -21,7 +21,7 @@ class Player : public ICallback<UserPhysics::ObjectType>
     PhysicalModel physicalModel;
 
     // Used for view rotation.
-    vec::vec2i lastMousePos;
+    glm::ivec2 lastMousePos;
     
     enum MotionType
     {
@@ -40,17 +40,17 @@ class Player : public ICallback<UserPhysics::ObjectType>
 public:
     Player();
     bool LoadPlayerModel(ModelManager* modelManager);
-    void LoadPlayerPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass);
+    void LoadPlayerPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass);
     
     void Update(float frameTime, int terrainTypeOn);
-    void Render(ModelManager* modelManager, const vec::mat4& projectionMatrix);
+    void Render(ModelManager* modelManager, const glm::mat4& projectionMatrix);
 
-    const vec::vec2 GetTerrainPosition() const;
-    const vec::vec3 GetViewPosition() const;
-    const vec::quaternion GetViewOrientation() const;
-    const vec::mat4 GetViewMatrix() const;
+    const glm::vec2 GetTerrainPosition() const;
+    const glm::vec3 GetViewPosition() const;
+    const glm::quat GetViewOrientation() const;
+    const glm::mat4 GetViewMatrix() const;
 
-    void Warp(RegionManager* regionManager, btDynamicsWorld* world, const vec::vec2 mapPos);      
+    void Warp(RegionManager* regionManager, btDynamicsWorld* world, const glm::vec2 mapPos);      
 
     void UnloadPlayerPhysics(BasicPhysics physics);
 

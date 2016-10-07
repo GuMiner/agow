@@ -1,29 +1,29 @@
 #pragma once
 #include <vector>
-#include "Math\Vec.h"
+#include <glm\vec3.hpp>
 #include "TerrainCache.h"
 
 struct TreeCacheData
 {
     bool hasEffect;
-    std::vector<vec::vec3> branches;
-    std::vector<vec::vec3> branchColors;
+    std::vector<glm::vec3> branches;
+    std::vector<glm::vec3> branchColors;
 
-    std::vector<vec::vec3> leaves;
-    std::vector<vec::vec3> leafColors;
+    std::vector<glm::vec3> leaves;
+    std::vector<glm::vec3> leafColors;
 };
 
 struct TreeCacheInputData
 {
     bool hasEffect;
-    std::vector<vec::vec3>* branches;
-    std::vector<vec::vec3>* branchColors;
+    std::vector<glm::vec3>* branches;
+    std::vector<glm::vec3>* branchColors;
 
-    std::vector<vec::vec3>* leaves;
-    std::vector<vec::vec3>* leafColors;
+    std::vector<glm::vec3>* leaves;
+    std::vector<glm::vec3>* leafColors;
 
-    TreeCacheInputData(bool hasEffect, std::vector<vec::vec3>* branches, std::vector<vec::vec3>* branchColors,
-        std::vector<vec::vec3>* leaves, std::vector<vec::vec3>* leafColors)
+    TreeCacheInputData(bool hasEffect, std::vector<glm::vec3>* branches, std::vector<glm::vec3>* branchColors,
+        std::vector<glm::vec3>* leaves, std::vector<glm::vec3>* leafColors)
         : hasEffect(hasEffect), branches(branches), branchColors(branchColors), leaves(leaves), leafColors(leafColors)
     {
     }

@@ -1,10 +1,11 @@
+#include <glm/gtc/matrix_transform.hpp>
 #include "Constants.h"
 
 float Constants::FOV_Y;
 float Constants::ASPECT;
 float Constants::NEAR_PLANE;
 float Constants::FAR_PLANE;
-vec::mat4 Constants::PerspectiveMatrix;
+glm::mat4 Constants::PerspectiveMatrix;
 
 float Constants::PI;
 
@@ -15,7 +16,7 @@ Constants::Constants()
     NEAR_PLANE = 0.10f;
     FAR_PLANE = 100000.0f;
     
-    PerspectiveMatrix = MatrixOps::Perspective(Constants::FOV_Y, Constants::ASPECT, Constants::NEAR_PLANE, Constants::FAR_PLANE);
+    PerspectiveMatrix = glm::perspective(glm::radians(Constants::FOV_Y), Constants::ASPECT, Constants::NEAR_PLANE, Constants::FAR_PLANE);
 
     PI = 3.141592653589f;
 }

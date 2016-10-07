@@ -14,9 +14,10 @@ An experiment in fragment shading, open world simulation, and style generation.
 ---------------
 Licenses for dependencies are within the *licenses* folder.
 
+* [GLM 0.9.8.1] (http://glm.g-truc.net/0.9.8/index.html)
 * [GLFW 3.2.1] (http://www.glfw.org/)
-* [SFML 2.3.2] (http://www.sfml-dev.org/index.php)
 * [GLEW 1.12] (http://glew.sourceforge.net/)
+* [SFML 2.3.2] (http://www.sfml-dev.org/index.php)
 * [STB latest] (https://github.com/nothings/stb)
 * [Bullet Physics 2.83.7] (https://github.com/bulletphysics/bullet3/releases/tag/2.83.7)
 * [MESA 11.1.1] (http://www.mesa3d.org)

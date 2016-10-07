@@ -144,9 +144,9 @@ bool Input::IsMouseButtonClicked(int mouseButton)
     return false;
 }
 
-vec::vec2i Input::GetMousePos()
+glm::ivec2 Input::GetMousePos()
 {
     double xPos, yPos;
     glfwGetCursorPos(window, &xPos, &yPos);
-    return vec::vec2i((int)xPos, (int)yPos);
+    return glm::ivec2((int)xPos, (int)yPos);
 }

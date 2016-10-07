@@ -140,7 +140,7 @@ int FontManager::GetSentenceVertexCount(const std::string& sentence)
 
 // Given a sentence, allocates the vertexes corresponding to the sentence.
 // The vertexes start at (0, 0, 0) and go in the X-direction, with 1 unit == pixelHeight.
-universalVertices FontManager::AllocateSentenceVertices(const std::string& sentence, int pixelHeight, vec::vec3 textColor, float* pixelSize)
+universalVertices FontManager::AllocateSentenceVertices(const std::string& sentence, int pixelHeight, glm::vec3 textColor, float* pixelSize)
 {
     float lastZPos = 0.0f;
     float lastXPos = 0.0f;
@@ -188,10 +188,10 @@ universalVertices FontManager::AllocateSentenceVertices(const std::string& sente
         float textureYEnd = (float)(charInfo.textureY + charInfo.height) / (float)height;
 
         // Triangle fan. First position is at start, then +x, +x+y, +y
-        vertices.AddColorTextureVertex(vec::vec3(xStart, -yStart, lastZPos), vec::vec3(textColor.x, textColor.y, textColor.z), vec::vec2(textureX, textureY));
-        vertices.AddColorTextureVertex(vec::vec3(xStart, -yDepth, lastZPos), vec::vec3(textColor.x, textColor.y, textColor.z), vec::vec2(textureX, textureYEnd));
-        vertices.AddColorTextureVertex(vec::vec3(xDepth, -yDepth, lastZPos), vec::vec3(textColor.x, textColor.y, textColor.z), vec::vec2(textureXEnd, textureYEnd));
-        vertices.AddColorTextureVertex(vec::vec3(xDepth, -yStart, lastZPos), vec::vec3(textColor.x, textColor.y, textColor.z), vec::vec2(textureXEnd, textureY));
+        vertices.AddColorTextureVertex(glm::vec3(xStart, -yStart, lastZPos), glm::vec3(textColor.x, textColor.y, textColor.z), glm::vec2(textureX, textureY));
+        vertices.AddColorTextureVertex(glm::vec3(xStart, -yDepth, lastZPos), glm::vec3(textColor.x, textColor.y, textColor.z), glm::vec2(textureX, textureYEnd));
+        vertices.AddColorTextureVertex(glm::vec3(xDepth, -yDepth, lastZPos), glm::vec3(textColor.x, textColor.y, textColor.z), glm::vec2(textureXEnd, textureYEnd));
+        vertices.AddColorTextureVertex(glm::vec3(xDepth, -yStart, lastZPos), glm::vec3(textColor.x, textColor.y, textColor.z), glm::vec2(textureXEnd, textureY));
 
         lastXPos += advanceWidth;
     }
@@ -255,7 +255,7 @@ int FontManager::CreateNewSentence()
 }
 
 // Updates the graphical components of a sentence so it can be drawn.
-void FontManager::UpdateSentence(int sentenceId, const std::string& sentence, int pixelHeight, vec::vec3 textColor)
+void FontManager::UpdateSentence(int sentenceId, const std::string& sentence, int pixelHeight, glm::vec3 textColor)
 {
     SentenceInfo& sentenceInfo = sentences[sentenceId];
 
@@ -285,7 +285,7 @@ void FontManager::UpdateSentence(int sentenceId, const std::string& sentence, in
 }
 
 // Renders the specified sentence.
-void FontManager::RenderSentence(int sentenceId, const vec::mat4& perpective, const vec::mat4& mvMatrix)
+void FontManager::RenderSentence(int sentenceId, const glm::mat4& perpective, const glm::mat4& mvMatrix)
 {
     const SentenceInfo sentenceInfo = sentences[sentenceId];
     if (sentenceInfo.characterStartIndices == nullptr)
@@ -303,8 +303,8 @@ void FontManager::RenderSentence(int sentenceId, const vec::mat4& perpective, co
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, fontTexture);
 
-    glUniformMatrix4fv(projLocation, 1, GL_FALSE, perpective);
-    glUniformMatrix4fv(mvLocation, 1, GL_FALSE, mvMatrix);
+    glUniformMatrix4fv(projLocation, 1, GL_FALSE, &perpective[0][0]);
+    glUniformMatrix4fv(mvLocation, 1, GL_FALSE, &mvMatrix[0][0]);
 
     // Draw the text
     glMultiDrawArrays(GL_TRIANGLE_FAN, sentenceInfo.characterStartIndices, sentenceInfo.characterVertexCounts, sentenceInfo.characterCount);

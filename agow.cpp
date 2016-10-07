@@ -4,7 +4,7 @@
 #include <thread>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "Math\MatrixOps.h"
+#include <glm\gtc\quaternion.hpp>
 #include "Utils\Logger.h"
 #include "Map.h"
 #include "agow.h"
@@ -22,13 +22,12 @@
 
 // Static definitions.
 Constants agow::Constant;
-MathOps agow::MathOp;
 PhysicsOps agow::PhysicsOp;
 
 agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       physics(), shaderManager(), imageManager(), modelManager(&imageManager),
-      regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", 1000, vec::vec2i(5, 17), vec::vec2i(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
+      regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", 1000, glm::ivec2(5, 17), glm::ivec2(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
       scenery(), npcManager(),
       player() // TODO configurable
 {
@@ -49,8 +48,8 @@ Constants::Status agow::LoadPhysics()
 
     npcManager.LoadNpcPhysics(physics, &regionManager);
     
-    vec::vec2 spawnPoint = Map::GetPoint(Map::PLAYER);
-    player.LoadPlayerPhysics(physics, vec::vec3(spawnPoint.x, spawnPoint.y, 200), 70);
+    glm::vec2 spawnPoint = Map::GetPoint(Map::PLAYER);
+    player.LoadPlayerPhysics(physics, glm::vec3(spawnPoint.x, spawnPoint.y, 200), 70);
 
     return Constants::Status::OK;
 }
@@ -85,7 +84,7 @@ void agow::LogGraphicsSettings()
     glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBlockSize);
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 
-    Logger::Log("Max Texture Units: ", ", Max Uniform Size: ", (maxUniformBlockSize/1024), " kB");
+    Logger::Log("Max Texture Units: ", maxTextureUnits, ", Max Uniform Size: ", (maxUniformBlockSize/1024), " kB");
     Logger::Log("Max Vertex Uniform Blocks: ", maxVertexUniformBlocks, ", Max Fragment Uniform Blocks: ", maxFragmentUniformBlocks);
     Logger::Log("Max Texture Size: ", maxTextureSize);
 }
@@ -248,17 +247,17 @@ Constants::Status agow::LoadAssets()
     }
 
     StyleText styleText;
-    styleText.color = vec::vec3(1.0f, 1.0f, 0.0f);
+    styleText.color = glm::vec3(1.0f, 1.0f, 0.0f);
     styleText.effect = StyleText::Effect::NORMAL;
     styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing.");
     dialogPane.QueueText(styleText);
 
-    styleText.color = vec::vec3(1.0f, 0.0f, 1.0f);
+    styleText.color = glm::vec3(1.0f, 0.0f, 1.0f);
     styleText.effect = StyleText::Effect::MINI;
     styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing.");
     dialogPane.QueueText(styleText);
 
-    styleText.color = vec::vec3(0.0f, 1.0f, 1.0f);
+    styleText.color = glm::vec3(0.0f, 1.0f, 1.0f);
     styleText.effect = StyleText::Effect::ITALICS;
     styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing.  but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing.");
     dialogPane.QueueText(styleText);
@@ -279,7 +278,7 @@ void agow::HandleEvents(GLFWwindow* window, bool& focusPaused, bool& escapePause
     // TODO configurable.
     if (Input::IsKeyTyped(GLFW_KEY_I))
     {
-        vec::vec3 pos = player.GetViewPosition();
+        glm::vec3 pos = player.GetViewPosition();
         std::cout << "[" << pos.x << " " << pos.y << " " << pos.z << "]" << std::endl;
     }
 
@@ -310,8 +309,8 @@ void agow::Update(float currentGameTime, float frameTime)
     if (Input::IsKeyTyped(GLFW_KEY_F))
     {
         // Fire a cube for collision tests.
-        vec::vec3 pos = player.GetViewPosition() + 5.0f * player.GetViewOrientation().forwardVector();
-        vec::vec3 vel = 40.0f * player.GetViewOrientation().forwardVector();
+        glm::vec3 pos = player.GetViewPosition() + 5.0f * PhysicsOps::ForwardsVector(player.GetViewOrientation());
+        glm::vec3 vel = 40.0f * PhysicsOps::UpVector(player.GetViewOrientation());
 
         PhysicalModel model;
         BasicPhysics::CShape shape;
@@ -336,10 +335,10 @@ void agow::Update(float currentGameTime, float frameTime)
     events.UpdateEvents(currentGameTime, frameTime);
 }
 
-void agow::Render(GLFWwindow* window, vec::mat4& viewMatrix)
+void agow::Render(GLFWwindow* window, glm::mat4& viewMatrix)
 {
-    vec::mat4 projectionMatrix = Constants::PerspectiveMatrix * viewMatrix;
-    vec::mat4 rotationOnlyMatrix = Constants::PerspectiveMatrix * player.GetViewOrientation().asMatrix();
+    glm::mat4 projectionMatrix = Constants::PerspectiveMatrix * viewMatrix;
+    glm::mat4 rotationOnlyMatrix = Constants::PerspectiveMatrix * glm::mat4_cast(player.GetViewOrientation());
 
     // Clear the screen (and depth buffer) before any rendering begins.
     const GLfloat color[] = { 0, 0, 0, 1 };
@@ -356,7 +355,7 @@ void agow::Render(GLFWwindow* window, vec::mat4& viewMatrix)
     // Render all the moving objects
     for (unsigned int i = 0; i < testCubes.size(); i++)
     {
-        vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(testCubes[i].rigidBody);
+        glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(testCubes[i].rigidBody);
         modelManager.RenderModel(projectionMatrix, testCubes[i].modelId, mvMatrix, false);
     }
 
@@ -418,7 +417,7 @@ Constants::Status agow::Run()
     sf::Time clockStartTime;
     bool focusPaused = false;
     bool escapePaused = false;
-    vec::mat4 viewMatrix;
+    glm::mat4 viewMatrix;
     while (!glfwWindowShouldClose(window))
     {
         clockStartTime = clock.getElapsedTime();
@@ -468,7 +467,6 @@ int main(int argc, char* argv[])
 
     // Startup 'static' stuff
     agow::Constant = Constants();
-    agow::MathOp = MathOps();
     agow::PhysicsOp = PhysicsOps();
 
     Logger::Setup();

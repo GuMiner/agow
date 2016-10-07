@@ -6,7 +6,7 @@
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
 
-TerrainManager::TerrainManager(vec::vec2i min, vec::vec2i max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, std::string terrainRootFolder, int tileSize)
+TerrainManager::TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, std::string terrainRootFolder, int tileSize)
     : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), tileSize(tileSize), terrainEffects(shaderManager, modelManager, basicPhysics, tileSize / TerrainManager::Subdivisions)
 {
 }
@@ -78,7 +78,7 @@ GLuint TerrainManager::CreateTileTexture(GLenum activeTexture, int subSize, unsi
     return newTextureId;
 }
 
-bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
+bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
 {
     bool loadedImage = false;
     if (terrainTiles.find(start) != terrainTiles.end())
@@ -124,7 +124,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
                         // Within our main image.
                         int xReal = x + i * GetSubTileSize();
                         int yReal = y + j * GetSubTileSize();
-                        vec::vec2i tileOffset = vec::vec2i(0, 0);
+                        glm::ivec2 tileOffset = glm::ivec2(0, 0);
                         
                         // If x == subSize - 1, we need to pull from the X+ terrain tile.
                         // If y == subSize - 1, we need to pull from the Y+ terrain tile.
@@ -138,7 +138,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
                             if (i == TerrainManager::Subdivisions - 1)
                             {
                                 xReal = 0;
-                                tileOffset = vec::vec2i(1, 0);
+                                tileOffset = glm::ivec2(1, 0);
                             }
                             else
                             {
@@ -151,7 +151,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
                             if (j == TerrainManager::Subdivisions - 1)
                             {
                                 yReal = 0;
-                                tileOffset = vec::vec2i(0, 1);
+                                tileOffset = glm::ivec2(0, 1);
                             }
                             else
                             {
@@ -208,7 +208,7 @@ bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
                 // We no longer need the data as it is now in the GPU.
                 delete[] heightmap;
 
-                vec::vec2i subTilePos = vec::vec2i(i, j);
+                glm::ivec2 subTilePos = glm::ivec2(i, j);
                 terrainTiles[start]->subtiles[subTilePos] = new SubTile(heightmapTextureId, realHeightmap, typeTextureId, types);
                 terrainEffects.LoadSubTileEffects(subTilePos + start * TerrainManager::Subdivisions, terrainTiles[start]->subtiles[subTilePos]);
             }
@@ -221,11 +221,11 @@ bool TerrainManager::LoadTileToCache(vec::vec2i start, bool loadSubtiles)
     return true;
 }
 
-bool TerrainManager::LoadTerrainTile(vec::vec2i start, TerrainTile** tile)
+bool TerrainManager::LoadTerrainTile(glm::ivec2 start, TerrainTile** tile)
 {
     // The +-x and +-y tiles must also be loaded to cache to properly generate subtile heightmaps and images.
-    if (!LoadTileToCache(vec::vec2i(std::min(start.x + 1, max.x), start.y), false) ||
-        !LoadTileToCache(vec::vec2i(start.x, std::min(start.y + 1, max.y)), false) ||
+    if (!LoadTileToCache(glm::ivec2(std::min(start.x + 1, max.x), start.y), false) ||
+        !LoadTileToCache(glm::ivec2(start.x, std::min(start.y + 1, max.y)), false) ||
         !LoadTileToCache(start, true))
     {
         return false;
@@ -240,7 +240,7 @@ void TerrainManager::Update(float gameTime)
     lastGameTime = gameTime;
 }
 
-void TerrainManager::Simulate(const vec::vec2i start, const vec::vec2i subPos, float elapsedSeconds)
+void TerrainManager::Simulate(const glm::ivec2 start, const glm::ivec2 subPos, float elapsedSeconds)
 {
     if (terrainTiles.find(start) == terrainTiles.end())
     {
@@ -257,7 +257,7 @@ void TerrainManager::Simulate(const vec::vec2i start, const vec::vec2i subPos, f
 }
 
 // TODO go everywhere else and cleanup projection / perspective / model / mv / view to all be correct.
-void TerrainManager::RenderTile(const vec::vec2i start, const vec::vec2i subPos, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
+void TerrainManager::RenderTile(const glm::ivec2 start, const glm::ivec2 subPos, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     if (terrainTiles.find(start) == terrainTiles.end())
     {
@@ -281,8 +281,8 @@ void TerrainManager::RenderTile(const vec::vec2i start, const vec::vec2i subPos,
     glBindTexture(GL_TEXTURE_2D, terrainTiles[start]->subtiles[subPos]->typeTextureId);
     glUniform1i(terrainTypeTexLocation, 1);
 
-    glUniformMatrix4fv(projLocation, 1, GL_FALSE, perspectiveMatrix);
-    glUniformMatrix4fv(mvLocation, 1, GL_FALSE, viewMatrix * modelMatrix);
+    glUniformMatrix4fv(projLocation, 1, GL_FALSE, &perspectiveMatrix[0][0]);
+    glUniformMatrix4fv(mvLocation, 1, GL_FALSE, &(viewMatrix * modelMatrix)[0][0]);
 
     glUniform1f(gameTimeLocation, lastGameTime);
 
@@ -293,10 +293,10 @@ void TerrainManager::RenderTile(const vec::vec2i start, const vec::vec2i subPos,
     terrainEffects.RenderSubTileEffects(subPos + start * TerrainManager::Subdivisions, perspectiveMatrix, viewMatrix, modelMatrix);
 }
 
-void TerrainManager::CleanupTerrainTile(vec::vec2i start, bool log)
+void TerrainManager::CleanupTerrainTile(glm::ivec2 start, bool log)
 {
     // We need to delete all of the subtiles and then the tile itself.
-    for (std::pair<const vec::vec2i, SubTile*> subTile : terrainTiles[start]->subtiles)
+    for (std::pair<const glm::ivec2, SubTile*> subTile : terrainTiles[start]->subtiles)
     {
         glDeleteTextures(1, &subTile.second->heightmapTextureId);
         delete[] subTile.second->heightmap;
@@ -315,9 +315,9 @@ void TerrainManager::CleanupTerrainTile(vec::vec2i start, bool log)
     }
 }
 
-void TerrainManager::UnloadTerrainTile(vec::vec2i start)
+void TerrainManager::UnloadTerrainTile(glm::ivec2 start)
 {
-    for (std::pair<const vec::vec2i, SubTile*> subTile : terrainTiles[start]->subtiles)
+    for (std::pair<const glm::ivec2, SubTile*> subTile : terrainTiles[start]->subtiles)
     {
         terrainEffects.UnloadSubTileEffects(start * TerrainManager::Subdivisions + subTile.first);
     }

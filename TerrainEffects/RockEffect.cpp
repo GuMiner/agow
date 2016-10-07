@@ -1,6 +1,6 @@
+#include <glm\gtc\random.hpp>
 #include "Config\PhysicsConfig.h"
 #include "Managers\TerrainManager.h"
-#include "Math\MathOps.h"
 #include "Utils\Logger.h"
 #include "RockGenerator.h"
 #include "RockEffect.h"
@@ -15,7 +15,7 @@ bool RockEffect::LoadBasics(ShaderManager* shaderManager)
     return true;
 }
 
-bool RockEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * tile)
+bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * tile)
 {
     bool hasRockEffect = false;
     RockEffectData* rockEffect = nullptr;
@@ -47,12 +47,12 @@ bool RockEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * t
                     rockGenerator.GetRandomRockModel(&coloredModel.model.modelId, &shape);
 
                     // TODO randomly generated from the rock generator
-                    coloredModel.color = vec::vec4(0.60f, 0.70f, 0.60f, 1.0f);
+                    coloredModel.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
 
                     // TODO configurable
                     // TODO randomly generated masses.
                     float height = tile->heightmap[i + j * subTileSize];
-                    vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i + MathOps::Rand(), (float)j + MathOps::Rand());
+                    glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)i + glm::linearRand(0.0f, 1.0f), (float)j + glm::linearRand(0.0f, 1.0f));
                     coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
                     coloredModel.model.rigidBody->setActivationState(ISLAND_SLEEPING);
 
@@ -70,12 +70,12 @@ bool RockEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * t
                     rockGenerator.GetRandomRockModel(&coloredModel.model.modelId, &shape);
 
                     // TODO randomly generated from the rock generator
-                    coloredModel.color = vec::vec4(0.60f, 0.70f, 0.60f, 1.0f);
+                    coloredModel.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
 
                     // TODO configurable
                     // TODO randomly generated masses.
                     float height = tile->heightmap[i + j * subTileSize];
-                    vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)i + MathOps::Rand(), (float)j + MathOps::Rand());
+                    glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)i + glm::linearRand(0.0f, 1.0f), (float)j + glm::linearRand(0.0f, 1.0f));
                     coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height + 2.0f), 30.0f);
                     coloredModel.model.rigidBody->setActivationState(ISLAND_SLEEPING);
                     rockEffect->rocks.push_back(coloredModel);
@@ -108,16 +108,16 @@ void RockEffect::UnloadEffect(void * effectData)
     delete rockEffect;
 }
 
-void RockEffect::Simulate(const vec::vec2i subtileId, void * effectData, float elapsedSeconds)
+void RockEffect::Simulate(const glm::ivec2 subtileId, void * effectData, float elapsedSeconds)
 {
 }
 
-void RockEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
+void RockEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     RockEffectData* rockEffect = (RockEffectData*)effectData;
     for (const ColoredPhysicalModel& model : rockEffect->rocks)
     {
-        vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.model.rigidBody);
+        glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.model.rigidBody);
         modelManager->RenderModel(perspectiveMatrix * viewMatrix, model.model.modelId, mvMatrix, model.color, false);
     }
 }

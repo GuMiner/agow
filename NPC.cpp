@@ -1,6 +1,6 @@
+#include <glm/gtc/matrix_transform.hpp>
 #include "Managers\FontManager.h"
-#include "Math\MathOps.h"
-#include "Math\VecOps.h"
+#include "Math\PhysicsOps.h"
 #include "Utils\Logger.h"
 #include "DialogPane.h"
 #include "NPC.h"
@@ -52,11 +52,11 @@ bool NPC::LoadNpcModels(ModelManager* modelManager)
     return true;
 }
 
-NPC::NPC(std::string name, std::string description, Shape shape, vec::vec4 color, int startingHealth)
+NPC::NPC(std::string name, std::string description, Shape shape, glm::vec4 color, int startingHealth)
     : name(name), description(description), shape(shape), color(color), health(startingHealth),
       isSelected(false), showInteractionKeys(false), nearFieldCollisionLastFrame(false)
 {
-    nameString.color = vec::vec3(1.0f) - vec::vec3(color.x, color.y, color.z);
+    nameString.color = glm::vec3(1.0f) - glm::vec3(color.x, color.y, color.z);
     interactionString.color = nameString.color * 1.10f;
 }
 
@@ -69,18 +69,18 @@ void NPC::LoadGraphics(FontManager* fontManager)
     fontManager->UpdateSentence(interactionString.sentenceId, "Converse [C]", 22, interactionString.color);
 }
 
-void NPC::LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass)
+void NPC::LoadNpcPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass)
 {
     BasicPhysics::CShape physicalShape = GetPhysicalShape(shape);
     physicalModel.modelId = models[shape];
-    physicalModel.rigidBody = physics.GetDynamicBody(physicalShape, VecOps::Convert(startingPosition), mass);
+    physicalModel.rigidBody = physics.GetDynamicBody(physicalShape, PhysicsOps::Convert(startingPosition), mass);
 
     // NPCs can't rotate from physical interactions.
     physicalModel.rigidBody->setAngularFactor(0.0f);
     
     physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
 
-    nearFieldBubble = physics.GetGhostObject(BasicPhysics::CShape::NPC_NEARFIELD_BUBBLE, VecOps::Convert(startingPosition));
+    nearFieldBubble = physics.GetGhostObject(BasicPhysics::CShape::NPC_NEARFIELD_BUBBLE, PhysicsOps::Convert(startingPosition));
     nearFieldBubble->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::NPC_CLOSEUP, this));
     physics.DynamicsWorld->addRigidBody(nearFieldBubble);
 }
@@ -99,14 +99,11 @@ std::string  NPC::GetName() const
 void NPC::Update(float gameTime, float elapsedTime)
 {
     nameString.posRotMatrix =
-        MatrixOps::Translate(vec::vec3(-0.60f, -0.60f, 0.55f)) *
-        BasicPhysics::GetBodyMatrix(physicalModel.rigidBody) * 
-        MatrixOps::Scale(0.20f, 0.20f, 0.20f) * 
-        MatrixOps::Rotate(90.0f, vec::vec3(1.0f, 0.0f, 0.0f));
-
-    interactionString.posRotMatrix = 
-        MatrixOps::Translate(vec::vec3(0.0f, 0.0f, -0.10f)) *
-        nameString.posRotMatrix;
+        glm::translate(glm::mat4(), glm::vec3(-0.60f, -0.60f, 0.55f)) *
+        BasicPhysics::GetBodyMatrix(physicalModel.rigidBody) *
+        glm::scale(glm::mat4(), glm::vec3(0.20f)) *
+        glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    interactionString.posRotMatrix = glm::translate(nameString.posRotMatrix, glm::vec3(0.0f, 0.0f, -0.10f));
 
     // This works as physics updates are last. TODO make this more deterministic.
     if (nearFieldCollisionLastFrame)
@@ -123,9 +120,9 @@ void NPC::Update(float gameTime, float elapsedTime)
     nearFieldBubble->setWorldTransform(physicalModel.rigidBody->getWorldTransform());
 }
 
-void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const vec::mat4& projectionMatrix)
+void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const glm::mat4& projectionMatrix)
 {
-    vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(physicalModel.rigidBody);
+    glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(physicalModel.rigidBody);
     modelManager->RenderModel(projectionMatrix, physicalModel.modelId, mvMatrix, color, isSelected);
     
     fontManager->RenderSentence(nameString.sentenceId, projectionMatrix, nameString.posRotMatrix);

@@ -2,7 +2,8 @@
 #include <map>
 #include <vector>
 #include <Bullet\btBulletDynamicsCommon.h>
-#include "Math\Vec.h"
+#include <glm\vec3.hpp>
+#include <glm\gtc\quaternion.hpp> 
 
 // Defines the basics of physics (ie, gravity) the rest of the game uses.
 // Also holds generic framework code.
@@ -41,7 +42,7 @@ public:
 
     BasicPhysics();
     bool LoadPhysics();
-    void AddCollisionModels(std::map<CShape, const std::vector<vec::vec3>*> shapePoints);
+    void AddCollisionModels(std::map<CShape, const std::vector<glm::vec3>*> shapePoints);
     void Step(float timestep);
     void UnloadPhysics();
 
@@ -57,14 +58,14 @@ public:
     btRigidBody* GetGhostObject(const CShape shape, const btVector3& origin);
     
     // Gets the body position, converting to our coordinate system.
-    static vec::vec3 GetBodyPosition(const btRigidBody* body);
+    static glm::vec3 GetBodyPosition(const btRigidBody* body);
     
     // Instantaneously moves the item to a new position.
-    static void Warp(btRigidBody* body, vec::vec3 position, vec::vec3 velocity);
+    static void Warp(btRigidBody* body, glm::vec3 position, glm::vec3 velocity);
 
     // Converts from Bullet geometry to our game geometry.
-    static vec::mat4 GetBodyMatrix(const btRigidBody* body);
-    static vec::quaternion GetBodyRotation(const btRigidBody* body);
+    static glm::mat4 GetBodyMatrix(const btRigidBody* body);
+    static glm::quat GetBodyRotation(const btRigidBody* body);
     void DeleteBody(btRigidBody* body, bool deleteCollisionShape) const;
     void DeleteGhostObject(btRigidBody* ghostObject) const;
 };

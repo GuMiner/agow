@@ -1,5 +1,5 @@
+#include <glm\vec2.hpp>
 #include "Vertex.h"
-#include <stddef.h>
 
 template<typename T>
 void universalVertices::SendToOpenGl(GLuint buffer, GLuint shaderIdx, GLuint itemCount, const std::vector<T>& data)
@@ -37,7 +37,7 @@ void universalVertices::Reset()
     indices.clear();
 }
 
-void universalVertices::AddColorTextureVertex(vec::vec3 position, vec::vec3 color, vec::vec2 uv)
+void universalVertices::AddColorTextureVertex(glm::vec3 position, glm::vec3 color, glm::vec2 uv)
 {
     positions.push_back(position);
     colors.push_back(color);
@@ -74,7 +74,7 @@ void universalVertices::TransferIndicesToOpenGl(GLuint indiciesBuffer)
     universalVertices::SendIndicesToOpenGl(indiciesBuffer, indices);
 }
 
-void universalVertices::TransferDirectToOpenGl(const std::vector<vec::vec4>& positions, GLuint positionBuffer, const std::vector<vec::vec3>& colors, GLuint colorBuffer)
+void universalVertices::TransferDirectToOpenGl(const std::vector<glm::vec4>& positions, GLuint positionBuffer, const std::vector<glm::vec3>& colors, GLuint colorBuffer)
 {
     universalVertices::SendToOpenGl(positionBuffer, 0, 4, positions);
     universalVertices::SendToOpenGl(colorBuffer, 1, 3, colors);

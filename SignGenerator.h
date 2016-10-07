@@ -1,8 +1,8 @@
 #pragma once
 #include <map>
 #include <vector>
+#include <glm\vec3.hpp>
 #include "Managers\ModelManager.h"
-#include "Math\Vec.h"
 #include "BasicPhysics.h"
 
 struct SignInternal
@@ -25,7 +25,7 @@ public:
     static bool LoadModels(ModelManager* modelManager);
 
     // Returns the model points so that physics can properly work on these models.
-    std::map<BasicPhysics::CShape, const std::vector<vec::vec3>*> GetModelPoints(ModelManager* modelManager);
+    std::map<BasicPhysics::CShape, const std::vector<glm::vec3>*> GetModelPoints(ModelManager* modelManager);
 
     void GetRandomSignModel(unsigned int* modelId, BasicPhysics::CShape* shape) const;
 };

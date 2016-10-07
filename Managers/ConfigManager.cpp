@@ -52,7 +52,7 @@ bool ConfigManager::ReadKey(std::vector<std::string>& configFileLines, int& key,
     return true;
 }
 
-bool ConfigManager::ReadVector(std::vector<std::string>& configFileLines, vec::vec3& vector, const char* errorMessage)
+bool ConfigManager::ReadVector(std::vector<std::string>& configFileLines, glm::vec3& vector, const char* errorMessage)
 {
     if (!ConversionUtils::LoadVector(configFileLines[++lineCounter], vector))
     {
@@ -93,7 +93,7 @@ void ConfigManager::WriteKey(const char* itemName, int& key)
     outputLines.push_back(tempOutput.str());
 }
 
-void ConfigManager::WriteVector(const char* itemName, vec::vec3& vector)
+void ConfigManager::WriteVector(const char* itemName, glm::vec3& vector)
 {
     std::stringstream tempOutput;
     tempOutput << itemName << StringUtils::Space << vector.x << StringUtils::Space << vector.y << StringUtils::Space << vector.z;

@@ -1,6 +1,6 @@
 #pragma once
 #include <map>
-#include "Math\Vec.h"
+#include <glm\vec3.hpp>
 #include "Data\StyleText.h"
 
 enum EventType
@@ -12,7 +12,7 @@ enum EventType
 
 struct SkyColorChange
 {
-    vec::vec3 flavorColor;
+    glm::vec3 flavorColor;
     float strength;
 };
 

@@ -1,7 +1,7 @@
 #include <limits>
+#include <glm\gtc\quaternion.hpp>
 #include "Data\UserPhysics.h"
-#include "Math\MatrixOps.h"
-#include "Math\VecOps.h"
+#include "Math\PhysicsOps.h"
 #include "Utils\Logger.h"
 #include "Utils\TypedCallback.h"
 #include "BasicPhysics.h"
@@ -21,18 +21,18 @@ void BasicPhysics::LoadBasicCollisionShapes()
     CollisionShapes[CShape::NPC_CUBOID] = new btBoxShape(btVector3(width, width, height));
     
     const int diamondPointCount = 8;
-    vec::vec3* diamondPoints = new vec::vec3[diamondPointCount];
-    diamondPoints[0] = vec::vec3(0.0f, 0.0f, -height);
-    diamondPoints[1] = vec::vec3(width / 2.0f, 0.0f, 0.0f);
-    diamondPoints[2] = vec::vec3(-width / 2.0f, 0.0f, 0.0f);
-    diamondPoints[3] = vec::vec3(0.0f, width / 2.0f, 0.0f);
-    diamondPoints[4] = vec::vec3(0.0f, -width / 2.0f, 0.0f);
-    diamondPoints[5] = vec::vec3(0.0f, 0.0f, height);
+    glm::vec3* diamondPoints = new glm::vec3[diamondPointCount];
+    diamondPoints[0] = glm::vec3(0.0f, 0.0f, -height);
+    diamondPoints[1] = glm::vec3(width / 2.0f, 0.0f, 0.0f);
+    diamondPoints[2] = glm::vec3(-width / 2.0f, 0.0f, 0.0f);
+    diamondPoints[3] = glm::vec3(0.0f, width / 2.0f, 0.0f);
+    diamondPoints[4] = glm::vec3(0.0f, -width / 2.0f, 0.0f);
+    diamondPoints[5] = glm::vec3(0.0f, 0.0f, height);
 
-    diamondPoints[6] = vec::vec3(-width / 2.0f, 0.0f, -height);
-    diamondPoints[7] = vec::vec3(0.0f, width / 2.0f, -height);
+    diamondPoints[6] = glm::vec3(-width / 2.0f, 0.0f, -height);
+    diamondPoints[7] = glm::vec3(0.0f, width / 2.0f, -height);
 
-    CollisionShapes[CShape::NPC_DIAMOND] = new btConvexHullShape((btScalar*)&diamondPoints[0], diamondPointCount, sizeof(vec::vec3));
+    CollisionShapes[CShape::NPC_DIAMOND] = new btConvexHullShape((btScalar*)&diamondPoints[0], diamondPointCount, sizeof(glm::vec3));
     delete[] diamondPoints;
 
     // TODO these all should be configurable size values (TODO configurable).
@@ -41,13 +41,13 @@ void BasicPhysics::LoadBasicCollisionShapes()
     CollisionShapes[CShape::SMALL_CUBE] = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
     
     const int playerPointCount = 4;
-    vec::vec3* playerPoints = new vec::vec3[playerPointCount];
-    playerPoints[0] = vec::vec3(0.0f, 0.0f, 0.7825f);
-    playerPoints[1] = vec::vec3(-0.50f, 0.2887f, -0.4423f);
-    playerPoints[2] = vec::vec3(0.50f, 0.2887f, -0.4423f);
-    playerPoints[3] = vec::vec3(0.0f, 0.0f, 0.4825f);
+    glm::vec3* playerPoints = new glm::vec3[playerPointCount];
+    playerPoints[0] = glm::vec3(0.0f, 0.0f, 0.7825f);
+    playerPoints[1] = glm::vec3(-0.50f, 0.2887f, -0.4423f);
+    playerPoints[2] = glm::vec3(0.50f, 0.2887f, -0.4423f);
+    playerPoints[3] = glm::vec3(0.0f, 0.0f, 0.4825f);
    
-    CollisionShapes[CShape::PLAYER] = new btConvexHullShape((btScalar*)&playerPoints[0], playerPointCount, sizeof(vec::vec3));
+    CollisionShapes[CShape::PLAYER] = new btConvexHullShape((btScalar*)&playerPoints[0], playerPointCount, sizeof(glm::vec3));
     delete[] playerPoints;
 }
 
@@ -73,11 +73,11 @@ bool BasicPhysics::LoadPhysics()
 }
 
 // Adds collsion models to the list of known collision shapes.
-void BasicPhysics::AddCollisionModels(std::map<CShape, const std::vector<vec::vec3>*> shapePoints)
+void BasicPhysics::AddCollisionModels(std::map<CShape, const std::vector<glm::vec3>*> shapePoints)
 {
-    for (std::pair<const CShape, const std::vector<vec::vec3>*> shapePointPair : shapePoints)
+    for (std::pair<const CShape, const std::vector<glm::vec3>*> shapePointPair : shapePoints)
     {
-        CollisionShapes[shapePointPair.first] = new btConvexHullShape((btScalar*)&(*shapePointPair.second)[0], shapePointPair.second->size(), sizeof(vec::vec3));
+        CollisionShapes[shapePointPair.first] = new btConvexHullShape((btScalar*)&(*shapePointPair.second)[0], shapePointPair.second->size(), sizeof(glm::vec3));
     }
 }
 
@@ -211,16 +211,16 @@ btRigidBody* BasicPhysics::GetGhostObject(const CShape shape, const btVector3& o
     return rigidBody;
 }
 
-vec::vec3 BasicPhysics::GetBodyPosition(const btRigidBody* body)
+glm::vec3 BasicPhysics::GetBodyPosition(const btRigidBody* body)
 {
     btTransform worldTransform;
     body->getMotionState()->getWorldTransform(worldTransform);
 
     btVector3& pos = worldTransform.getOrigin();
-    return vec::vec3(pos.x(), pos.y(), pos.z());
+    return glm::vec3(pos.x(), pos.y(), pos.z());
 }
 
-void BasicPhysics::Warp(btRigidBody* body, vec::vec3 position, vec::vec3 velocity)
+void BasicPhysics::Warp(btRigidBody* body, glm::vec3 position, glm::vec3 velocity)
 {
     btTransform worldTransform;
     body->getMotionState()->getWorldTransform(worldTransform);
@@ -233,22 +233,28 @@ void BasicPhysics::Warp(btRigidBody* body, vec::vec3 position, vec::vec3 velocit
     body->getMotionState()->setWorldTransform(worldTransform);
 }
 
-vec::mat4 BasicPhysics::GetBodyMatrix(const btRigidBody* body)
+glm::mat4 BasicPhysics::GetBodyMatrix(const btRigidBody* body)
 {
-    vec::mat4 result;
+    glm::mat4 result;
     body->getWorldTransform().getOpenGLMatrix((btScalar*)&result);
     return result;
     
-    // vec::quaternion rotation = VecOps::Convert(worldTransform.getRotation());
+    // glm::quat rotation = VecOps::Convert(worldTransform.getRotation());
     // return MatrixOps::Translate(VecOps::Convert(worldTransform.getOrigin())) * rotation.asMatrix();
 }
 
-vec::quaternion BasicPhysics::GetBodyRotation(const btRigidBody* body)
+glm::quat BasicPhysics::GetBodyRotation(const btRigidBody* body)
 {
     btTransform worldTransform;
     body->getMotionState()->getWorldTransform(worldTransform);
 
-    return VecOps::Convert(worldTransform.getRotation());
+    btQuaternion worldRotation = worldTransform.getRotation();
+    glm::quat quat;
+    quat.x = worldRotation.x();
+    quat.y = worldRotation.y();
+    quat.z = worldRotation.z();
+    quat.w = worldRotation.w();
+    return quat;
 }
 
 void BasicPhysics::DeleteGhostObject(btRigidBody* ghostObject) const

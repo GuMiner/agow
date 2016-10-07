@@ -3,7 +3,6 @@
 #include <sstream>
 #include <stb\stb_image.h>
 #include "TerrainManager.h"
-#include "Math\MathOps.h"
 #include "TerrainEffects\CityEffect.h"
 #include "TerrainEffects\GrassEffect.h"
 #include "TerrainEffects\RoadEffect.h"
@@ -40,7 +39,7 @@ bool TerrainEffectManager::LoadBasics()
     return true;
 }
 
-bool TerrainEffectManager::LoadSubTileEffects(vec::vec2i start, SubTile* tile)
+bool TerrainEffectManager::LoadSubTileEffects(glm::ivec2 start, SubTile* tile)
 {
     if (subtileEffectData.find(start) != subtileEffectData.end())
     {
@@ -62,7 +61,7 @@ bool TerrainEffectManager::LoadSubTileEffects(vec::vec2i start, SubTile* tile)
     return true;
 }
 
-void TerrainEffectManager::Simulate(const vec::vec2i start, float elapsedSeconds)
+void TerrainEffectManager::Simulate(const glm::ivec2 start, float elapsedSeconds)
 {
     if (subtileEffectData.find(start) == subtileEffectData.end())
     {
@@ -76,7 +75,7 @@ void TerrainEffectManager::Simulate(const vec::vec2i start, float elapsedSeconds
     }
 }
 
-void TerrainEffectManager::RenderSubTileEffects(const vec::vec2i start, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
+void TerrainEffectManager::RenderSubTileEffects(const glm::ivec2 start, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     if (subtileEffectData.find(start) == subtileEffectData.end())
     {
@@ -90,7 +89,7 @@ void TerrainEffectManager::RenderSubTileEffects(const vec::vec2i start, const ve
     }
 }
 
-void TerrainEffectManager::CleanupSubTileEffects(vec::vec2i start, bool log)
+void TerrainEffectManager::CleanupSubTileEffects(glm::ivec2 start, bool log)
 {
     for (auto iter = subtileEffectData[start].begin(); iter != subtileEffectData[start].end(); iter++)
     {
@@ -104,7 +103,7 @@ void TerrainEffectManager::CleanupSubTileEffects(vec::vec2i start, bool log)
     }
 }
 
-void TerrainEffectManager::UnloadSubTileEffects(vec::vec2i start)
+void TerrainEffectManager::UnloadSubTileEffects(glm::ivec2 start)
 {
     CleanupSubTileEffects(start, true);
     subtileEffectData.erase(start);

@@ -1,4 +1,4 @@
-#include "Math\MathOps.h"
+#include <glm\gtc\random.hpp>
 #include "Utils\Logger.h"
 #include "GrassEffect.h"
 
@@ -22,7 +22,7 @@ bool GrassEffect::LoadBasics(ShaderManager* shaderManager)
     return true;
 }
 
-bool GrassEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* tile)
+bool GrassEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile)
 {
     bool hasGrassEffect = false;
     GrassEffectData* grassEffect = nullptr;
@@ -41,17 +41,17 @@ bool GrassEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* t
                 }
                 
                 float height = tile->heightmap[i + j * subTileSize];
-                vec::vec2i realPos = subtileId * 0.10f + vec::vec2i(i, j);
+                glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j);
 
                 // TODO configurable
-                vec::vec3 bottomColor = vec::vec3(0.0f, 0.90f + MathOps::Rand() * 0.10f, 0.0f);
-                vec::vec3 topColor = vec::vec3(0.0f, 0.50f + MathOps::Rand() * 0.30f, 0.20f + MathOps::Rand() * 0.60f);
-                vec::vec3 bottomPos = vec::vec3((float)realPos.x + MathOps::Rand(1.0f), (float)realPos.y + MathOps::Rand(1.0f), height);
-                vec::vec3 topPos = bottomPos + vec::vec3(MathOps::Rand(0.20f), MathOps::Rand(0.20f), 0.15f + 0.50f * MathOps::Rand());
+                glm::vec3 bottomColor = glm::vec3(0.0f, 0.90f + glm::linearRand(0.0f, 0.10f), 0.0f);
+                glm::vec3 topColor = glm::vec3(0.0f, 0.50f + glm::linearRand(0.0f, 0.30f), 0.20f + glm::linearRand(0.0f, 0.60f));
+                glm::vec3 bottomPos = glm::vec3((float)realPos.x + glm::linearRand(-0.5f, 0.5f), (float)realPos.y + glm::linearRand(-0.5f, 0.5f), height);
+                glm::vec3 topPos = bottomPos + glm::vec3(glm::linearRand(-0.10f, 0.10f), glm::linearRand(-0.10f, 0.10f), 0.15f + 0.50f * glm::linearRand(0.0f, 1.0f));
 
                 // Add grass
-                vec::vec3 lowerOffset = vec::vec3(0.0f);
-                vec::vec3 upperOffset = vec::vec3(0.0f);
+                glm::vec3 lowerOffset = glm::vec3(0.0f);
+                glm::vec3 upperOffset = glm::vec3(0.0f);
                 grassEffect->grassOffsets.push_back(lowerOffset);
                 grassEffect->grassOffsets.push_back(upperOffset);
 
@@ -91,7 +91,7 @@ void GrassEffect::UnloadEffect(void* effectData)
     delete grassEffect;
 }
 
-void GrassEffect::Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds)
+void GrassEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds)
 {
     // This is still too slow. I need to randomly update not only specific elements, but specific grass segments per subtile.
     // Don't update all the grass at once, that's too slow. Just move a few elements.
@@ -100,7 +100,7 @@ void GrassEffect::Simulate(const vec::vec2i subtileId, void* effectData, float e
     {
     if (i % minimizationFactor == 0)
     {
-    vec::vec3 upperOffset = vec::vec3(MathOps::Rand(), MathOps::Rand(), 0.0f);
+    glm::vec3 upperOffset = glm::vec3(MathOps::Rand(), MathOps::Rand(), 0.0f);
     effectData[start]->grassEffect.grassStalks.positions[i * 2 + 1] =
     (effectData[start]->grassEffect.grassStalks.positions[i * 2 + 1]
     - effectData[start]->grassEffect.grassOffsets[i * 2 + 1]) + upperOffset;
@@ -113,7 +113,7 @@ void GrassEffect::Simulate(const vec::vec2i subtileId, void* effectData, float e
     effectData[start]->grassEffect.grassStalks.TransferPositionToOpenGl(effectData[start]->grassEffect.positionBuffer);*/
 }
 
-void GrassEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
+void GrassEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     GrassEffectData* grassEffect = (GrassEffectData*)effectData;
 
@@ -121,8 +121,8 @@ void GrassEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, c
     glUseProgram(programId);
     glBindVertexArray(grassEffect->vao);
 
-    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, perspectiveMatrix);
-    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, viewMatrix * modelMatrix);
+    glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, &perspectiveMatrix[0][0]);
+    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, &(viewMatrix * modelMatrix)[0][0]);
 
     glDrawArrays(GL_LINES, 0, grassEffect->grassStalks.positions.size());
     glLineWidth(1.0f);

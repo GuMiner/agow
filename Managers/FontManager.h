@@ -5,8 +5,8 @@
 #include <stb/stb_truetype.h>
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>
+#include <glm\vec3.hpp>
 #include "Data\TextDataTypes.h"
-#include "Math\Vec.h"
 #include "Utils\Vertex.h"
 #include "ShaderManager.h"
 
@@ -43,7 +43,7 @@ class FontManager
     std::map<int, SentenceInfo> sentences;
 
     int GetSentenceVertexCount(const std::string& sentence);
-    universalVertices AllocateSentenceVertices(const std::string& sentence, int pixelHeight, vec::vec3 textColor, float* pixelSize);
+    universalVertices AllocateSentenceVertices(const std::string& sentence, int pixelHeight, glm::vec3 textColor, float* pixelSize);
 
     void ClearCharacterData(const SentenceInfo& sentenceInfo);
     void DeleteSentence(const SentenceInfo& sentenceInfo);
@@ -53,8 +53,8 @@ public:
     bool LoadFont(ShaderManager* shaderManager, const char* fontName);
 
     int CreateNewSentence();
-    void UpdateSentence(int sentenceId, const std::string& sentence, int pixelHeight, vec::vec3 textColor);
-    void RenderSentence(int sentenceId, const vec::mat4& perpective, const vec::mat4& mvMatrix);
+    void UpdateSentence(int sentenceId, const std::string& sentence, int pixelHeight, glm::vec3 textColor);
+    void RenderSentence(int sentenceId, const glm::mat4& perpective, const glm::mat4& mvMatrix);
     void DeleteSentence(int sentenceId);
 
     float SimulateSentenceLength(const std::string& sentence, int pixelHeight);

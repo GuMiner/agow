@@ -1,4 +1,4 @@
-#include "Math\MathOps.h"
+#include <glm\gtc\random.hpp>
 #include "Utils\Logger.h"
 #include "TreeEffect.h"
 
@@ -31,7 +31,7 @@ bool TreeEffect::LoadBasics(ShaderManager* shaderManager)
     return true;
 }
 
-bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* tile)
+bool TreeEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile)
 {
     bool hasTreeEffect = false;
     TreeEffectData* treeEffect = nullptr;
@@ -62,7 +62,7 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
             for (int j = 0; j < subTileSize; j++)
             {
                 // TOOD configurable density
-                if (tile->type[i + j * subTileSize] == TerrainTypes::TREES && MathOps::Rand() > 0.90f)
+                if (tile->type[i + j * subTileSize] == TerrainTypes::TREES && glm::linearRand(0.0f, 1.0f) > 0.90f)
                 {
                     if (!hasTreeEffect)
                     {
@@ -71,13 +71,13 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
                     }
 
                     float height = tile->heightmap[i + j * subTileSize];
-                    vec::vec2i realPos = subtileId * 0.10f + vec::vec2i(i, j);
+                    glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j);
 
                     // TODO configurable
-                    vec::vec3 bottomColor = vec::vec3(0.57f, 0.20f + MathOps::Rand() * 0.10f, 0.10f);
-                    vec::vec3 topColor = vec::vec3(0.57f, 0.20f + MathOps::Rand() * 0.30f, 0.10f + MathOps::Rand() * 0.40f);
-                    vec::vec3 bottomPos = vec::vec3((float)realPos.x + 2.0f * MathOps::Rand() - 1.0f, (float)realPos.y + 2.0f * MathOps::Rand() - 1.0f, height);
-                    vec::vec3 topPos = bottomPos + vec::vec3(0, 0, 1.0f);
+                    glm::vec3 bottomColor = glm::vec3(0.57f, 0.20f + glm::linearRand(0.0f, 0.10f), 0.10f);
+                    glm::vec3 topColor = glm::vec3(0.57f, 0.20f + glm::linearRand(0.0f, 0.30f), 0.10f + glm::linearRand(0.0f, 0.40f));
+                    glm::vec3 bottomPos = glm::vec3((float)realPos.x + glm::linearRand(0.0f, 2.0f) - 1.0f, (float)realPos.y + glm::linearRand(0.0f, 2.0f) - 1.0f, height);
+                    glm::vec3 topPos = bottomPos + glm::vec3(0, 0, 1.0f);
 
                      GenerationResults results = treeGenerator.GenerateTree(bottomPos,
                          &treeEffect->treeTrunks.vertices.positions, nullptr,
@@ -92,7 +92,7 @@ bool TreeEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
                     // Add tree leaf colors.
                     for (unsigned int i = 0; i < results.leaves; i++) // 
                     {
-                        treeEffect->treeLeaves.vertices.colors.push_back(vec::vec3(0.1f, 0.70f + MathOps::Rand() * 0.30f, 0.0f));
+                        treeEffect->treeLeaves.vertices.colors.push_back(glm::vec3(0.1f, 0.70f + glm::linearRand(0.0f, 0.30f), 0.0f));
                     }
                 }
             }
@@ -149,12 +149,12 @@ void TreeEffect::UnloadEffect(void* effectData)
     delete treeEffect;
 }
 
-void TreeEffect::Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds)
+void TreeEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds)
 {
     // TODO wave the trees slightly over time.
 }
 
-void TreeEffect::Render(void* effectData, const vec::mat4& projectionMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
+void TreeEffect::Render(void* effectData, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     TreeEffectData* treeEffect = (TreeEffectData*)effectData;
 
@@ -163,8 +163,8 @@ void TreeEffect::Render(void* effectData, const vec::mat4& projectionMatrix, con
     glUseProgram(trunkProgram.programId);
     glBindVertexArray(treeEffect->treeTrunks.vao);
 
-    glUniformMatrix4fv(trunkProgram.projMatrixLocation, 1, GL_FALSE, projectionMatrix);
-    glUniformMatrix4fv(trunkProgram.mvMatrixLocation, 1, GL_FALSE, viewMatrix * modelMatrix);
+    glUniformMatrix4fv(trunkProgram.projMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+    glUniformMatrix4fv(trunkProgram.mvMatrixLocation, 1, GL_FALSE, &(viewMatrix * modelMatrix)[0][0]);
 
     glDrawArrays(GL_LINES, 0, treeEffect->treeTrunks.vertices.positions.size());
     glLineWidth(1.0f);
@@ -173,8 +173,8 @@ void TreeEffect::Render(void* effectData, const vec::mat4& projectionMatrix, con
     glUseProgram(leafProgram.programId);
     glBindVertexArray(treeEffect->treeLeaves.vao);
 
-    glUniformMatrix4fv(leafProgram.projMatrixLocation, 1, GL_FALSE, projectionMatrix);
-    glUniformMatrix4fv(leafProgram.mvMatrixLocation, 1, GL_FALSE, viewMatrix * modelMatrix);
+    glUniformMatrix4fv(leafProgram.projMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+    glUniformMatrix4fv(leafProgram.mvMatrixLocation, 1, GL_FALSE, &(viewMatrix * modelMatrix)[0][0]);
 
     glDrawArrays(GL_POINTS, 0, treeEffect->treeLeaves.vertices.positions.size());
 }

@@ -1,4 +1,4 @@
-#include "Math\MathOps.h"
+#include <glm/gtc/random.hpp>
 #include "RockGenerator.h"
 
 std::vector<RockInternal> RockGenerator::rockArchetypes;
@@ -75,9 +75,9 @@ bool RockGenerator::LoadModels(ModelManager* modelManager)
     return true;
 }
 
-std::map<BasicPhysics::CShape, const std::vector<vec::vec3>*> RockGenerator::GetModelPoints(ModelManager* modelManager)
+std::map<BasicPhysics::CShape, const std::vector<glm::vec3>*> RockGenerator::GetModelPoints(ModelManager* modelManager)
 {
-    std::map<BasicPhysics::CShape, const std::vector<vec::vec3>*> modelPoints;
+    std::map<BasicPhysics::CShape, const std::vector<glm::vec3>*> modelPoints;
     for (const RockInternal& rockInternal : rockArchetypes)
     {
         modelPoints[rockInternal.shape] = &(modelManager->GetModel(rockInternal.modelId).vertices.positions);
@@ -88,7 +88,7 @@ std::map<BasicPhysics::CShape, const std::vector<vec::vec3>*> RockGenerator::Get
 
 void RockGenerator::GetRandomRockModel(unsigned int* modelId, BasicPhysics::CShape* shape) const
 {
-    const RockInternal& rockInternal = rockArchetypes[MathOps::Rand(0, rockArchetypes.size())];
+    const RockInternal& rockInternal = rockArchetypes[glm::linearRand(0, (int)rockArchetypes.size() - 1)];
     *modelId = rockInternal.modelId;
     *shape = rockInternal.shape;
 }

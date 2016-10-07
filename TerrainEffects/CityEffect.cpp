@@ -1,5 +1,6 @@
+#include <glm\gtc\matrix_transform.hpp>
+#include <glm\gtc\random.hpp>
 #include "Config\PhysicsConfig.h"
-#include "Math\MathOps.h"
 #include "Managers\TerrainManager.h"
 #include "Utils\Logger.h"
 #include "BuildingGenerator.h"
@@ -16,7 +17,7 @@ bool CityEffect::LoadBasics(ShaderManager* shaderManager)
     return true;
 }
 
-bool CityEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* tile)
+bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile)
 {
     BuildingGenerator buildingGenerator(modelManager, physics);
 
@@ -132,11 +133,11 @@ bool CityEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile* ti
                 // Get a building.
                 float separationRadius;
                 float height = tile->heightmap[buildingXPos + buildingYPos * subTileSize];// -0.50f; // Ground inset, TODO configurable.
-                vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)xPos, (float)yPos);
-                vec::vec3 offset((float)realPos.x, (float)realPos.y, height);
+                glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)xPos, (float)yPos);
+                glm::vec3 offset((float)realPos.x, (float)realPos.y, height);
                 Building building;
                 building.segments = buildingGenerator.GetRandomLowDensityBuilding(offset, &separationRadius);
-                building.color = vec::vec4(MathOps::Rand(), MathOps::Rand(), MathOps::Rand(), 0.50f + MathOps::Rand() / 2.0f);
+                building.color = glm::vec4(glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f), 0.50f + glm::linearRand(0.0f, 5.0f));
 
                 // Move the building to be where the city part is.
                 // TODO also randomly color the building.
@@ -182,19 +183,19 @@ void CityEffect::UnloadEffect(void* effectData)
     delete cityEffect;
 }
 
-void CityEffect::Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds)
+void CityEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds)
 {
 }
 
-void CityEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
+void CityEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     CityEffectData* cityEffect = (CityEffectData*)effectData;
     for (const Building& building : cityEffect->buildings)
     {
         for (const ScaledPhysicalModel& model : building.segments)
         {
-            vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.rigidBody);
-            mvMatrix = mvMatrix * MatrixOps::Scale(model.scaleFactor);
+            glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.rigidBody);
+            mvMatrix = mvMatrix * glm::scale(glm::mat4(), model.scaleFactor);
             modelManager->RenderModel(perspectiveMatrix * viewMatrix, model.modelId, mvMatrix, building.color, false);
         }
     }

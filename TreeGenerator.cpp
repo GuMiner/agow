@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <chrono>
 #include <limits>
-#include "Math\MathOps.h"
+#include <glm/gtc/random.hpp>
 #include "Utils\Logger.h"
 #include "TreeGenerator.h"
 
@@ -24,7 +24,7 @@ bool TreeGenerator::IsDenseType(TreeType type)
     }
 }
 
-bool TreeGenerator::IsPointWithinShape(TreeType type, const vec::vec3& pos)
+bool TreeGenerator::IsPointWithinShape(TreeType type, const glm::vec3& pos)
 {
     const float ovalRadius = 0.25f; // TODO configurable.
     const float sideOvalRadius = 0.50f;
@@ -36,7 +36,7 @@ bool TreeGenerator::IsPointWithinShape(TreeType type, const vec::vec3& pos)
         return true;
     case TreeType::SPHERE_DENSE:
     case TreeType::SPHERE_SPARSE:
-        return vec::length(pos) < 1.0f;
+        return glm::length(pos) < 1.0f;
     case TreeType::OVAL_DENSE:
     case TreeType::OVAL_SPARSE:
         return (pos.x * pos.x) + (pos.y * pos.y) + (pos.z * pos.z) / (ovalRadius * ovalRadius) < 1.0f;
@@ -51,10 +51,10 @@ bool TreeGenerator::IsPointWithinShape(TreeType type, const vec::vec3& pos)
     }
 }
 
-void TreeGenerator::GenerateAttractionPoints(TreeType type, float radius, float height, std::vector<vec::vec3>* points)
+void TreeGenerator::GenerateAttractionPoints(TreeType type, float radius, float height, std::vector<glm::vec3>* points)
 {
     // TODO configurable. All attraction points are above the trunk height.
-    float trunkHeight = (0.11f + MathOps::Rand() * 0.22f) * height;
+    float trunkHeight = (0.11f + glm::linearRand(0.0f, 1.0f) * 0.22f) * height;
     float shapeHeight = height - trunkHeight; // Guaranteed to be positive.
 
     unsigned int pointCount = IsDenseType(type) ? 2000 : 1000;
@@ -62,20 +62,20 @@ void TreeGenerator::GenerateAttractionPoints(TreeType type, float radius, float 
     for (unsigned int i = 0; points->size() <= pointCount && i < maxIterations; i++)
     {
         // Potentially generate a random point within the vincinity of the shape (cube of [-radius, -radius, 0], [radius, radius, shapeHeight])
-        vec::vec3 point = vec::vec3(MathOps::Rand() * 2.0f - 1.0f, MathOps::Rand() * 2.0f - 1.0f, MathOps::Rand());
+        glm::vec3 point = glm::linearRand(glm::vec3(-1.0f), glm::vec3(1.0f));
         if (IsPointWithinShape(type, point))
         {
-            points->push_back(point * vec::vec3(radius * 2.0f - radius, radius * 2.0f - radius, shapeHeight) + vec::vec3(0, 0, trunkHeight));
+            points->push_back(point * glm::vec3(radius * 2.0f - radius, radius * 2.0f - radius, shapeHeight) + glm::vec3(0, 0, trunkHeight));
         }
     }
 }
 
-float TreeGenerator::GetMinLeafDistance(vec::vec3 point, std::vector<Leaf>* leafs)
+float TreeGenerator::GetMinLeafDistance(glm::vec3 point, std::vector<Leaf>* leafs)
 {
     float minDistance = std::numeric_limits<float>::max();
     for (unsigned int i = 0; i < leafs->size(); i++)
     {
-        float distance = vec::length(point - (*leafs)[i].pos);
+        float distance = glm::length(point - (*leafs)[i].pos);
         if (distance < minDistance)
         {
             minDistance = distance;
@@ -88,7 +88,7 @@ float TreeGenerator::GetMinLeafDistance(vec::vec3 point, std::vector<Leaf>* leaf
 void TreeGenerator::GrowTrunk(std::vector<Branch>* branches, std::vector<Leaf>* leafs, float branchLength, float leafDetectionDistance, float maxHeight)
 {
     Branch* lastBranch = nullptr;
-    branches->push_back(Branch(nullptr, vec::vec3(0, 0, 0), vec::vec3(0, 0, branchLength)));
+    branches->push_back(Branch(nullptr, glm::vec3(0, 0, 0), glm::vec3(0, 0, branchLength)));
     bool lastBranchCloseEnough = GetMinLeafDistance((*branches)[branches->size() - 1].end(), leafs) < leafDetectionDistance;
     
     // Grow until we're ready to add leaves or our trunk is the height of the tree!
@@ -104,8 +104,8 @@ bool TreeGenerator::IsBranchWithinDistance(std::vector<Branch>* branches, Branch
 {
     for (unsigned int i = 0; i < branches->size(); i++)
     {
-        if (vec::length(branch.pos - (*branches)[i].pos) < distance && 
-            vec::length(branch.end() - (*branches)[i].end()) < distance)
+        if (glm::length(branch.pos - (*branches)[i].pos) < distance && 
+            glm::length(branch.end() - (*branches)[i].end()) < distance)
         {
             return true;
         }
@@ -115,26 +115,26 @@ bool TreeGenerator::IsBranchWithinDistance(std::vector<Branch>* branches, Branch
 }
 
 // Generates a random tree.
-GenerationResults TreeGenerator::GenerateTree(const vec::vec3& pos, std::vector<vec::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<vec::vec3>* leafPoints)
+GenerationResults TreeGenerator::GenerateTree(const glm::vec3& pos, std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints)
 {
-    TreeType type = (TreeType)MathOps::Rand(0, (int)TreeType::COUNT);
+    TreeType type = (TreeType)glm::linearRand(0, (int)TreeType::COUNT - 1);
     
     // TODO configurable
-    float radius = 2.0f + MathOps::Rand() * 4.0f;
-    float height = std::max(3.0f, radius + MathOps::Rand() * 5.0f - 1.0f);
+    float radius = 2.0f + glm::linearRand(0.0f, 4.0f);
+    float height = std::max(3.0f, radius + glm::linearRand(0.0f, 5.0f) - 1.0f);
 
     return GenerateTree(type, pos, radius, height, trunkLines, trunkSizes, leafPoints);
 }
 
 // Generates a tree of the specified type.
-GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& pos, float radius, float height,
-    std::vector<vec::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<vec::vec3>* leafPoints)
+GenerationResults TreeGenerator::GenerateTree(TreeType type, const glm::vec3& pos, float radius, float height,
+    std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints)
 {
     // TODO support trunk sizes by determining max parent height of branches.
     auto startTime = std::chrono::system_clock::now();
 
     // Generate the tree at the origin
-    std::vector<vec::vec3> attractionPoints;
+    std::vector<glm::vec3> attractionPoints;
     GenerateAttractionPoints(type, radius, height, &attractionPoints);
 
     // TODO configurable
@@ -177,11 +177,11 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
             // Find the closest branch, remove the leaf if it is close enough.
             for (unsigned int j = 0; j < branches.size(); j++)
             {
-                float distance = vec::length(branches[j].end() - leaves[i].pos);
+                float distance = glm::length(branches[j].end() - leaves[i].pos);
                 if (distance < minDistance)
                 {
                     // The leaf is too close, so we remove it and add it to the known leaf points.
-                    leafPoints->push_back(branches[j].pos + MathOps::Rand() * (branches[j].end() - leaves[i].pos) + pos);
+                    leafPoints->push_back(branches[j].pos + glm::linearRand(0.0f, 1.0f) * (branches[j].end() - leaves[i].pos) + pos);
                     leavesToRemove.push_back(i);
                     ++leavesAdded;
                     leafRemoved = true;
@@ -201,8 +201,8 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
             // Tug the branch towards the leaf accordingly. Tug is *regardless of distance from branch*.
             if (!leafRemoved && leaves[i].closestBranch != nullptr)
             {
-                vec::vec3 direction = leaves[i].pos - leaves[i].closestBranch->end();
-                leaves[i].closestBranch->growDirection += (vec::normalize(direction) * branchLength);
+                glm::vec3 direction = leaves[i].pos - leaves[i].closestBranch->end();
+                leaves[i].closestBranch->growDirection += (glm::normalize(direction) * branchLength);
                 leaves[i].closestBranch->grew++;
             }
         }
@@ -219,7 +219,7 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const vec::vec3& po
         {
             if (branches[i].grew != 0)
             {
-                vec::vec3 averageDirection = vec::normalize(branches[i].growDirection);
+                glm::vec3 averageDirection = glm::normalize(branches[i].growDirection);
                 newBranches.push_back(Branch(&branches[i], branches[i].end(), averageDirection * branchLength * (float)(1 + branches[i].grew % 3)));
 
                 branches[i].growDirection = branches[i].startDirection;

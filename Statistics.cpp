@@ -1,19 +1,19 @@
 #include <sstream>
 #include <string>
-#include "Math\MatrixOps.h"
+#include <glm\gtc\matrix_transform.hpp>
 #include "Statistics.h"
 
 Statistics::Statistics()
-    : textPixelHeight(20), textScale(MatrixOps::Scale(0.02f, 0.02f, 0.02f)), currentFrameCounter(0), totalElapsedTime(0.0f), lastSector(-1, -1)
+    : textPixelHeight(20), textScale(glm::scale(glm::mat4(), glm::vec3(0.02f, 0.02f, 0.02f))), currentFrameCounter(0), totalElapsedTime(0.0f), lastSector(-1, -1)
 {
-    runTime.posRotMatrix = MatrixOps::Translate(-0.821f, -0.221f, -1.0f) * MatrixOps::Scale(0.015f, 0.015f, 0.015f);
-    runTime.color = vec::vec3(0.8f, 0.8f, 0.8f);
+    runTime.posRotMatrix = glm::scale(glm::translate(glm::mat4(), glm::vec3(-0.821f, -0.221f, -1.0f)), glm::vec3(0.015f, 0.015f, 0.015f));
+    runTime.color = glm::vec3(0.8f, 0.8f, 0.8f);
 
-    fps.posRotMatrix = MatrixOps::Translate(-0.821f, -0.121f, -1.0f) * MatrixOps::Scale(0.015f, 0.015f, 0.015f);
-    fps.color = vec::vec3(0.0f, 1.0f, 0.0f);
+    fps.posRotMatrix = glm::scale(glm::translate(glm::mat4(), glm::vec3(-0.821f, -0.121f, -1.0f)), glm::vec3(0.015f, 0.015f, 0.015f));
+    fps.color = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    sector.posRotMatrix = MatrixOps::Translate(-0.821f, -0.021f, -1.0f) * MatrixOps::Scale(0.015f, 0.015f, 0.015f);
-    sector.color = vec::vec3(1.0f, 1.0f, 0.0f);
+    sector.posRotMatrix = glm::scale(glm::translate(glm::mat4(), glm::vec3(-0.821f, -0.021f, -1.0f)), glm::vec3(0.015f, 0.015f, 0.015f));
+    sector.color = glm::vec3(1.0f, 1.0f, 0.0f);
 }
 
 bool Statistics::Initialize(FontManager* fontManager)
@@ -28,7 +28,7 @@ bool Statistics::Initialize(FontManager* fontManager)
     return true;
 }
 
-void Statistics::UpateSector(const vec::vec2i& sector)
+void Statistics::UpateSector(const glm::ivec2& sector)
 {
     if (sector.x != lastSector.x || sector.y != lastSector.y)
     {
@@ -72,7 +72,7 @@ void Statistics::UpdateRunTime(float currentTime, float elapsedTime)
     }
 }
 
-void Statistics::RenderStats(vec::mat4& perspectiveMatrix)
+void Statistics::RenderStats(glm::mat4& perspectiveMatrix)
 {
     fontManager->RenderSentence(runTime.sentenceId, perspectiveMatrix, runTime.posRotMatrix);
     fontManager->RenderSentence(fps.sentenceId, perspectiveMatrix, fps.posRotMatrix);

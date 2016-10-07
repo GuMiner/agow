@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
+#include <glm\vec3.hpp>
 #include "Data\RenderableSentence.h"
 #include "Managers\FontManager.h"
-#include "Math\Vec.h"
 #include "Utils\Vertex.h"
 
 // Draws statistics information in a more fancier (and older) manner than using the GUI library.
@@ -14,10 +14,10 @@ class Statistics
     // Stats data
     int currentFrameCounter;
     float totalElapsedTime;
-    vec::vec2i lastSector;
+    glm::ivec2 lastSector;
 
     int textPixelHeight;
-    vec::mat4 textScale;
+    glm::mat4 textScale;
 
     // Overall Details
     RenderableSentence fps;
@@ -29,6 +29,6 @@ public:
     bool Initialize(FontManager* fontManager);
 
     void UpdateRunTime(float currentTime, float elapsedTime);
-    void UpateSector(const vec::vec2i& sector);
-    void RenderStats(vec::mat4& perspectiveMatrix);
+    void UpateSector(const glm::ivec2& sector);
+    void RenderStats(glm::mat4& perspectiveMatrix);
 };

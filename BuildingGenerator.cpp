@@ -1,5 +1,5 @@
 #include <Bullet\btBulletDynamicsCommon.h>
-#include "Math\MathOps.h"
+#include <glm\gtc\random.hpp>
 #include "Utils\Logger.h"
 #include "Utils\StringUtils.h"
 #include "BuildingGenerator.h"
@@ -48,7 +48,7 @@ DecisionTree<BuildingDecisionData>::Choice BuildingGenerator::RandomWalkEvaluato
     if (yesNodeNotNull && noNodeNotNull)
     {
         // Both aren't null. Randomly choose.
-        if (MathOps::Rand() > 0.50f)
+        if (glm::linearRand(0.0f, 1.0f) > 0.50f)
         {
             return DecisionTree<BuildingDecisionData>::Choice::YES_ITEM;
         }
@@ -163,7 +163,7 @@ bool BuildingGenerator::LoadBuilder(std::string lowDensityFile, std::string high
     return lowDensityBuildingBuilder.LoadTreeFromFile(lowDensityFile) && highDensityBuildingBuilder.LoadTreeFromFile(highDensityFile);
 }
 
-void BuildingGenerator::GetScaledModelPoints(std::vector<vec::vec3>& points, vec::vec3 scaleFactor, unsigned int modelId)
+void BuildingGenerator::GetScaledModelPoints(std::vector<glm::vec3>& points, glm::vec3 scaleFactor, unsigned int modelId)
 {
     for (unsigned int i = 0; i < modelManager->GetModel(modelId).vertices.positions.size(); i++)
     {
@@ -172,11 +172,11 @@ void BuildingGenerator::GetScaledModelPoints(std::vector<vec::vec3>& points, vec
 }
 
 // Returns a random low density building centered (XY) on the origin starting at Z == 0.
-std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(vec::vec3 offset, float* separationRadius)
+std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(glm::vec3 offset, float* separationRadius)
 {
     std::vector<ScaledPhysicalModel> resultingSegments;
 
-    vec::vec3 overallScale = vec::vec3(1.0f);
+    glm::vec3 overallScale = glm::vec3(1.0f);
     float currentHeight = 0.0f;
     *separationRadius = 0.0f;
 
@@ -184,20 +184,20 @@ std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(
     for (unsigned int i = 0; i < buildingSegmentRules.size(); i++)
     {
         const BuildingDecisionData& buildingRule = buildingSegmentRules[i];
-        int layers = MathOps::Rand(buildingRule.minLayers, buildingRule.maxLayers + 1);
+        int layers = glm::linearRand(buildingRule.minLayers, buildingRule.maxLayers);
         while (layers > 0)
         {
             // For each segment, scale the model according to randomness and z-factors.
-            float scaleFactor = MathOps::Rand() * (buildingRule.maxScaleFactor - buildingRule.minScaleFactor) + buildingRule.minScaleFactor;
-            overallScale *= vec::vec3(scaleFactor);
+            float scaleFactor = glm::linearRand(buildingRule.minScaleFactor, buildingRule.maxScaleFactor);
+            overallScale *= glm::vec3(scaleFactor);
 
             ScaledPhysicalModel model;
-            model.scaleFactor = overallScale * vec::vec3(1.0f, 1.0f, buildingRule.zFactor);
+            model.scaleFactor = overallScale * glm::vec3(1.0f, 1.0f, buildingRule.zFactor);
             model.modelId = modelManager->GetModelId(buildingRule.modelName);
 
-            std::vector<vec::vec3> scaledPoints;
+            std::vector<glm::vec3> scaledPoints;
             GetScaledModelPoints(scaledPoints, model.scaleFactor, model.modelId);
-            btCollisionShape* collisionShape = new btConvexHullShape((btScalar*)&scaledPoints[0], scaledPoints.size(), sizeof(vec::vec3));
+            btCollisionShape* collisionShape = new btConvexHullShape((btScalar*)&scaledPoints[0], scaledPoints.size(), sizeof(glm::vec3));
             
             btVector3 aabbMin;
             btVector3 aabbMax;

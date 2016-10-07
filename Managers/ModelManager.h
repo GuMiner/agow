@@ -1,12 +1,13 @@
 #pragma once
-#include <GL/glew.h>
 #include <map>
 #include <string>
 #include <vector>
+#include <GL/glew.h>
+#include <glm\vec3.hpp>
+#include <glm\mat4x4.hpp>
 #include "ImageManager.h"
 #include "ShaderManager.h"
 #include "Data\Model.h"
-#include "Math\Vec.h"
 
 struct PosUvPair
 {
@@ -38,7 +39,7 @@ class ModelManager
     std::vector<TextureModel> models;
 
     // Temporary loading structures.
-    std::vector<vec::vec2> rawUvs;
+    std::vector<glm::vec2> rawUvs;
     std::vector<PosUvPair> rawIndices;
     std::map<unsigned int, unsigned int> indexUvMap; // [positionId] = UV Id. Maps rawIndices for faster loading access.
     std::map<unsigned int, std::vector<PosUvPair>> uvVertexRemapping;
@@ -51,7 +52,7 @@ class ModelManager
 
     // Loads an OBJ model into the specified vertices, returning true on success.
     // Note that the OBJ model must fully specify all positions / UVs *before* any indices.
-    bool LoadModel(const char* objFilename, universalVertices& vertices, int* rawPointCount, vec::vec3* minBounds, vec::vec3* maxBounds);
+    bool LoadModel(const char* objFilename, universalVertices& vertices, int* rawPointCount, glm::vec3* minBounds, glm::vec3* maxBounds);
 
 public:
     // Clears the next model ID and initializes the local reference to the image manager.
@@ -69,10 +70,10 @@ public:
     unsigned int GetCurrentModelCount() const;
 
     // Renders the specified model given by the ID.
-    void RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, bool selected);
+    void RenderModel(const glm::mat4& projectionMatrix, unsigned int id, glm::mat4& mvMatrix, bool selected);
 
     // Renders the specified model given by the ID, using the given color.
-    void RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, vec::vec4 shadingColor, bool selected);
+    void RenderModel(const glm::mat4& projectionMatrix, unsigned int id, glm::mat4& mvMatrix, glm::vec4 shadingColor, bool selected);
 
     // Initializes the OpenGL resources
     bool InitializeOpenGlResources(ShaderManager& shaderManager);

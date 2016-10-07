@@ -1,7 +1,19 @@
 #pragma once
 #include <map>
 #include <GL/glew.h>
-#include "Math\Vec.h"
+#include <glm\vec2.hpp>
+#include <glm\vec3.hpp>
+
+// TODO make a new 'math utils' class and put this there.
+struct iVec2Comparer
+{
+    bool operator()(const glm::ivec2& lhs, const glm::ivec2& rhs) const
+    {
+        // TODO this is really wrong (assuming max voxel size), but also right (anything that big wouldn't run.
+        const int maxSize = 10000;
+        return (lhs.x + lhs.y * maxSize) > (rhs.x + rhs.y * maxSize);
+    }
+};
 
 // Copied from PaletteWindow.cpp, MapEditor.
 namespace TerrainTypes
@@ -38,5 +50,5 @@ struct TerrainTile
     unsigned char* rawImage;
     bool loadedSubtiles;
 
-    std::map<vec::vec2i, SubTile*, vec::vec2iComparer> subtiles;
+    std::map<glm::ivec2, SubTile*, iVec2Comparer> subtiles;
 };

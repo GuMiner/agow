@@ -1,6 +1,5 @@
 #include "Config\PhysicsConfig.h"
 #include "Managers\TerrainManager.h"
-#include "Math\MathOps.h"
 #include "Utils\Logger.h"
 #include "SignGenerator.h"
 #include "SignEffect.h"
@@ -16,7 +15,7 @@ bool SignEffect::LoadBasics(ShaderManager* shaderManager)
     return true;
 }
 
-bool SignEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * tile)
+bool SignEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * tile)
 {
     bool hasSignEffect = false;
     SignEffectData* signEfect = nullptr;
@@ -53,11 +52,11 @@ bool SignEffect::LoadEffect(vec::vec2i subtileId, void** effectData, SubTile * t
                             signGenerator.GetRandomSignModel(&coloredModel.model.modelId, &shape);
 
                             // TODO configurable.
-                            coloredModel.color = vec::vec4(0.60f, 0.70f, 0.60f, 1.0f);
+                            coloredModel.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
 
                             // TODO configurable masses.
                             float height = tile->heightmap[i + j * subTileSize];
-                            vec::vec2 realPos = vec::vec2((float)subtileId.x, (float)subtileId.y) * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + vec::vec2((float)(i + 1), (float)(j + 1));
+                            glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)(i + 1), (float)(j + 1));
                             coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
 
                             signEfect->signs.push_back(coloredModel);
@@ -90,17 +89,17 @@ void SignEffect::UnloadEffect(void * effectData)
     delete rockEffect;
 }
 
-void SignEffect::Simulate(const vec::vec2i subtileId, void* effectData, float elapsedSeconds)
+void SignEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds)
 {
     // No custom simulation.
 }
 
-void SignEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix)
+void SignEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     SignEffectData* rockEffect = (SignEffectData*)effectData;
     for (const ColoredPhysicalModel& model : rockEffect->signs)
     {
-        vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.model.rigidBody);
+        glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.model.rigidBody);
         modelManager->RenderModel(perspectiveMatrix * viewMatrix, model.model.modelId, mvMatrix, model.color, false);
     }
 }

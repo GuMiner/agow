@@ -1,25 +1,25 @@
+#include <glm\gtc\matrix_transform.hpp>
 #include "Region.h"
 #include "Config\PhysicsConfig.h"
 #include "Data\UserPhysics.h"
-#include "Math\MatrixOps.h"
 #include "Utils\TypedCallback.h"
 
-Region::Region(vec::vec2i pos, TerrainManager* terrainManager, int subdivisions)
+Region::Region(glm::ivec2 pos, TerrainManager* terrainManager, int subdivisions)
     : pos(pos), subdivisions(subdivisions)
 {
     terrainManager->LoadTerrainTile(pos, &regionTile);
 }
 
-vec::vec2i Region::GetPos() const
+glm::ivec2 Region::GetPos() const
 {
     return pos;
 }
 
-void Region::EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::vector<vec::vec2i>* tilesToLoadHeightmapsFor)
+void Region::EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::vector<glm::ivec2>* tilesToLoadHeightmapsFor)
 {
-    for (const vec::vec2i& tilePos : *tilesToLoadHeightmapsFor)
+    for (const glm::ivec2& tilePos : *tilesToLoadHeightmapsFor)
     {
-        vec::vec2i localPos = tilePos - (pos * TerrainManager::Subdivisions);
+        glm::ivec2 localPos = tilePos - (pos * TerrainManager::Subdivisions);
         bool inRegion = (localPos.x >= 0 && localPos.y >= 0 && localPos.x < TerrainManager::Subdivisions && localPos.y < TerrainManager::Subdivisions);
         if (inRegion && loadedHeightmaps.find(localPos) == loadedHeightmaps.end())
         {
@@ -28,7 +28,7 @@ void Region::EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::v
     }
 }
 
-btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDynamicsWorld* dynamicsWorld)
+btRigidBody* Region::CreateHeightmap(glm::ivec2 tilePos, SubTile* subTile, btDynamicsWorld* dynamicsWorld)
 {
     btHeightfieldTerrainShape* heightfield = new btHeightfieldTerrainShape(
         PhysicsConfig::TerrainSize / TerrainManager::Subdivisions, PhysicsConfig::TerrainSize / TerrainManager::Subdivisions, subTile->heightmap, 900.0f, 2, true, false);
@@ -52,45 +52,45 @@ btRigidBody* Region::CreateHeightmap(vec::vec2i tilePos, SubTile* subTile, btDyn
     return heightmap;
 }
 
-float Region::GetPointHeight(const vec::vec2i tilePos, const vec::vec2i fullPos) const
+float Region::GetPointHeight(const glm::ivec2 tilePos, const glm::ivec2 fullPos) const
 {
     // Map to the correct subtile.
-    vec::vec2i localPos = tilePos - (pos * TerrainManager::Subdivisions);
+    glm::ivec2 localPos = tilePos - (pos * TerrainManager::Subdivisions);
 
     // Map to the correct point within the subtile.
     int subTileSize = (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions);
-    vec::vec2i subtileOffset = fullPos - (tilePos * subTileSize);
+    glm::ivec2 subtileOffset = fullPos - (tilePos * subTileSize);
     return regionTile->subtiles[localPos]->heightmap[subtileOffset.x + subtileOffset.y * subTileSize];
 }
 
-int Region::GetPointType(const vec::vec2i tilePos, const vec::vec2i fullPos) const
+int Region::GetPointType(const glm::ivec2 tilePos, const glm::ivec2 fullPos) const
 {
     // Map to the correct subtile.
-    vec::vec2i localPos = tilePos - (pos * TerrainManager::Subdivisions);
+    glm::ivec2 localPos = tilePos - (pos * TerrainManager::Subdivisions);
 
     // Map to the correct point within the subtile.
     int subTileSize = (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions);
-    vec::vec2i subtileOffset = fullPos - (tilePos * subTileSize);
+    glm::ivec2 subtileOffset = fullPos - (tilePos * subTileSize);
     return (int)(regionTile->subtiles[localPos]->type[subtileOffset.x + subtileOffset.y * subTileSize]);
 }
 
-void Region::Simulate(TerrainManager* terrainManager, vec::vec2i tilePos, float elapsedSeconds)
+void Region::Simulate(TerrainManager* terrainManager, glm::ivec2 tilePos, float elapsedSeconds)
 {
     terrainManager->Simulate(pos, tilePos - (pos * TerrainManager::Subdivisions), elapsedSeconds);
 }
 
-void Region::RenderRegion(vec::vec2i tilePos, TerrainManager* terrainManager, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix) const
+void Region::RenderRegion(glm::ivec2 tilePos, TerrainManager* terrainManager, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix) const
 {
-    vec::mat4 mvMatrix = MatrixOps::Translate(
+    glm::mat4 mvMatrix = glm::translate(glm::mat4(), glm::vec3(
         (float)(tilePos.x * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions)),
-        (float)(tilePos.y * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions)), 0);
+        (float)(tilePos.y * (PhysicsConfig::TerrainSize / TerrainManager::Subdivisions)), 0));
     terrainManager->RenderTile(pos, tilePos - (pos * TerrainManager::Subdivisions), perspectiveMatrix, viewMatrix, mvMatrix);
 }
 
 void Region::CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld)
 {
     terrainManager->UnloadTerrainTile(pos);
-    for (std::pair<const vec::vec2i, btRigidBody*> heightmap : loadedHeightmaps)
+    for (std::pair<const glm::ivec2, btRigidBody*> heightmap : loadedHeightmaps)
     {
         dynamicsWorld->removeRigidBody(heightmap.second);
         delete heightmap.second->getUserPointer();

@@ -2,10 +2,10 @@
 #include <string>
 #include <map>
 #include <Bullet\btBulletDynamicsCommon.h>
+#include <glm\vec4.hpp>
 #include "Data\RenderableSentence.h"
 #include "Data\UserPhysics.h"
 #include "Managers\ModelManager.h"
-#include "Math/Vec.h"
 #include "Utils\TypedCallback.h"
 #include "BasicPhysics.h"
 #include "DialogPane.h"
@@ -31,7 +31,7 @@ private:
 
     std::string description;
     Shape shape;
-    vec::vec4 color;
+    glm::vec4 color;
 
     int health;
     bool isSelected;
@@ -52,16 +52,16 @@ private:
 public:
     static bool LoadNpcModels(ModelManager* modelManager);
 
-    NPC(std::string name, std::string description, Shape shape, vec::vec4 color, int startingHealth);
+    NPC(std::string name, std::string description, Shape shape, glm::vec4 color, int startingHealth);
     
     void LoadGraphics(FontManager* fontManager);
-    void LoadNpcPhysics(BasicPhysics physics, vec::vec3 startingPosition, float mass);
+    void LoadNpcPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass);
     
     bool Converse(DialogPane* dialogPane);
     std::string GetName() const;
 
     void Update(float gameTime, float elapsedTime);
-    void Render(FontManager* fontManager, ModelManager* modelManager, const vec::mat4& projectionMatrix);
+    void Render(FontManager* fontManager, ModelManager* modelManager, const glm::mat4& projectionMatrix);
 
     void UnloadNpcPhysics(BasicPhysics physics);
     virtual ~NPC();

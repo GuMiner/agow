@@ -13,31 +13,31 @@ NpcManager::NpcManager()
 
     // TODO make this not order-dependent.
     npcs[NpcType::KEY].push_back(NPC("James Blanton", "Giver of yer gear.", NPC::Shape::DIAMOND, 
-        vec::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE));
+        glm::vec4(0.0f, 1.0f, 0.10f, 0.80f), NPC::INVULNERABLE));
     npcs[NpcType::KEY].push_back(NPC("Aaron Krinst", "Giver of yer data.", NPC::Shape::DIAMOND,
-        vec::vec4(0.0f, 0.20f, 1.0f, 0.70f), NPC::INVULNERABLE));
+        glm::vec4(0.0f, 0.20f, 1.0f, 0.70f), NPC::INVULNERABLE));
     npcs[NpcType::KEY].push_back(NPC("Barry Ingleson", "Nominal strategy director.", NPC::Shape::CUBOID,
-        vec::vec4(1.0f, 0.10f, 0.0f, 0.90f), NPC::INVULNERABLE));
+        glm::vec4(1.0f, 0.10f, 0.0f, 0.90f), NPC::INVULNERABLE));
     npcs[NpcType::KEY].push_back(NPC("Oliver Yttrisk", "Battle assistant extraordinaire.", NPC::Shape::CUBOID,
-        vec::vec4(1.0f, 0.50f, 0.0f, 0.50f), NPC::INVULNERABLE));
+        glm::vec4(1.0f, 0.50f, 0.0f, 0.50f), NPC::INVULNERABLE));
 }
 
 void NpcManager::LoadNpcPhysics(BasicPhysics physics, RegionManager* regionManager)
 {
     // TODO configurable.
-    vec::vec2 gearSciPos = Map::GetPoint(Map::POI::GEAR_SCIENTIST);
-    vec::vec2 intelSciPos = Map::GetPoint(Map::POI::INTELLIGENCE_SCIENTIST);
-    vec::vec2 generalMilPos = Map::GetPoint(Map::POI::GENERAL_MILITARY);
-    vec::vec2 sergeantMilPos = Map::GetPoint(Map::POI::SERGEANT_MILITARY);
+    glm::vec2 gearSciPos = Map::GetPoint(Map::POI::GEAR_SCIENTIST);
+    glm::vec2 intelSciPos = Map::GetPoint(Map::POI::INTELLIGENCE_SCIENTIST);
+    glm::vec2 generalMilPos = Map::GetPoint(Map::POI::GENERAL_MILITARY);
+    glm::vec2 sergeantMilPos = Map::GetPoint(Map::POI::SERGEANT_MILITARY);
     
     npcs[NpcType::KEY][KeyNpcs::GEAR].LoadNpcPhysics(physics,
-        vec::vec3(gearSciPos.x, gearSciPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, gearSciPos)), 100);
+        glm::vec3(gearSciPos.x, gearSciPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, gearSciPos)), 100);
     npcs[NpcType::KEY][KeyNpcs::INTEL].LoadNpcPhysics(physics,
-        vec::vec3(intelSciPos.x, intelSciPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, intelSciPos)), 90);
+        glm::vec3(intelSciPos.x, intelSciPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, intelSciPos)), 90);
     npcs[NpcType::KEY][KeyNpcs::GENERAL].LoadNpcPhysics(physics,
-        vec::vec3(generalMilPos.x, generalMilPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, generalMilPos)), 80);
+        glm::vec3(generalMilPos.x, generalMilPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, generalMilPos)), 80);
     npcs[NpcType::KEY][KeyNpcs::SERGEANT].LoadNpcPhysics(physics,
-        vec::vec3(sergeantMilPos.x, sergeantMilPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, sergeantMilPos)), 65);
+        glm::vec3(sergeantMilPos.x, sergeantMilPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, sergeantMilPos)), 65);
 }
 
 void NpcManager::LoadGraphics(FontManager* fontManager)
@@ -83,7 +83,7 @@ void NpcManager::Update(float gameTime, float frameTime)
     }
 }
 
-void NpcManager::Render(FontManager* fontManager, ModelManager* modelManager, vec::mat4 projectionMatrix)
+void NpcManager::Render(FontManager* fontManager, ModelManager* modelManager, glm::mat4 projectionMatrix)
 {
     for (auto iter = npcs.begin(); iter != npcs.end(); iter++)
     {

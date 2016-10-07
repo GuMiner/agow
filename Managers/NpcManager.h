@@ -2,10 +2,10 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <glm\vec3.hpp>
 #include "Managers\FontManager.h"
 #include "Managers\ModelManager.h"
 #include "Managers\RegionManager.h"
-#include "Math\Vec.h"
 #include "BasicPhysics.h"
 #include "Events.h"
 #include "Npc.h"
@@ -41,7 +41,7 @@ public:
     
     void Converse(Events* events, DialogPane* dialogPane);
     void Update(float gameTime, float frameTime);
-    void Render(FontManager* fontManager, ModelManager* modelManager, vec::mat4 projectionMatrix);
+    void Render(FontManager* fontManager, ModelManager* modelManager, glm::mat4 projectionMatrix);
     
     void UnloadNpcPhysics(BasicPhysics physics);
 };

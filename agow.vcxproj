@@ -125,11 +125,7 @@
     <ClInclude Include="Managers\TerrainEffectManager.h" />
     <ClInclude Include="Managers\TerrainManager.h" />
     <ClInclude Include="Map.h" />
-    <ClInclude Include="Math\MathOps.h" />
-    <ClInclude Include="Math\MatrixOps.h" />
     <ClInclude Include="Math\PhysicsOps.h" />
-    <ClInclude Include="Math\Vec.h" />
-    <ClInclude Include="Math\VecOps.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="Region.h" />
     <ClInclude Include="RockGenerator.h" />
@@ -179,11 +175,7 @@
     <ClCompile Include="Managers\TerrainEffectManager.cpp" />
     <ClCompile Include="Managers\TerrainManager.cpp" />
     <ClCompile Include="Map.cpp" />
-    <ClCompile Include="Math\MathOps.cpp" />
-    <ClCompile Include="Math\MatrixOps.cpp" />
     <ClCompile Include="Math\PhysicsOps.cpp" />
-    <ClCompile Include="Math\Vec.cpp" />
-    <ClCompile Include="Math\VecOps.cpp" />
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="Region.cpp" />
     <ClCompile Include="RockGenerator.cpp" />

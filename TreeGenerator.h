@@ -1,22 +1,22 @@
 #pragma once
 #include <vector>
-#include "Math\Vec.h"
+#include <glm\vec3.hpp>
 
 struct Branch
 {
     Branch* parent;
-    vec::vec3 pos;
-    vec::vec3 startDirection;
+    glm::vec3 pos;
+    glm::vec3 startDirection;
     
-    vec::vec3 growDirection;
+    glm::vec3 growDirection;
     unsigned int grew;
 
-    Branch(Branch* parent, vec::vec3 pos, vec::vec3 startDirection)
+    Branch(Branch* parent, glm::vec3 pos, glm::vec3 startDirection)
         : parent(parent), pos(pos), startDirection(startDirection), growDirection(startDirection), grew(0)
     {
     }
 
-    vec::vec3 end() const
+    glm::vec3 end() const
     {
         return pos + startDirection;
     }
@@ -24,12 +24,12 @@ struct Branch
 
 struct Leaf
 {
-    vec::vec3 pos;
+    glm::vec3 pos;
     
     float closestDistance;
     Branch* closestBranch;
 
-    Leaf(vec::vec3 pos)
+    Leaf(glm::vec3 pos)
         : pos(pos), closestDistance(std::numeric_limits<float>::max())
     {
     }
@@ -67,11 +67,11 @@ class TreeGenerator
     bool IsDenseType(TreeType type);
 
     // Checks if the point is within a shape (0 to 1 in all dimensions).
-    bool IsPointWithinShape(TreeType type, const vec::vec3& pos);
+    bool IsPointWithinShape(TreeType type, const glm::vec3& pos);
 
-    void GenerateAttractionPoints(TreeType type, float radius, float height, std::vector<vec::vec3>* points);
+    void GenerateAttractionPoints(TreeType type, float radius, float height, std::vector<glm::vec3>* points);
 
-    float GetMinLeafDistance(vec::vec3 point, std::vector<Leaf>* leafs);
+    float GetMinLeafDistance(glm::vec3 point, std::vector<Leaf>* leafs);
     void GrowTrunk(std::vector<Branch>* branches, std::vector<Leaf>* leafs, float branchLength, float leafDetectionDistance, float maxHeight);
 
     bool IsBranchWithinDistance(std::vector<Branch>* branches, Branch branch, float distance);
@@ -80,10 +80,10 @@ public:
     TreeGenerator();
 
     // Generates a random tree.
-    GenerationResults GenerateTree(const vec::vec3& pos, std::vector<vec::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<vec::vec3>* leafPoints);
+    GenerationResults GenerateTree(const glm::vec3& pos, std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints);
 
     // Generates a tree of the specified type.
-    GenerationResults GenerateTree(TreeType type, const vec::vec3& pos, float radius, float height,
-        std::vector<vec::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<vec::vec3>* leafPoints);
+    GenerationResults GenerateTree(TreeType type, const glm::vec3& pos, float radius, float height,
+        std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints);
 };
 

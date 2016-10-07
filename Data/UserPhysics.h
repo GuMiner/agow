@@ -1,5 +1,5 @@
 #pragma once
-#include "Math\Vec.h"
+#include <glm\vec3.hpp>
 
 class UserPhysics
 {

@@ -1,5 +1,5 @@
 #pragma once
-#include "Math\MatrixOps.h"
+#include <glm\mat4x4.hpp>
 
 // Holds data constant across the application.
 class Constants
@@ -20,7 +20,7 @@ public:
 
     static float PI;
 
-    static vec::mat4 PerspectiveMatrix;
+    static glm::mat4 PerspectiveMatrix;
 
     const static int MAX_FRAMERATE = 60;
 };

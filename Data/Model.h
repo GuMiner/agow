@@ -3,8 +3,9 @@
 #include <vector>
 #include <Bullet\btBulletDynamicsCommon.h>
 #include <GL\glew.h>
+#include <glm\vec3.hpp>
+#include <glm\vec4.hpp>
 #include "Utils\Vertex.h"
-#include "Math\Vec.h"
 
 // Holds data from a loaded, indexed UV textured model.
 struct TextureModel
@@ -25,8 +26,8 @@ struct TextureModel
     GLuint indexOffset;
 
     // Model bounding box.
-    vec::vec3 minBounds;
-    vec::vec3 maxBounds;
+    glm::vec3 minBounds;
+    glm::vec3 maxBounds;
 };
 
 struct PhysicalModel
@@ -38,14 +39,14 @@ struct PhysicalModel
 struct ScaledPhysicalModel
 {
     // We scale drawing by this factor. The rigid body is assumed to already be scaled.
-    vec::vec3 scaleFactor;
+    glm::vec3 scaleFactor;
     unsigned int modelId;
     btRigidBody* rigidBody;
 };
 
 struct ColoredPhysicalModel
 {
-    vec::vec4 color;
+    glm::vec4 color;
     PhysicalModel model;
 };
 

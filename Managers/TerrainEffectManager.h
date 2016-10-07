@@ -7,7 +7,7 @@
 #include "Data\TerrainTile.h"
 #include "Managers\ShaderManager.h"
 #include "Managers\ModelManager.h"
-#include "Math\Vec.h"
+#include <glm\vec3.hpp>
 #include "TerrainEffects\TerrainEffect.h"
 #include "Utils\Vertex.h"
 #include "BasicPhysics.h"
@@ -33,9 +33,9 @@ class TerrainEffectManager
     int subTileSize; // In pixels
 
     std::vector<TerrainEffect*> effects;
-    std::map<vec::vec2i, std::vector<TerrainEffectData*>, vec::vec2iComparer> subtileEffectData;
+    std::map<glm::ivec2, std::vector<TerrainEffectData*>, iVec2Comparer> subtileEffectData;
 
-    void CleanupSubTileEffects(vec::vec2i start, bool log);
+    void CleanupSubTileEffects(glm::ivec2 start, bool log);
 
 public:
     TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, int subTileSize);
@@ -44,15 +44,15 @@ public:
     bool LoadBasics();
     
     // Loads a single tile.
-    bool LoadSubTileEffects(vec::vec2i start, SubTile* tile);
+    bool LoadSubTileEffects(glm::ivec2 start, SubTile* tile);
     
     // Simulates the effects for the loaded tile.
-    void Simulate(const vec::vec2i start, float elapsedSeconds);
+    void Simulate(const glm::ivec2 start, float elapsedSeconds);
 
     // Renders a tile's effects *The tile must have been loaded ahead-of-time.*
-    void RenderSubTileEffects(const vec::vec2i start, const vec::mat4& perspectiveMatrix, const vec::mat4& viewMatrix, const vec::mat4& modelMatrix);
+    void RenderSubTileEffects(const glm::ivec2 start, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix);
 
-    void UnloadSubTileEffects(vec::vec2i start);
+    void UnloadSubTileEffects(glm::ivec2 start);
     virtual ~TerrainEffectManager();
 };
 

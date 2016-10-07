@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML\System.hpp>
 #include <vector>
+#include <glm\mat4x4.hpp>
 #include "Config\GraphicsConfig.h"
 #include "Config\KeyBindingConfig.h"
 #include "Config\PhysicsConfig.h"
@@ -11,7 +12,6 @@
 #include "Managers\NpcManager.h"
 #include "Managers\RegionManager.h"
 #include "Managers\ShaderManager.h"
-#include "Math\MathOps.h"
 #include "Math\PhysicsOps.h"
 #include "Utils\Constants.h"
 
@@ -69,12 +69,11 @@ class agow
     void Update(float currentGameTime, float frameTime);
 
     // Renders the scene.
-    void Render(GLFWwindow* window, vec::mat4& viewMatrix);
+    void Render(GLFWwindow* window, glm::mat4& viewMatrix);
 
 public:
     // Used just for data storage.
     static Constants Constant;
-    static MathOps MathOp;
     static PhysicsOps PhysicsOp;
 
     // Initializes agow and any construction-time setup (such as threads).
