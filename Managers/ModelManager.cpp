@@ -258,24 +258,24 @@ unsigned int ModelManager::LoadModel(const char* rootFilename)
         return 0;
     }
 
-    models[nextModelId] = textureModel;
+    models.push_back(textureModel);
     ++nextModelId;
     return nextModelId - 1;
 }
 
 const TextureModel& ModelManager::GetModel(unsigned int id)
 {
-    return models[id];
+    return models[id - 1];
 }
 
 // Retrieves the model ID given the name used to load the model, 0 if not found.
 unsigned int ModelManager::GetModelId(std::string name) const
 {
-    for (auto iter = models.cbegin(); iter != models.cend(); iter++)
+    for (unsigned int i = 0; i < models.size(); i++)
     {
-        if (_stricmp(iter->second.name.c_str(), name.c_str()) == 0)
+        if (_stricmp(models[i].name.c_str(), name.c_str()) == 0)
         {
-            return iter->first;
+            return i + 1;
         }
     }
 
@@ -299,7 +299,7 @@ void ModelManager::RenderModel(const vec::mat4& projectionMatrix, unsigned int i
 
     GLuint unit = 0;
     glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, models[id].textureId);
+    glBindTexture(GL_TEXTURE_2D, models[id - 1].textureId);
     glUniform1i(textureLocation, unit);
 
     glUniform4f(shadingColorLocation, shadingColor.x, shadingColor.y, shadingColor.z, shadingColor.w);
@@ -308,7 +308,7 @@ void ModelManager::RenderModel(const vec::mat4& projectionMatrix, unsigned int i
     glUniform1f(selectionFactorLocation, selected ? 0.40f : 0.0f);
 
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, models[id].vertices.indices.size(), GL_UNSIGNED_INT, (const void*)(models[id].indexOffset * sizeof(GL_UNSIGNED_INT)));
+    glDrawElements(GL_TRIANGLES, models[id - 1].vertices.indices.size(), GL_UNSIGNED_INT, (const void*)(models[id - 1].indexOffset * sizeof(GL_UNSIGNED_INT)));
 }
 
 // Initializes the OpenGL resources

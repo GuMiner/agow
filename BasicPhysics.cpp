@@ -235,11 +235,12 @@ void BasicPhysics::Warp(btRigidBody* body, vec::vec3 position, vec::vec3 velocit
 
 vec::mat4 BasicPhysics::GetBodyMatrix(const btRigidBody* body)
 {
-    btTransform worldTransform;
-    body->getMotionState()->getWorldTransform(worldTransform);
-
-    vec::quaternion rotation = VecOps::Convert(worldTransform.getRotation());
-    return MatrixOps::Translate(VecOps::Convert(worldTransform.getOrigin())) * rotation.asMatrix();
+    vec::mat4 result;
+    body->getWorldTransform().getOpenGLMatrix((btScalar*)&result);
+    return result;
+    
+    // vec::quaternion rotation = VecOps::Convert(worldTransform.getRotation());
+    // return MatrixOps::Translate(VecOps::Convert(worldTransform.getOrigin())) * rotation.asMatrix();
 }
 
 vec::quaternion BasicPhysics::GetBodyRotation(const btRigidBody* body)

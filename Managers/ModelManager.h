@@ -17,70 +17,69 @@ struct PosUvPair
 // Assists with loading in 3D models
 class ModelManager
 {
-    public:
-        // Clears the next model ID and initializes the local reference to the image manager.
-        ModelManager(ImageManager* imageManager);
+    ImageManager* imageManager;
 
-        // Loads a new textured OBJ model, returning the model ID. Returns 0 on failure.
-        unsigned int LoadModel(const char* rootFilename);
+    // Rendering data
+    GLuint vao;
+    GLuint uvBuffer;
+    GLuint positionBuffer;
+    GLuint indexBuffer;
 
-        // Retrieves a 3D model, returning the model ID.
-        const TextureModel& GetModel(unsigned int id);
+    GLuint modelRenderProgram;
 
-        // Retrieves the model ID given the name used to load the model.
-        unsigned int GetModelId(std::string name) const;
+    GLuint textureLocation;
+    GLuint shadingColorLocation;
+    GLuint mvLocation;
+    GLuint projLocation;
+    GLuint selectionFactorLocation;
 
-        unsigned int GetCurrentModelCount() const;
+    // Model data
+    unsigned int nextModelId;
+    std::vector<TextureModel> models;
 
-        // Renders the specified model given by the ID.
-        void RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, bool selected);
+    // Temporary loading structures.
+    std::vector<vec::vec2> rawUvs;
+    std::vector<PosUvPair> rawIndices;
+    std::map<unsigned int, unsigned int> indexUvMap; // [positionId] = UV Id. Maps rawIndices for faster loading access.
+    std::map<unsigned int, std::vector<PosUvPair>> uvVertexRemapping;
 
-        // Renders the specified model given by the ID, using the given color.
-        void RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, vec::vec4 shadingColor, bool selected);
+    // Given a position index and UV coordinate index, returns the actual index to use.
+    unsigned int GetActualVertexIndex(unsigned int positionIdx, unsigned int uvIdx, universalVertices& vertices);
 
-        // Initializes the OpenGL resources
-        bool InitializeOpenGlResources(ShaderManager& shaderManager);
+    // Parses an individual line of an OBJ model file.
+    bool ParseLine(const std::vector<std::string>& line, universalVertices& vertices);
 
-        // Sends in the model data to OpenGL.
-        void ResetOpenGlModelData();
+    // Loads an OBJ model into the specified vertices, returning true on success.
+    // Note that the OBJ model must fully specify all positions / UVs *before* any indices.
+    bool LoadModel(const char* objFilename, universalVertices& vertices, int* rawPointCount, vec::vec3* minBounds, vec::vec3* maxBounds);
 
-        // Deletes all initialized OpenGL resources.
-        ~ModelManager();
+public:
+    // Clears the next model ID and initializes the local reference to the image manager.
+    ModelManager(ImageManager* imageManager);
 
-    private:
-        ImageManager* imageManager;
+    // Loads a new textured OBJ model, returning the model ID. Returns 0 on failure.
+    unsigned int LoadModel(const char* rootFilename);
 
-        // Rendering data
-        GLuint vao;
-        GLuint uvBuffer;
-        GLuint positionBuffer;
-        GLuint indexBuffer;
+    // Retrieves a 3D model, returning the model ID.
+    const TextureModel& GetModel(unsigned int id);
 
-        GLuint modelRenderProgram;
+    // Retrieves the model ID given the name used to load the model.
+    unsigned int GetModelId(std::string name) const;
 
-        GLuint textureLocation;
-        GLuint shadingColorLocation;
-        GLuint mvLocation;
-        GLuint projLocation;
-        GLuint selectionFactorLocation;
+    unsigned int GetCurrentModelCount() const;
 
-        // Model data
-        unsigned int nextModelId;
-        std::map<unsigned int, TextureModel> models;
+    // Renders the specified model given by the ID.
+    void RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, bool selected);
 
-        // Temporary loading structures.
-        std::vector<vec::vec2> rawUvs;
-        std::vector<PosUvPair> rawIndices;
-        std::map<unsigned int, unsigned int> indexUvMap; // [positionId] = UV Id. Maps rawIndices for faster loading access.
-        std::map<unsigned int, std::vector<PosUvPair>> uvVertexRemapping;
+    // Renders the specified model given by the ID, using the given color.
+    void RenderModel(const vec::mat4& projectionMatrix, unsigned int id, vec::mat4& mvMatrix, vec::vec4 shadingColor, bool selected);
 
-        // Given a position index and UV coordinate index, returns the actual index to use.
-        unsigned int GetActualVertexIndex(unsigned int positionIdx, unsigned int uvIdx, universalVertices& vertices);
+    // Initializes the OpenGL resources
+    bool InitializeOpenGlResources(ShaderManager& shaderManager);
 
-        // Parses an individual line of an OBJ model file.
-        bool ParseLine(const std::vector<std::string>& line, universalVertices& vertices);
+    // Sends in the model data to OpenGL.
+    void ResetOpenGlModelData();
 
-        // Loads an OBJ model into the specified vertices, returning true on success.
-        // Note that the OBJ model must fully specify all positions / UVs *before* any indices.
-        bool LoadModel(const char* objFilename, universalVertices& vertices, int* rawPointCount, vec::vec3* minBounds, vec::vec3* maxBounds);
+    // Deletes all initialized OpenGL resources.
+    ~ModelManager();
 };

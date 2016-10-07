@@ -193,7 +193,8 @@ void CityEffect::Render(void* effectData, const vec::mat4& perspectiveMatrix, co
     {
         for (const ScaledPhysicalModel& model : building.segments)
         {
-            vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.rigidBody) * MatrixOps::Scale(model.scaleFactor);
+            vec::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.rigidBody);
+            mvMatrix = mvMatrix * MatrixOps::Scale(model.scaleFactor);
             modelManager->RenderModel(perspectiveMatrix * viewMatrix, model.modelId, mvMatrix, building.color, false);
         }
     }
