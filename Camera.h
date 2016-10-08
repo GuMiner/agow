@@ -21,6 +21,11 @@ class Camera
 
     std::deque<glm::mat4> lastMatrices;
 
+    void UpdateCamera();
+
+    glm::vec3 rotateAmounts;
+    float angle;
+
 public:
     Camera(float centerPitch, glm::vec2 yawLimits, glm::vec2 pitchLimits);
     void Initialize(btRigidBody* playerObject);

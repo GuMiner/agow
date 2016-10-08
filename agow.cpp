@@ -278,7 +278,7 @@ void agow::HandleEvents(GLFWwindow* window, bool& focusPaused, bool& escapePause
     // TODO configurable.
     if (Input::IsKeyTyped(GLFW_KEY_I))
     {
-        glm::vec3 pos = player.GetViewPosition();
+        glm::vec3 pos = player.GetPosition();
         std::cout << "[" << pos.x << " " << pos.y << " " << pos.z << "]" << std::endl;
     }
 
@@ -309,8 +309,8 @@ void agow::Update(float currentGameTime, float frameTime)
     if (Input::IsKeyTyped(GLFW_KEY_F))
     {
         // Fire a cube for collision tests.
-        glm::vec3 pos = player.GetViewPosition() + 5.0f * PhysicsOps::ForwardsVector(player.GetViewOrientation());
-        glm::vec3 vel = 40.0f * PhysicsOps::UpVector(player.GetViewOrientation());
+        glm::vec3 pos = player.GetPosition() + 5.0f * PhysicsOps::ForwardsVector(player.GetOrientation());
+        glm::vec3 vel = 40.0f * PhysicsOps::ForwardsVector(player.GetOrientation());
 
         PhysicalModel model;
         BasicPhysics::CShape shape;
@@ -324,12 +324,12 @@ void agow::Update(float currentGameTime, float frameTime)
         physics.DynamicsWorld->addRigidBody(model.rigidBody);
     }
 
-    regionManager.UpdateVisibleRegion(player.GetViewPosition(), physics.DynamicsWorld);
+    regionManager.UpdateVisibleRegion(player.GetPosition(), physics.DynamicsWorld);
     regionManager.SimulateVisibleRegions(currentGameTime, frameTime);
 
     // Update useful statistics that are fancier than the standard GUI
     statistics.UpdateRunTime(currentGameTime, frameTime);
-    statistics.UpateSector(regionManager.GetCurrentCenterTile(player.GetViewPosition()));
+    statistics.UpateSector(regionManager.GetCurrentCenterTile(player.GetPosition()));
 
     // Update all events we have
     events.UpdateEvents(currentGameTime, frameTime);

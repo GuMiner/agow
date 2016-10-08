@@ -5,6 +5,8 @@
 #include "BasicPhysics.h"
 #include "Camera.h"
 
+#include <iostream>
+
 Camera::Camera(float centerPitch, glm::vec2 yawLimits, glm::vec2 pitchLimits)
     : centerPitch(centerPitch), yawLimits(yawLimits), pitchLimits(pitchLimits), currentYaw(0), currentPitch(0)
 {
@@ -13,42 +15,37 @@ Camera::Camera(float centerPitch, glm::vec2 yawLimits, glm::vec2 pitchLimits)
 void Camera::Initialize(btRigidBody* playerObject)
 {
     this->playerObject = playerObject;
-    glm::vec3 pos = BasicPhysics::GetBodyPosition(playerObject);
-    glm::quat orientation = GetViewOrientation();
+    rotateAmounts = glm::vec3(0, 1, 0);
+    angle = 90;
+    
+    UpdateCamera();
+    lastMatrices.push_back(glm::mat4_cast(GetViewOrientation()) * glm::translate(glm::mat4(), -GetViewPosition()));
+}
 
-    glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(orientation);
-    glm::vec3 upVector = PhysicsOps::UpVector(orientation);
+void Camera::UpdateCamera()
+{
+    glm::vec3 pos = BasicPhysics::GetBodyPosition(playerObject);
+
+    glm::quat playerOrientation = BasicPhysics::GetBodyRotation(playerObject);
+    glm::quat travelRotation = playerOrientation * glm::rotate(glm::quat(), glm::radians(-90.0f), glm::vec3(1, 0, 0));
+
+    glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(travelRotation);
+    glm::vec3 upVector = PhysicsOps::UpVector(travelRotation);
 
     // TODO configurable distance from the player.
-    cameraPos = pos - (upVector * 0.1f + forwardsVector * 3.5f);
+    cameraPos = pos + (-upVector * 0.8f + forwardsVector * 3.5f);
 
-    glm::quat bodyRotation = BasicPhysics::GetBodyRotation(playerObject);
-    cameraRotation = glm::conjugate(bodyRotation) * glm::rotate(glm::quat(), glm::radians(centerPitch), glm::vec3(1, 0, 0));
-
-    lastMatrices.push_back(glm::mat4_cast(GetViewOrientation()) * glm::translate(glm::mat4(), -GetViewPosition()));
+    cameraRotation = glm::rotate(glm::quat(), glm::radians(centerPitch + currentPitch), glm::vec3(1, 0, 0))
+        * glm::rotate(glm::quat(), glm::radians(currentYaw), glm::vec3(0, 0, 1))
+        * glm::conjugate(playerOrientation);
 }
 
 void Camera::Update(float elapsedTime)
 {
-    // Yaw and pitch rotate.
-    glm::quat bodyRotation = BasicPhysics::GetBodyRotation(playerObject);
-    glm::quat expectedRotation = glm::conjugate(bodyRotation)
-        * glm::rotate(glm::quat(), glm::radians(centerPitch + currentPitch), glm::vec3(1, 0, 0))
-        * glm::rotate(glm::quat(), glm::radians(currentYaw), glm::vec3(0, 1, 0));
+    // centerPitch++;273 455
+    // std::cout << centerPitch << std::endl;
+    UpdateCamera();
 
-    cameraRotation = expectedRotation;
-
-    glm::vec3 pos = BasicPhysics::GetBodyPosition(playerObject);
-    glm::quat orientation = GetViewOrientation();
-
-    glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(orientation);
-    glm::vec3 upVector = PhysicsOps::UpVector(orientation);
-
-    // TODO configurable distance from the player.
-    glm::vec3 newCameraPos = pos - (upVector * 0.1f + forwardsVector * 3.5f);
-    newCameraPos.z = std::max(newCameraPos.z, pos.z);
-
-    cameraPos = newCameraPos;
     lastMatrices.push_back(glm::mat4_cast(GetViewOrientation()) * glm::translate(glm::mat4(), -GetViewPosition()));
     if (lastMatrices.size() > 7)
     {

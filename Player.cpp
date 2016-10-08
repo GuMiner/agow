@@ -8,7 +8,7 @@
 #include "Player.h"
 
 Player::Player()
-    : lastMousePos(glm::ivec2(-1, -1)), camera(75, glm::vec2(-30, 30), glm::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT), // TODO configurable camera.
+    : lastMousePos(glm::ivec2(-1, -1)), camera(-85, glm::vec2(-30, 30), glm::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT), // TODO configurable camera.
       enemyKos(0), allyKos(0), civilianKos(0)
 {
 }
@@ -23,6 +23,9 @@ void Player::LoadPlayerPhysics(BasicPhysics physics, glm::vec3 startingPosition,
 {
     physicalModel.rigidBody = physics.GetDynamicBody(BasicPhysics::CShape::PLAYER, PhysicsOps::Convert(startingPosition), mass);
     physicalModel.rigidBody->forceActivationState(DISABLE_DEACTIVATION);
+    
+    // Rotate to face the forwards direction.
+    btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
     physicalModel.rigidBody->setAngularFactor(0.0f);
     physicalModel.rigidBody->setFriction(2.0f); // TODO configurable.
     physicalModel.rigidBody->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::PLAYER, this));
@@ -52,9 +55,14 @@ const glm::vec2 Player::GetTerrainPosition() const
     return glm::vec2(bodyPos.x, bodyPos.y);
 }
 
-const glm::vec3 Player::GetViewPosition() const
+const glm::vec3 Player::GetPosition() const
 {
-    return camera.GetViewPosition();
+    return BasicPhysics::GetBodyPosition(physicalModel.rigidBody);
+}
+
+const glm::quat Player::GetOrientation() const
+{
+    return BasicPhysics::GetBodyRotation(physicalModel.rigidBody) * glm::rotate(glm::quat(), glm::radians(-90.0f), glm::vec3(1, 0, 0));
 }
 
 const glm::quat Player::GetViewOrientation() const
@@ -90,31 +98,22 @@ void Player::Render(ModelManager* modelManager, const glm::mat4& projectionMatri
 
 void Player::Update(float frameTime, int terrainTypeOn)
 {
-    glm::quat travelRotation = glm::conjugate(BasicPhysics::GetBodyRotation(physicalModel.rigidBody)) * glm::rotate(glm::quat(), glm::radians(90.0f), glm::vec3(0, 0, 1));
-
-    glm::vec3 upVector = PhysicsOps::UpVector(travelRotation);
-    glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(travelRotation);
+    glm::quat orientation = GetOrientation();
+    glm::vec3 upVector = PhysicsOps::UpVector(orientation);
+    glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(orientation);
     glm::vec3 sidewaysVector = glm::cross(upVector, forwardsVector);
 
     // TODO configurable.
-    sidewaysVector = glm::normalize(sidewaysVector);
+    forwardsVector = glm::normalize(forwardsVector);
     if (Input::IsKeyPressed(GLFW_KEY_W))
     {
-        physicalModel.rigidBody->applyCentralForce(PhysicsOps::Convert(sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
+        physicalModel.rigidBody->applyCentralForce(PhysicsOps::Convert(forwardsVector * PhysicsConfig::ViewSidewaysSpeed));
     }
 
     if (Input::IsKeyPressed(GLFW_KEY_S))
     {
-        physicalModel.rigidBody->applyCentralForce(PhysicsOps::Convert(-sidewaysVector * PhysicsConfig::ViewSidewaysSpeed));
+        physicalModel.rigidBody->applyCentralForce(PhysicsOps::Convert(-forwardsVector * PhysicsConfig::ViewSidewaysSpeed));
     }
-
-    forwardsVector.z = 0; // Moving forwards doesn't move you down in the Z-direction.
-    if (forwardsVector.x < 0.01f && forwardsVector.x > -0.01f)
-    {
-        forwardsVector.x = 0.01f; // Tiny nudge to avoid div/zero issues.
-    }
-
-    forwardsVector = glm::normalize(forwardsVector);
 
     if (Input::IsKeyPressed(GLFW_KEY_A))
     {

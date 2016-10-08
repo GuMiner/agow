@@ -13,7 +13,7 @@
     <RemoteDaemonHostName>CodeXLEmptyString</RemoteDaemonHostName>
     <RemoteDaemonPortNumber>27015</RemoteDaemonPortNumber>
     <RecentlyUsedRemoteIPAddresses>;</RecentlyUsedRemoteIPAddresses>
-    <LastSessionType>CPU: Time-based Sampling</LastSessionType>
+    <LastSessionType>CPU: Assess Performance</LastSessionType>
     <ProfileName>CodeXLEmptyString</ProfileName>
     <ApplicationEnvironmentVariables></ApplicationEnvironmentVariables>
     <ProductExtensions>
@@ -199,6 +199,81 @@
                 <terminateProcess>F</terminateProcess>
                 <msInterval>1.000000</msInterval>
                 <EventCount>0</EventCount>
+                <fetchSample>F</fetchSample>
+                <opSample>F</opSample>
+                <opCycleCount>T</opCycleCount>
+                <fetchInterval>0l</fetchInterval>
+                <opInterval>0l</opInterval>
+                <cluSample>F</cluSample>
+                <cluCycleCount>T</cluCycleCount>
+                <cluInterval>0l</cluInterval>
+                <cacheLineUtilChecked>F</cacheLineUtilChecked>
+                <cacheLineUtilEnabled>F</cacheLineUtilEnabled>
+                <ldstChecked>F</ldstChecked>
+                <ldstEnabled>F</ldstEnabled>
+                <applyFilter>F</applyFilter>
+                <utilMask>0</utilMask>
+            </Session>
+            <Session type="Profile">
+                <profileName>Oct-06-2016_19-58</profileName>
+                <profilePath>C:\Users\Gustave\Desktop\agow\Profiling_ProfilerOutput\Oct-06-2016_19-58\Oct-06-2016_19-58.cxlcpdb</profilePath>
+                <profileType>Assess Performance</profileType>
+                <isImported>0</isImported>
+                <launchTarget>C:\Users\Gustave\Desktop\agow\bin\Release\agow.exe</launchTarget>
+                <commandArguments />
+                <workingDir>C:\Users\Gustave\Desktop\agow</workingDir>
+                <envVariables />
+                <startTime>Oct-06-2016_19-58-04</startTime>
+                <endTime>Oct-06-2016_19-58-52</endTime>
+                <startAffinity>255</startAffinity>
+                <css>T</css>
+                <cssInterval>1</cssInterval>
+                <cssScope>0x1</cssScope>
+                <cssFpoTimeBased>T</cssFpoTimeBased>
+                <cssFpo>F</cssFpo>
+                <cssUnwindTimeBased>128</cssUnwindTimeBased>
+                <cssUnwind>32</cssUnwind>
+                <saveRawFiles>F</saveRawFiles>
+                <profileScope>0</profileScope>
+                <startDelay>0</startDelay>
+                <startPaused>F</startPaused>
+                <profileEntire>T</profileEntire>
+                <duration>47</duration>
+                <terminateProcess>F</terminateProcess>
+                <msInterval>0.000000</msInterval>
+                <EventCount>8</EventCount>
+                <PMC>
+                    <PMCCount>250000</PMCCount>
+                    <PMCEvent>5439680</PMCEvent>
+                </PMC>
+                <PMC>
+                    <PMCCount>250000</PMCCount>
+                    <PMCEvent>5439606</PMCEvent>
+                </PMC>
+                <PMC>
+                    <PMCCount>25000</PMCCount>
+                    <PMCEvent>5439682</PMCEvent>
+                </PMC>
+                <PMC>
+                    <PMCCount>25000</PMCCount>
+                    <PMCEvent>5439683</PMCEvent>
+                </PMC>
+                <PMC>
+                    <PMCCount>250000</PMCCount>
+                    <PMCEvent>5439552</PMCEvent>
+                </PMC>
+                <PMC>
+                    <PMCCount>25000</PMCCount>
+                    <PMCEvent>5439809</PMCEvent>
+                </PMC>
+                <PMC>
+                    <PMCCount>25000</PMCCount>
+                    <PMCEvent>5441350</PMCEvent>
+                </PMC>
+                <PMC>
+                    <PMCCount>25000</PMCCount>
+                    <PMCEvent>5439559</PMCEvent>
+                </PMC>
                 <fetchSample>F</fetchSample>
                 <opSample>F</opSample>
                 <opCycleCount>T</opCycleCount>

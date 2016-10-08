@@ -87,26 +87,14 @@ btVector3 PhysicsOps::Convert(glm::vec3 vector)
 
 glm::vec3 PhysicsOps::ForwardsVector(glm::quat quaternion)
 {
-    glm::quat DEFAULT_FORWARD_VECTOR;
-    DEFAULT_FORWARD_VECTOR.x = 0.0f;
-    DEFAULT_FORWARD_VECTOR.y = 0.0f;
-    DEFAULT_FORWARD_VECTOR.z = -1.0f;
-    DEFAULT_FORWARD_VECTOR.w = 0.0f;
-
-    glm::quat result = quaternion * DEFAULT_FORWARD_VECTOR * glm::conjugate(quaternion);
-    return glm::vec3(result.x, result.y, result.z);
+    glm::vec3 DEFAULT_FORWARD_VECTOR(0.0f, 0.0f, 1.0f);
+    return quaternion * DEFAULT_FORWARD_VECTOR;
 }
 
 glm::vec3 PhysicsOps::UpVector(glm::quat quaternion)
 {
-    glm::quat DEFAULT_UP_VECTOR;
-    DEFAULT_UP_VECTOR.x = 0.0f;
-    DEFAULT_UP_VECTOR.y = -1.0f;
-    DEFAULT_UP_VECTOR.z = 0.0f;
-    DEFAULT_UP_VECTOR.w = 0.0f;
-
-    glm::quat result = quaternion * DEFAULT_UP_VECTOR * glm::conjugate(quaternion);
-    return glm::vec3(result.x, result.y, result.z);
+    glm::vec3 DEFAULT_UP_VECTOR(0.0f, 1.0f, 0.0f);
+    return quaternion * DEFAULT_UP_VECTOR;
 }
 
 glm::mat4 PhysicsOps::Average(std::deque<glm::mat4> matrices)

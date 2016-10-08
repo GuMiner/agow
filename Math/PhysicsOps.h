@@ -9,6 +9,7 @@
 class PhysicsOps
 {
     public:
+
         enum Plane
         {
             XY = 0,
