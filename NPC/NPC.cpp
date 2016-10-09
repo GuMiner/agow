@@ -96,6 +96,11 @@ std::string  NPC::GetName() const
     return name;
 }
 
+std::string NPC::GetDescription() const
+{
+    return description;
+}
+
 void NPC::Update(float gameTime, float elapsedTime)
 {
     nameString.posRotMatrix =

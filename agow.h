@@ -19,7 +19,6 @@
 #include "DialogPane.h"
 #include "Events.h"
 #include "Input.h"
-#include "NPC.h"
 #include "Player.h"
 #include "Generators\BuildingGenerator.h"
 #include "Generators\RockGenerator.h"

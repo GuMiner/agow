@@ -17,12 +17,13 @@ public:
     {
         DIAMOND,
         CAPSULE,
-        CUBOID
+        CUBOID,
+        COUNT
     };
 
     static const int INVULNERABLE = -1;
 
-private:
+protected:
     static std::map<Shape, unsigned int> models;
 
     std::string name;
@@ -59,8 +60,9 @@ public:
     
     bool Converse(DialogPane* dialogPane);
     std::string GetName() const;
+    virtual std::string GetDescription() const;
 
-    void Update(float gameTime, float elapsedTime);
+    virtual void Update(float gameTime, float elapsedTime);
     void Render(FontManager* fontManager, ModelManager* modelManager, const glm::mat4& projectionMatrix);
 
     void UnloadNpcPhysics(BasicPhysics physics);

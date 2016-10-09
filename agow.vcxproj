@@ -96,6 +96,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AI\DecisionTree.h" />
+    <ClInclude Include="AI\MilitaryStateMachine.h" />
     <ClInclude Include="BasicPhysics.h" />
     <ClInclude Include="Generators\BuildingGenerator.h" />
     <ClInclude Include="Cache\TerrainCache.h" />
@@ -114,6 +115,8 @@
     <ClInclude Include="Data\UserPhysics.h" />
     <ClInclude Include="DialogPane.h" />
     <ClInclude Include="Events.h" />
+    <ClInclude Include="Generators\ColorGenerator.h" />
+    <ClInclude Include="Generators\NameGenerator.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Managers\ConfigManager.h" />
     <ClInclude Include="Managers\FontManager.h" />
@@ -126,7 +129,10 @@
     <ClInclude Include="Managers\TerrainManager.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Math\PhysicsOps.h" />
-    <ClInclude Include="NPC.h" />
+    <ClInclude Include="NPC\AllyNPC.h" />
+    <ClInclude Include="NPC\CivilianNPC.h" />
+    <ClInclude Include="NPC\EnemyNPC.h" />
+    <ClInclude Include="NPC\NPC.h" />
     <ClInclude Include="Region.h" />
     <ClInclude Include="Generators\RockGenerator.h" />
     <ClInclude Include="Scenery.h" />
@@ -159,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AI\DecisionTree.cpp" />
+    <ClCompile Include="AI\MilitaryStateMachine.cpp" />
     <ClCompile Include="BasicPhysics.cpp" />
     <ClCompile Include="Generators\BuildingGenerator.cpp" />
     <ClCompile Include="Cache\TerrainCache.cpp" />
@@ -169,6 +176,8 @@
     <ClCompile Include="Config\PhysicsConfig.cpp" />
     <ClCompile Include="DialogPane.cpp" />
     <ClCompile Include="Events.cpp" />
+    <ClCompile Include="Generators\ColorGenerator.cpp" />
+    <ClCompile Include="Generators\NameGenerator.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Managers\ConfigManager.cpp" />
     <ClCompile Include="Managers\FontManager.cpp" />
@@ -181,7 +190,10 @@
     <ClCompile Include="Managers\TerrainManager.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Math\PhysicsOps.cpp" />
-    <ClCompile Include="NPC.cpp" />
+    <ClCompile Include="NPC\AllyNPC.cpp" />
+    <ClCompile Include="NPC\CivilianNPC.cpp" />
+    <ClCompile Include="NPC\EnemyNPC.cpp" />
+    <ClCompile Include="NPC\NPC.cpp" />
     <ClCompile Include="Region.cpp" />
     <ClCompile Include="Generators\RockGenerator.cpp" />
     <ClCompile Include="Scenery.cpp" />

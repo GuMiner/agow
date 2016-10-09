@@ -66,7 +66,6 @@
     <ClCompile Include="Managers\TerrainEffectManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
-    <ClCompile Include="NPC.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -132,6 +131,27 @@
     </ClCompile>
     <ClCompile Include="Generators\BuildingGenerator.cpp">
       <Filter>Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC\NPC.cpp">
+      <Filter>NPC</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC\CivilianNPC.cpp">
+      <Filter>NPC</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\NameGenerator.cpp">
+      <Filter>Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\ColorGenerator.cpp">
+      <Filter>Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC\AllyNPC.cpp">
+      <Filter>NPC</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC\EnemyNPC.cpp">
+      <Filter>NPC</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\MilitaryStateMachine.cpp">
+      <Filter>AI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -213,7 +233,6 @@
     <ClInclude Include="Managers\TerrainEffectManager.h">
       <Filter>Managers</Filter>
     </ClInclude>
-    <ClInclude Include="NPC.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Camera.h" />
@@ -292,6 +311,27 @@
     <ClInclude Include="Generators\BuildingGenerator.h">
       <Filter>Generators</Filter>
     </ClInclude>
+    <ClInclude Include="NPC\NPC.h">
+      <Filter>NPC</Filter>
+    </ClInclude>
+    <ClInclude Include="NPC\CivilianNPC.h">
+      <Filter>NPC</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\NameGenerator.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\ColorGenerator.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="NPC\AllyNPC.h">
+      <Filter>NPC</Filter>
+    </ClInclude>
+    <ClInclude Include="NPC\EnemyNPC.h">
+      <Filter>NPC</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\MilitaryStateMachine.h">
+      <Filter>AI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="AI">
@@ -323,6 +363,9 @@
     </Filter>
     <Filter Include="Generators">
       <UniqueIdentifier>{987cc8f2-2d2c-4c29-8e32-3e6b296c8c8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NPC">
+      <UniqueIdentifier>{89fe5591-ec64-4977-9e38-c223de96e8ad}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

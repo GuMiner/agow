@@ -8,7 +8,7 @@
 #include "Managers\RegionManager.h"
 #include "BasicPhysics.h"
 #include "Events.h"
-#include "Npc.h"
+#include "NPC\Npc.h"
 
 // Defines loading and displaying a single unit of terrain.
 class NpcManager
