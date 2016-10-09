@@ -1,4 +1,5 @@
 #include <iostream>
+#include <glm\vec2.hpp>
 #include <glm\gtc\quaternion.hpp>
 #include "Config\PhysicsConfig.h"
 #include "Data\TerrainTile.h"
@@ -7,10 +8,12 @@
 #include "Map.h"
 #include "Player.h"
 
-Player::Player()
-    : lastMousePos(glm::ivec2(-1, -1)), camera(-85, glm::vec2(-30, 30), glm::vec2(-14, 14)), isOnGround(false), motionType(ON_FOOT), // TODO configurable camera.
+Player::Player(ModelManager* modelManager, BasicPhysics* physics)
+    : gravityWeapon(physics), pressureWeapon(physics, glm::vec2(1.0f, 10.0f)), rockWeapon(modelManager, physics, glm::vec2(10.0f, 500.0f)), sunbeamWeapon(physics), // TODO configurable
+      lastMousePos(glm::ivec2(-1, -1)), camera(-85, glm::vec2(-30, 30), glm::vec2(-14, 14)), isOnGround(true), motionType(ON_FOOT), // TODO configurable camera.
       enemyKos(0), allyKos(0), civilianKos(0)
 {
+    selectedWeapon = &rockWeapon;
 }
 
 bool Player::LoadPlayerModel(ModelManager* modelManager)
@@ -36,6 +39,8 @@ void Player::LoadPlayerPhysics(BasicPhysics physics, glm::vec3 startingPosition,
 
 void Player::UnloadPlayerPhysics(BasicPhysics physics)
 {
+    // TODO cleanup the weapons.
+
     delete physicalModel.rigidBody->getUserPointer();
     physics.DynamicsWorld->removeRigidBody(physicalModel.rigidBody);
     physics.DeleteBody(physicalModel.rigidBody, false);
@@ -94,10 +99,13 @@ void Player::Render(ModelManager* modelManager, const glm::mat4& projectionMatri
 {
     glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(physicalModel.rigidBody);
     modelManager->RenderModel(projectionMatrix, physicalModel.modelId, mvMatrix, false);
+
+    selectedWeapon->Render(projectionMatrix);
 }
 
 void Player::Update(float frameTime, int terrainTypeOn)
 {
+    // Move the player around.
     glm::quat orientation = GetOrientation();
     glm::vec3 upVector = PhysicsOps::UpVector(orientation);
     glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(orientation);
@@ -137,7 +145,7 @@ void Player::Update(float frameTime, int terrainTypeOn)
     if (isOnGround && Input::IsKeyPressed(GLFW_KEY_SPACE))
     {
         physicalModel.rigidBody->applyCentralImpulse(PhysicsOps::Convert(glm::vec3(0.0f, 0.0f, 200.0f)));
-        isOnGround = false;
+        //isOnGround = false;
     }
 
     // Camera off-center offset.
@@ -180,4 +188,16 @@ void Player::Update(float frameTime, int terrainTypeOn)
     }
 
     camera.Update(frameTime);
+
+    selectedWeapon->Update(frameTime);
+
+    // Fire.
+    // TODO configurable.
+    if (Input::IsKeyTyped(GLFW_KEY_F))
+    {
+        // Fire a cube for collision tests.
+        glm::quat orientation = GetOrientation();
+        glm::vec3 pos = GetPosition() + 5.0f * PhysicsOps::ForwardsVector(orientation);
+        selectedWeapon->Fire(pos, orientation);
+    }
 }

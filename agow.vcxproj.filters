@@ -110,6 +110,21 @@
     </ClCompile>
     <ClCompile Include="BuildingGenerator.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Weapons\WeaponBase.cpp">
+      <Filter>Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapons\PressureWeapon.cpp">
+      <Filter>Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapons\RockWeapon.cpp">
+      <Filter>Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapons\SunbeamWeapon.cpp">
+      <Filter>Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapons\GravityWeapon.cpp">
+      <Filter>Weapons</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -246,8 +261,26 @@
     </ClInclude>
     <ClInclude Include="BuildingGenerator.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="Weapons\WeaponBase.h">
+      <Filter>Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapons\PressureWeapon.h">
+      <Filter>Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapons\RockWeapon.h">
+      <Filter>Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapons\SunbeamWeapon.h">
+      <Filter>Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapons\GravityWeapon.h">
+      <Filter>Weapons</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <Filter Include="AI">
+      <UniqueIdentifier>{722ed4c4-2389-4dff-8aaa-5a9ea278bd4c}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Cache">
       <UniqueIdentifier>{5eb8df45-2c95-4222-805e-07e0e40259ac}</UniqueIdentifier>
     </Filter>
@@ -269,8 +302,8 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{fc6e9ad3-a83f-4c84-be34-55f39d410ec9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AI">
-      <UniqueIdentifier>{722ed4c4-2389-4dff-8aaa-5a9ea278bd4c}</UniqueIdentifier>
+    <Filter Include="Weapons">
+      <UniqueIdentifier>{5eb8df45-2c95-4222-805e-07e0e40259ac}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

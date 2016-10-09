@@ -7,6 +7,11 @@
 #include "Managers\RegionManager.h"
 #include "Managers\ModelManager.h"
 #include "Utils\TypedCallback.h"
+#include "Weapons\GravityWeapon.h"
+#include "Weapons\PressureWeapon.h"
+#include "Weapons\RockWeapon.h"
+#include "Weapons\SunbeamWeapon.h"
+#include "Weapons\WeaponBase.h"
 #include "BasicPhysics.h"
 #include "Camera.h"
 
@@ -37,8 +42,14 @@ class Player : public ICallback<UserPhysics::ObjectType>
     int civilianKos;
     int allyKos;
 
+    GravityWeapon gravityWeapon;
+    PressureWeapon pressureWeapon;
+    RockWeapon rockWeapon;
+    SunbeamWeapon sunbeamWeapon;
+    WeaponBase* selectedWeapon;
+
 public:
-    Player();
+    Player(ModelManager* modelManager, BasicPhysics* physics);
     bool LoadPlayerModel(ModelManager* modelManager);
     void LoadPlayerPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass);
     

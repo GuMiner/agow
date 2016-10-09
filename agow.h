@@ -51,9 +51,6 @@ class agow
     Scenery scenery;
 
     Events events;
-
-    // TEST DATA
-    std::vector<PhysicalModel> testCubes;
     
     // Physics setup.
     Constants::Status LoadPhysics();

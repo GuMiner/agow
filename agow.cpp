@@ -29,7 +29,7 @@ agow::agow()
       physics(), shaderManager(), imageManager(), modelManager(&imageManager),
       regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", 1000, glm::ivec2(5, 17), glm::ivec2(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
       scenery(), npcManager(),
-      player() // TODO configurable
+      player(&modelManager, &physics) // TODO configurable
 {
 }
 
@@ -60,13 +60,6 @@ void agow::UnloadPhysics()
     regionManager.CleanupPhysics(physics.DynamicsWorld);
     npcManager.UnloadNpcPhysics(physics);
     player.UnloadPlayerPhysics(physics);
-
-    for (const PhysicalModel& model : testCubes)
-    {
-        physics.DynamicsWorld->removeRigidBody(model.rigidBody);
-        physics.DeleteBody(model.rigidBody, false);
-    }
-
     physics.UnloadPhysics();
 }
 
@@ -305,25 +298,6 @@ void agow::Update(float currentGameTime, float frameTime)
         player.Warp(&regionManager, physics.DynamicsWorld, player.GetTerrainPosition());
     }
 
-    // TODO test code
-    if (Input::IsKeyTyped(GLFW_KEY_F))
-    {
-        // Fire a cube for collision tests.
-        glm::vec3 pos = player.GetPosition() + 5.0f * PhysicsOps::ForwardsVector(player.GetOrientation());
-        glm::vec3 vel = 40.0f * PhysicsOps::ForwardsVector(player.GetOrientation());
-
-        PhysicalModel model;
-        BasicPhysics::CShape shape;
-        RockGenerator rockGenerator;
-        rockGenerator.GetRandomRockModel(&model.modelId, &shape);
-
-        model.rigidBody = physics.GetDynamicBody(shape, btVector3(pos.x, pos.y, pos.z), 20.0f);
-        model.rigidBody->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
-        testCubes.push_back(model);
-
-        physics.DynamicsWorld->addRigidBody(model.rigidBody);
-    }
-
     regionManager.UpdateVisibleRegion(player.GetPosition(), physics.DynamicsWorld);
     regionManager.SimulateVisibleRegions(currentGameTime, frameTime);
 
@@ -351,13 +325,6 @@ void agow::Render(GLFWwindow* window, glm::mat4& viewMatrix)
 
     // Render our ground, and any derivative items from that.
     regionManager.RenderRegions(Constants::PerspectiveMatrix, viewMatrix);
-
-    // Render all the moving objects
-    for (unsigned int i = 0; i < testCubes.size(); i++)
-    {
-        glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(testCubes[i].rigidBody);
-        modelManager.RenderModel(projectionMatrix, testCubes[i].modelId, mvMatrix, false);
-    }
 
     // Render the NPCs
     npcManager.Render(&fontManager, &modelManager, projectionMatrix);

@@ -46,12 +46,12 @@ bool RoadEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                     }
 
                     float height = tile->heightmap[i + j * subTileSize];
-                    glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j);
+                    glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j); // -glm::ivec2(1, 4); // TODO figure out where this came from.
 
                     // TODO configurable
                     glm::vec3 bottomColor = glm::vec3(0.0f, 0.50f, glm::linearRand(0.0f, 0.20f) + 0.80f);
                     glm::vec3 topColor = glm::vec3(0.40f + glm::linearRand(0.0f, 0.60f), 0.0f, 0.20f + glm::linearRand(0.0f, 0.40f));
-                    glm::vec3 position = glm::vec3((float)realPos.x, (float)realPos.y, height + 0.5f);
+                    glm::vec3 position = glm::vec3((float)realPos.x, (float)realPos.y, height + 0.1f);
                     glm::vec2 velocity = glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)) * 40.0f;
 
                     glm::vec3 endPosition = position + glm::normalize(glm::vec3(velocity.x, velocity.y, 0.0f));
@@ -169,15 +169,13 @@ float RoadEffect::MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* road
 
 void RoadEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds)
 {
-    return;
-
     RoadEffectData* roadEffect = (RoadEffectData*)effectData;
     auto& travellers = roadEffect->travellers.positions;
     for (unsigned int i = 0; i < travellers.size() / 2; i++)
     {
         float height = MoveTraveller(subtileId, roadEffect, i, elapsedSeconds);
 
-        glm::vec3 position = glm::vec3(roadEffect->positions[i].x, roadEffect->positions[i].y, height + 0.5f);
+        glm::vec3 position = glm::vec3(roadEffect->positions[i].x, roadEffect->positions[i].y, height + 0.f);
         glm::vec3 endPosition = position + glm::normalize(glm::vec3(roadEffect->velocities[i].x, roadEffect->velocities[i].y, 0.0f));
 
         travellers[i * 2] = position;

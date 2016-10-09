@@ -151,6 +151,11 @@
     <ClInclude Include="agow.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Weapons\GravityWeapon.h" />
+    <ClInclude Include="Weapons\PressureWeapon.h" />
+    <ClInclude Include="Weapons\RockWeapon.h" />
+    <ClInclude Include="Weapons\SunbeamWeapon.h" />
+    <ClInclude Include="Weapons\WeaponBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AI\DecisionTree.cpp" />
@@ -200,6 +205,11 @@
     <ClCompile Include="Utils\Vertex.cpp" />
     <ClCompile Include="agow.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Weapons\GravityWeapon.cpp" />
+    <ClCompile Include="Weapons\PressureWeapon.cpp" />
+    <ClCompile Include="Weapons\RockWeapon.cpp" />
+    <ClCompile Include="Weapons\SunbeamWeapon.cpp" />
+    <ClCompile Include="Weapons\WeaponBase.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

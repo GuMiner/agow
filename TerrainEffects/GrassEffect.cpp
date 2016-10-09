@@ -41,7 +41,7 @@ bool GrassEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* t
                 }
                 
                 float height = tile->heightmap[i + j * subTileSize];
-                glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j);
+                glm::vec2 realPos = glm::vec2((float)subtileId.x * 0.10f + (float)i, (float)subtileId.y * 0.10f + (float)j) - glm::vec2(10, 40); // TODO where did this offset come from?
 
                 // TODO configurable
                 glm::vec3 bottomColor = glm::vec3(0.0f, 0.90f + glm::linearRand(0.0f, 0.10f), 0.0f);
@@ -121,8 +121,9 @@ void GrassEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, c
     glUseProgram(programId);
     glBindVertexArray(grassEffect->vao);
 
+    glm::mat4 viewModelMatrix = viewMatrix * modelMatrix;
     glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, &perspectiveMatrix[0][0]);
-    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, &(viewMatrix * modelMatrix)[0][0]);
+    glUniformMatrix4fv(mvMatrixLocation, 1, GL_FALSE, &viewModelMatrix[0][0]);
 
     glDrawArrays(GL_LINES, 0, grassEffect->grassStalks.positions.size());
     glLineWidth(1.0f);
