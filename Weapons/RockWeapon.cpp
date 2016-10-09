@@ -1,6 +1,6 @@
 #include <algorithm>
 #include "Math\PhysicsOps.h"
-#include "RockGenerator.h"
+#include "Generators\RockGenerator.h"
 #include "WeaponBase.h"
 #include "RockWeapon.h"
 

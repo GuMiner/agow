@@ -70,7 +70,6 @@
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="RockGenerator.cpp" />
     <ClCompile Include="Utils\TypedCallback.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -87,7 +86,6 @@
     <ClCompile Include="TerrainEffects\TreeEffect.cpp">
       <Filter>TerrainEffects</Filter>
     </ClCompile>
-    <ClCompile Include="TreeGenerator.cpp" />
     <ClCompile Include="Cache\TreeCache.cpp">
       <Filter>Cache</Filter>
     </ClCompile>
@@ -97,7 +95,6 @@
     <ClCompile Include="TerrainEffects\SignEffect.cpp">
       <Filter>TerrainEffects</Filter>
     </ClCompile>
-    <ClCompile Include="SignGenerator.cpp" />
     <ClCompile Include="DialogPane.cpp" />
     <ClCompile Include="Managers\NpcManager.cpp">
       <Filter>Managers</Filter>
@@ -108,7 +105,6 @@
     <ClCompile Include="TerrainEffects\CityEffect.cpp">
       <Filter>TerrainEffects</Filter>
     </ClCompile>
-    <ClCompile Include="BuildingGenerator.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Weapons\WeaponBase.cpp">
       <Filter>Weapons</Filter>
@@ -124,6 +120,18 @@
     </ClCompile>
     <ClCompile Include="Weapons\GravityWeapon.cpp">
       <Filter>Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\RockGenerator.cpp">
+      <Filter>Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\SignGenerator.cpp">
+      <Filter>Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\TreeGenerator.cpp">
+      <Filter>Generators</Filter>
+    </ClCompile>
+    <ClCompile Include="Generators\BuildingGenerator.cpp">
+      <Filter>Generators</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -209,7 +217,6 @@
     <ClInclude Include="Map.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="RockGenerator.h" />
     <ClInclude Include="Data\UserPhysics.h">
       <Filter>Data</Filter>
     </ClInclude>
@@ -235,14 +242,12 @@
     <ClInclude Include="TerrainEffects\TreeEffect.h">
       <Filter>TerrainEffects</Filter>
     </ClInclude>
-    <ClInclude Include="TreeGenerator.h" />
     <ClInclude Include="Cache\TerrainCache.h">
       <Filter>Cache</Filter>
     </ClInclude>
     <ClInclude Include="Cache\TreeCache.h">
       <Filter>Cache</Filter>
     </ClInclude>
-    <ClInclude Include="SignGenerator.h" />
     <ClInclude Include="DialogPane.h" />
     <ClInclude Include="Data\StyleText.h">
       <Filter>Data</Filter>
@@ -259,7 +264,6 @@
     <ClInclude Include="TerrainEffects\CityEffect.h">
       <Filter>TerrainEffects</Filter>
     </ClInclude>
-    <ClInclude Include="BuildingGenerator.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Weapons\WeaponBase.h">
       <Filter>Weapons</Filter>
@@ -275,6 +279,18 @@
     </ClInclude>
     <ClInclude Include="Weapons\GravityWeapon.h">
       <Filter>Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\TreeGenerator.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\SignGenerator.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\RockGenerator.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="Generators\BuildingGenerator.h">
+      <Filter>Generators</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -304,6 +320,9 @@
     </Filter>
     <Filter Include="Weapons">
       <UniqueIdentifier>{5eb8df45-2c95-4222-805e-07e0e40259ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generators">
+      <UniqueIdentifier>{987cc8f2-2d2c-4c29-8e32-3e6b296c8c8c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

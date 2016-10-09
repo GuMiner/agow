@@ -1,8 +1,8 @@
 #pragma once
 #include "Cache\TreeCache.h"
+#include "Generators\TreeGenerator.h"
 #include "Utils\Vertex.h"
 #include "TerrainEffect.h"
-#include "TreeGenerator.h"
 
 struct VertexData
 {

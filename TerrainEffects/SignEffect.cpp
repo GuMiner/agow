@@ -1,7 +1,7 @@
 #include "Config\PhysicsConfig.h"
+#include "Generators\SignGenerator.h"
 #include "Managers\TerrainManager.h"
 #include "Utils\Logger.h"
-#include "SignGenerator.h"
 #include "SignEffect.h"
 
 SignEffect::SignEffect(ModelManager* modelManager, BasicPhysics* physics, int subTileSize)

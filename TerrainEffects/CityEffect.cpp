@@ -1,9 +1,9 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\random.hpp>
 #include "Config\PhysicsConfig.h"
+#include "Generators\BuildingGenerator.h"
 #include "Managers\TerrainManager.h"
 #include "Utils\Logger.h"
-#include "BuildingGenerator.h"
 #include "CityEffect.h"
 
 CityEffect::CityEffect(ModelManager* modelManager, BasicPhysics* physics, const std::string& cacheFolder, int subTileSize)

@@ -21,9 +21,9 @@
 #include "Input.h"
 #include "NPC.h"
 #include "Player.h"
-#include "BuildingGenerator.h"
-#include "RockGenerator.h"
-#include "SignGenerator.h"
+#include "Generators\BuildingGenerator.h"
+#include "Generators\RockGenerator.h"
+#include "Generators\SignGenerator.h"
 #include "Scenery.h"
 #include "Statistics.h"
 

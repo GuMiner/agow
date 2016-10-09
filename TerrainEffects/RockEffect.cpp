@@ -1,8 +1,8 @@
 #include <glm\gtc\random.hpp>
 #include "Config\PhysicsConfig.h"
+#include "Generators\RockGenerator.h"
 #include "Managers\TerrainManager.h"
 #include "Utils\Logger.h"
-#include "RockGenerator.h"
 #include "RockEffect.h"
 
 RockEffect::RockEffect(ModelManager* modelManager, BasicPhysics* physics, int subTileSize)
