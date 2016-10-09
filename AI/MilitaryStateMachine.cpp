@@ -1,14 +1,14 @@
 #include "MilitaryStateMachine.h"
 
 MilitaryStateMachine::MilitaryStateMachine()
-    : currentState(State::Survey), timeInState(0.0f)
+    : state(State::Survey), timeInState(0.0f)
 {
 
 }
 
 std::string MilitaryStateMachine::GetStateDescription() const
 {
-    switch (currentState)
+    switch (state)
     {
     case State::CallForBackup:
         return "calling for backup.";
@@ -34,14 +34,68 @@ std::string MilitaryStateMachine::GetStateDescription() const
     }
 }
 
+glm::vec3 MilitaryStateMachine::GetTarget() const
+{
+
+}
+
 void MilitaryStateMachine::Update(float elapsedTime)
 {
     timeInState += elapsedTime;
 
-    // Perform state transitions.
-    switch (currentState)
+    // Perform state transitions, using the callback functions for assistance.
+    switch (state)
     {
+    case State::CallForBackup:
+        // TODO
+        break;
+    case State::FireAtNearest: 
+        // TODO
+        break;
+    case State::FireAtTargetted:
+        // TODO
+        break;
+    case State::Flee:
+        // TODO
+        break;
+    case State::Follow:
+        // TODO
+        break;
+    case State::Survey:
+        // If we detect an enemy, fire at it.
+        if (isNearbyEnemy(&target))
+        {
+            state = State::FireAtNearest;
+        }
 
+        if (isTargettedEnemy(&target))
+        {
+            state = State::FireAtTargetted;
+        }
+        // TODO
+
+        break;
+    case State::TakeCover:
+        if (hasMovedToTarget())
+        {
+            state = State::Survey;
+        }
+
+        break;
+    case State::ThrowExplosive:
+        if (hasThrownExplosive())
+        {
+            state = State::Survey;
+        }
+
+        break;
+    case State::TravelToFlank:
+        // TODO
+        break;
+    case State::TravelToProtect:
+    default:
+        // TODO
+        break;
     }
 
 }

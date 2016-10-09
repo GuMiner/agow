@@ -1,6 +1,8 @@
 #include <glm\gtc\random.hpp>
 #include "NameGenerator.h"
 
+std::vector<std::string> NameGenerator::firstNames;
+std::vector<std::string> NameGenerator::lastNames;
 bool NameGenerator::namesLoaded = false;
 
 void NameGenerator::LoadNames()
