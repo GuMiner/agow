@@ -12,8 +12,8 @@ public:
         TakeCover,
         Flee,
         ThrowExplosive,
-        TravelToFlank,
-        TravelToProtect,
+        // TravelToFlank, // Future work.
+        // TravelToProtect,
         Follow,
         Survey,
         CallForBackup
@@ -22,21 +22,36 @@ public:
 private:
     State state;
     float timeInState;
-    
-    glm::vec3 target;
 
-    
-    // Takes in the target, returns true if the target has been reached.
+    // States of actions.
     std::function<bool()> hasMovedToTarget; 
+    std::function<bool()> hasReachedAlly;
     std::function<bool()> hasThrownExplosive;
+    std::function<bool()> hasCalledForBackup;
 
-    // Returns true if an enemy is found, with the target position.
-    std::function<bool(glm::vec3*)> isNearbyEnemy;
-    std::function<bool(glm::vec3*)> isTargettedEnemy;
+    // States of self and enemies.
+    std::function<bool()> isNearbyEnemy;
+    std::function<bool()> isTargettedEnemy;
+    std::function<bool()> isTargettedAlly;
+    std::function<bool()> isEnemyStillAlive;
+    std::function<bool()> isManyNearbyEnemies;
+    std::function<bool()> isLowPerceivedHealth;
+
+    bool hasNewState;
+    void UpdateState(State newState);
 
 public:
     MilitaryStateMachine();
-    glm::vec3 GetTarget() const;
+
+    void SetCallbackFunctions(std::function<bool()> hasMovedToTarget, std::function<bool()> hasReachedAlly,
+        std::function<bool()> hasThrownExplosive, std::function<bool()> hasCalledForBackup,
+        std::function<bool()> isNearbyEnemy, std::function<bool()> isTargettedEnemy,
+        std::function<bool()> isTargettedAlly, std::function<bool()> isEnemyStillAlive,
+        std::function<bool()> isManyNearbyEnemies, std::function<bool()> isLowPerceivedHealth);
+
     std::string GetStateDescription() const;
     void Update(float elapsedTime);
+    
+    State GetState();
+    bool HasChangedState();
 };

@@ -4,6 +4,7 @@
 #include <vector>
 #include <GL/glew.h>
 #include <glm\vec3.hpp>
+#include <glm\vec4.hpp>
 #include <glm\mat4x4.hpp>
 #include "ImageManager.h"
 #include "ShaderManager.h"
@@ -13,6 +14,20 @@ struct PosUvPair
 {
     unsigned int positionId;
     unsigned int uvId;
+};
+
+struct ModelRenderStore
+{
+    // Stores MV matrices, split into 4 vectors per matrix.
+    std::vector<glm::vec4> matrixStore;
+
+    // Stores the shading color (even indices) and selection bool ('R', odd incies)
+    std::vector<glm::vec4> shadingColorSelectionStore;
+
+    unsigned int GetInstanceCount()
+    {
+        return shadingColorSelectionStore.size() / 2;
+    }
 };
 
 // Assists with loading in 3D models
@@ -28,15 +43,22 @@ class ModelManager
 
     GLuint modelRenderProgram;
 
+    // In-shader locations
     GLuint textureLocation;
     GLuint shadingColorLocation;
     GLuint mvLocation;
     GLuint projLocation;
-    GLuint selectionFactorLocation;
+
+    // Buffers. These are created from the image manager, and do not need to be freed.
+    GLuint mvMatrixImageId;
+    GLuint shadingColorAndSelectionImageId;
 
     // Model data
     unsigned int nextModelId;
     std::vector<TextureModel> models;
+
+    // Stores model data in preparation to rendering.
+    std::vector<ModelRenderStore> modelRenderStore;
 
     // Temporary loading structures.
     std::vector<glm::vec2> rawUvs;
@@ -69,17 +91,20 @@ public:
 
     unsigned int GetCurrentModelCount() const;
 
-    // Renders the specified model given by the ID.
+    // Prepares for rendering the specified model given by the ID.
     void RenderModel(const glm::mat4& projectionMatrix, unsigned int id, glm::mat4& mvMatrix, bool selected);
 
-    // Renders the specified model given by the ID, using the given color.
+    // Prepares for rendering the specified model given by the ID, using the given color.
     void RenderModel(const glm::mat4& projectionMatrix, unsigned int id, glm::mat4& mvMatrix, glm::vec4 shadingColor, bool selected);
+
+    // Finalizes rendering (and actually renders) all models.
+    void FinalizeRender(const glm::mat4& projectionMatrix);
 
     // Initializes the OpenGL resources
     bool InitializeOpenGlResources(ShaderManager& shaderManager);
 
-    // Sends in the model data to OpenGL.
-    void ResetOpenGlModelData();
+    // Finalizes the list of loaded models we know of, sending the data to OpenGL.
+    void FinalizeLoadedModels();
 
     // Deletes all initialized OpenGL resources.
     ~ModelManager();

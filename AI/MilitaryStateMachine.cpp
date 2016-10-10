@@ -3,7 +3,24 @@
 MilitaryStateMachine::MilitaryStateMachine()
     : state(State::Survey), timeInState(0.0f)
 {
+}
 
+void MilitaryStateMachine::SetCallbackFunctions(std::function<bool()> hasMovedToTarget, std::function<bool()> hasReachedAlly,
+    std::function<bool()> hasThrownExplosive, std::function<bool()> hasCalledForBackup,
+    std::function<bool()> isNearbyEnemy, std::function<bool()> isTargettedEnemy,
+    std::function<bool()> isTargettedAlly, std::function<bool()> isEnemyStillAlive,
+    std::function<bool()> isManyNearbyEnemies, std::function<bool()> isLowPerceivedHealth)
+{
+    this->hasMovedToTarget = hasMovedToTarget;
+    this->hasReachedAlly = hasReachedAlly;
+    this->hasThrownExplosive = hasThrownExplosive;
+    this->hasCalledForBackup = hasCalledForBackup;
+    this->isNearbyEnemy = isNearbyEnemy;
+    this->isTargettedEnemy = isTargettedEnemy;
+    this->isTargettedAlly = isTargettedAlly;
+    this->isEnemyStillAlive = isEnemyStillAlive;
+    this->isManyNearbyEnemies = isManyNearbyEnemies;
+    this->isLowPerceivedHealth = isLowPerceivedHealth;
 }
 
 std::string MilitaryStateMachine::GetStateDescription() const
@@ -25,77 +42,172 @@ std::string MilitaryStateMachine::GetStateDescription() const
     case State::TakeCover:
         return "taking cover.";
     case State::ThrowExplosive:
-        return "throwing an explosive.";
-    case State::TravelToFlank:
-        return "traveling to flank the enemy.";
-    case State::TravelToProtect:
     default:
-        return "traveling to protect the target.";
+        return "throwing an explosive.";
+    // case State::TravelToFlank:
+    //     return "traveling to flank the enemy.";
+    // case State::TravelToProtect:
+    // default:
+    //     return "traveling to protect the target.";
     }
-}
-
-glm::vec3 MilitaryStateMachine::GetTarget() const
-{
-
 }
 
 void MilitaryStateMachine::Update(float elapsedTime)
 {
     timeInState += elapsedTime;
+    bool isEnemyAlive;
 
     // Perform state transitions, using the callback functions for assistance.
     switch (state)
     {
     case State::CallForBackup:
-        // TODO
+        if (hasCalledForBackup())
+        {
+            // Once we've called for backup, switch back to survey state.
+            UpdateState(State::Survey);
+            break;
+        }
+
+        // Else continue calling for backup.
         break;
     case State::FireAtNearest: 
-        // TODO
+        isEnemyAlive = isEnemyStillAlive();
+        if (isEnemyAlive * elapsedTime > 5.0f)
+        {
+            // Take cover if we haven't killed the enemy quickly.
+            UpdateState(State::TakeCover);
+            break;
+        }
+
+        if (!isEnemyAlive)
+        {
+            // Survey if we killed all nearby enemies.
+            UpdateState(State::Survey);
+            break;
+        }
+
+        // If we had a targetted ally and we are no longer next to it, stop firing and move towards the ally.
+        if (isTargettedAlly() && !hasReachedAlly())
+        {
+            UpdateState(State::Follow);
+            break;
+        }
+
+        // Keep on firing otherwise.
         break;
     case State::FireAtTargetted:
-        // TODO
+        isEnemyAlive = isEnemyStillAlive();
+        if (isEnemyAlive * elapsedTime > 5.0f)
+        {
+            // Take cover if we haven't killed the enemy recently.
+            UpdateState(State::TakeCover);
+            break;
+        }
+        else if (!isEnemyAlive)
+        {
+            // Survey once the enemy is dead.
+            UpdateState(State::Survey);
+            break;
+        }
+
+        // Keep on firing otherwise.
         break;
     case State::Flee:
-        // TODO
+        if (!isNearbyEnemy())
+        {
+            // Once we are far away from enemies, stop fleeing.
+            UpdateState(State::Survey);
+            break;
+        }
+
+        // Keep on fleeing otherwise.
         break;
     case State::Follow:
-        // TODO
+        if (hasReachedAlly())
+        {
+            // We reached the ally, switch back to survey.
+            UpdateState(State::Survey);
+            break;
+        }
+
+        // Keep on following otherwise.
         break;
     case State::Survey:
+        // If we have a targetted ally and aren't at the target, follow it.
+        if (isTargettedAlly() && !hasReachedAlly())
+        {
+            UpdateState(State::Follow);
+            break;
+        }
+        
         // If we detect an enemy, fire at it.
-        if (isNearbyEnemy(&target))
+        if (isNearbyEnemy())
         {
-            state = State::FireAtNearest;
+            UpdateState(State::FireAtNearest);
+            break;
         }
 
-        if (isTargettedEnemy(&target))
+        // If we have a targetted enemy, fire at it.
+        if (isTargettedEnemy())
         {
-            state = State::FireAtTargetted;
+            UpdateState(State::FireAtTargetted);
+            break;
         }
-        // TODO
+        
+        if (isManyNearbyEnemies() && isLowPerceivedHealth() && !hasCalledForBackup())
+        {
+            // Flee if we 'think' we are about to die and there are many nearby enemies
+            UpdateState(State::Flee);
+            break;
+        }
 
+        // Otherwise, keep surveying.
         break;
     case State::TakeCover:
         if (hasMovedToTarget())
         {
-            state = State::Survey;
+            if (isManyNearbyEnemies && isLowPerceivedHealth())
+            {
+                // Call for backup, which prevents fleeing.
+                UpdateState(State::CallForBackup);
+                break;
+            }
+
+            // Once we are back in cover, we reset to survey state.
+            UpdateState(State::Survey);
+            break;
         }
 
+        // Otherwise, keep moving to take cover.
         break;
     case State::ThrowExplosive:
+    default:
         if (hasThrownExplosive())
         {
-            state = State::Survey;
+            // Once we have thrown the explosive, we reset to survey state.
+            UpdateState(State::Survey);
+            break;
         }
 
-        break;
-    case State::TravelToFlank:
-        // TODO
-        break;
-    case State::TravelToProtect:
-    default:
-        // TODO
+        // Otherwise, keep throwing the explosive.
         break;
     }
+}
 
+MilitaryStateMachine::State MilitaryStateMachine::GetState()
+{
+    return state;
+}
+
+void MilitaryStateMachine::UpdateState(State newState)
+{
+    hasNewState = true;
+    state = newState;
+}
+
+bool MilitaryStateMachine::HasChangedState()
+{
+    bool changedState = hasNewState;
+    hasNewState = false;
+    return changedState;
 }

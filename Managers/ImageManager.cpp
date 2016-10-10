@@ -25,7 +25,7 @@ GLuint ImageManager::AddImage(const char* filename)
     unsigned char* imageData = stbi_load(filename, &width, &height, &channels, STBI_rgb_alpha);
     if (imageData && width && height)
     {
-        return CreateTexture(width, height, imageData);
+        return CreateTexture(width, height, GL_RGBA8, imageData);
     }
     else
     {
@@ -37,22 +37,46 @@ GLuint ImageManager::AddImage(const char* filename)
     return 0;
 }
 
-GLuint ImageManager::CreateEmptyTexture(int width, int height)
+GLuint ImageManager::CreateEmptyTexture(int width, int height, unsigned int type)
 {
-    unsigned char* data = new unsigned char[width * height * 4];
-    for (unsigned int i = 0; i < (unsigned int)(width * height); i++)
+    unsigned char* data;
+    
+    if (type == GL_RGBA8)
     {
-        unsigned char redFactor = (i % 3 == 0) ? 255 : 0;
-        unsigned char greenFactor = (i % 3 == 1) ? 255 : 0;
-        unsigned char blueFactor = (i % 3 == 2) ? 255 : 0;
+        // 8-bit data
+        data = new unsigned char[width * height * 4];
+        for (unsigned int i = 0; i < (unsigned int)(width * height); i++)
+        {
+            unsigned char redFactor = (i % 3 == 0) ? 255 : 0;
+            unsigned char greenFactor = (i % 3 == 1) ? 255 : 0;
+            unsigned char blueFactor = (i % 3 == 2) ? 255 : 0;
 
-        data[i * 4] = redFactor;
-        data[i * 4 + 1] = greenFactor;
-        data[i * 4 + 2] = blueFactor;
-        data[i * 4 + 3] = 255;
+            data[i * 4] = redFactor;
+            data[i * 4 + 1] = greenFactor;
+            data[i * 4 + 2] = blueFactor;
+            data[i * 4 + 3] = 255;
+        }
+    }
+    else
+    {
+        // 32-bit data
+        float* fpData = new float[width * height * 4];
+        for (unsigned int i = 0; i < (unsigned int)(width * height); i++)
+        {
+            float redFactor = (i % 3 == 0) ? 1.0f : 0;
+            float greenFactor = (i % 3 == 1) ? 1.0f : 0;
+            float blueFactor = (i % 3 == 2) ? 1.0f : 0;
+
+            fpData[i * 4] = redFactor;
+            fpData[i * 4 + 1] = greenFactor;
+            fpData[i * 4 + 2] = blueFactor;
+            fpData[i * 4 + 3] = 1.0f;
+        }
+
+        data = (unsigned char*)fpData;
     }
 
-    GLuint imageId = CreateTexture(width, height, data);
+    GLuint imageId = CreateTexture(width, height, type, data);
     imageTextures[imageId].loadedFromStb = false;
 
     return imageId;
@@ -70,17 +94,17 @@ void ImageManager::CopyToImage(GLuint srcImage, GLuint dstImage, int dstX, int d
     }
 }
 
-GLuint ImageManager::CreateTexture(int width, int height, unsigned char* imageData)
+GLuint ImageManager::CreateTexture(int width, int height, unsigned int type, unsigned char* imageData)
 {
     // Create a new texture for the image.
     GLuint newTextureId;
     glGenTextures(1, &newTextureId);
 
-    imageTextures[newTextureId] = ImageTexture(newTextureId, imageData, width, height);
+    imageTextures[newTextureId] = ImageTexture(newTextureId, imageData, type, width, height);
 
     // Bind the texture and send in image data
     glBindTexture(GL_TEXTURE_2D, newTextureId);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+    glTexStorage2D(GL_TEXTURE_2D, 1, type, width, height);
     ResendToOpenGl(newTextureId);
 
     return newTextureId;
@@ -89,7 +113,8 @@ GLuint ImageManager::CreateTexture(int width, int height, unsigned char* imageDa
 void ImageManager::ResendToOpenGl(GLuint imageId)
 {
     const ImageTexture& image = imageTextures[imageId];
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, GL_RGBA, GL_UNSIGNED_BYTE, image.imageData);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, GL_RGBA, 
+        image.type == GL_RGBA8 ? GL_UNSIGNED_BYTE : GL_FLOAT, image.imageData);
 }
 
 ImageManager::~ImageManager()

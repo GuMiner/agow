@@ -259,6 +259,7 @@ unsigned int ModelManager::LoadModel(const char* rootFilename)
     }
 
     models.push_back(textureModel);
+    modelRenderStore.push_back(ModelRenderStore());
     ++nextModelId;
     return nextModelId - 1;
 }
@@ -295,20 +296,57 @@ void ModelManager::RenderModel(const glm::mat4& projectionMatrix, unsigned int i
 // Renders the specified model given by the ID, using the given color.
 void ModelManager::RenderModel(const glm::mat4& projectionMatrix, unsigned int id, glm::mat4& mvMatrix, glm::vec4 shadingColor, bool selected)
 {
+    ModelRenderStore& renderStore = modelRenderStore[id - 1];
+    renderStore.matrixStore.push_back(mvMatrix[0]);
+    renderStore.matrixStore.push_back(mvMatrix[1]);
+    renderStore.matrixStore.push_back(mvMatrix[2]);
+    renderStore.matrixStore.push_back(mvMatrix[3]);
+
+    renderStore.shadingColorSelectionStore.push_back(shadingColor);
+    renderStore.shadingColorSelectionStore.push_back(glm::vec4(selected ? 0.40f : 0.0f, 0.0f, 0.0f, 0.0f));
+}
+
+// Finalizes rendering (and actually renders) all models.
+void ModelManager::FinalizeRender(const glm::mat4& projectionMatrix)
+{
     glUseProgram(modelRenderProgram);
-
-    GLuint unit = 0;
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, models[id - 1].textureId);
-    glUniform1i(textureLocation, unit);
-
-    glUniform4f(shadingColorLocation, shadingColor.x, shadingColor.y, shadingColor.z, shadingColor.w);
-    glUniformMatrix4fv(projLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-    glUniformMatrix4fv(mvLocation, 1, GL_FALSE, &mvMatrix[0][0]);
-    glUniform1f(selectionFactorLocation, selected ? 0.40f : 0.0f);
-
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, models[id - 1].vertices.indices.size(), GL_UNSIGNED_INT, (const void*)(models[id - 1].indexOffset * sizeof(GL_UNSIGNED_INT)));
+
+    glUniformMatrix4fv(projLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+    for (unsigned int i = 0; i < modelRenderStore.size(); i++)
+    {
+        if (modelRenderStore[i].matrixStore.size() != 0)
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, models[i].textureId);
+            glUniform1i(textureLocation, 0);
+
+            // Send model data to OpenGL
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, imageManager->GetImage(mvMatrixImageId).textureId);
+            std::memcpy(imageManager->GetImage(mvMatrixImageId).imageData,
+                &(modelRenderStore[i].matrixStore)[0], modelRenderStore[i].matrixStore.size() * sizeof(glm::vec4));
+            imageManager->ResendToOpenGl(mvMatrixImageId);
+            glUniform1i(mvLocation, 1);
+
+            // Send shading color and selection data to OpenGL
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, imageManager->GetImage(shadingColorAndSelectionImageId).textureId);
+            std::memcpy(imageManager->GetImage(shadingColorAndSelectionImageId).imageData, 
+                &(modelRenderStore[i].shadingColorSelectionStore)[0], modelRenderStore[i].shadingColorSelectionStore.size() * sizeof(glm::vec4));
+            imageManager->ResendToOpenGl(shadingColorAndSelectionImageId);
+            glUniform1i(shadingColorLocation, 2);
+
+            // Draw all the models of the specified type.
+            glDrawElementsInstanced(GL_TRIANGLES, models[i].vertices.indices.size(), GL_UNSIGNED_INT, 
+                (const void*)(models[i].indexOffset * sizeof(GL_UNSIGNED_INT)), modelRenderStore[i].GetInstanceCount());
+
+            // Clear the store.
+            modelRenderStore[i].matrixStore.clear();
+            modelRenderStore[i].shadingColorSelectionStore.clear();
+        }
+    }
 }
 
 // Initializes the OpenGL resources
@@ -323,8 +361,7 @@ bool ModelManager::InitializeOpenGlResources(ShaderManager& shaderManager)
     textureLocation = glGetUniformLocation(modelRenderProgram, "modelTexture");
     mvLocation = glGetUniformLocation(modelRenderProgram, "mvMatrix");
     projLocation = glGetUniformLocation(modelRenderProgram, "projMatrix");
-    selectionFactorLocation = glGetUniformLocation(modelRenderProgram, "selectionFactor");
-    shadingColorLocation = glGetUniformLocation(modelRenderProgram, "shadingColor");
+    shadingColorLocation = glGetUniformLocation(modelRenderProgram, "shadingColorAndFactor");
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -333,11 +370,18 @@ bool ModelManager::InitializeOpenGlResources(ShaderManager& shaderManager)
     glGenBuffers(1, &uvBuffer);
     glGenBuffers(1, &indexBuffer);
 
+    // This is enough for 512x512/4 (65,536) models (mat4), which we should never hit.
+    glActiveTexture(GL_TEXTURE1);
+    mvMatrixImageId = imageManager->CreateEmptyTexture(512, 512, GL_RGBA32F);
+
+    glActiveTexture(GL_TEXTURE2);
+    shadingColorAndSelectionImageId = imageManager->CreateEmptyTexture(512, 512, GL_RGBA32F);
+
     return true;
 }
 
-// Sends in the model data to OpenGL.
-void ModelManager::ResetOpenGlModelData()
+// Finalizes the list of loaded models we know of, sending the data to OpenGL.
+void ModelManager::FinalizeLoadedModels()
 {
     glBindVertexArray(vao);
 

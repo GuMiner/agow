@@ -9,6 +9,8 @@ struct ImageTexture
     int width;
     int height;
 
+    unsigned int type;
+
     // Image data as loaded in.
     unsigned char* imageData;
 
@@ -19,8 +21,8 @@ struct ImageTexture
     {
     }
 
-    ImageTexture(GLuint textureId, unsigned char* imageData, int width, int height)
-        : textureId(textureId), width(width), height(height), imageData(imageData), loadedFromStb(true)
+    ImageTexture(GLuint textureId, unsigned char* imageData, unsigned int type, int width, int height)
+        : textureId(textureId), type(type), width(width), height(height), imageData(imageData), loadedFromStb(true)
     {
     }
 };

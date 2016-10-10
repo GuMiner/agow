@@ -224,7 +224,7 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_SHADERS;
     }
 
-    modelManager.ResetOpenGlModelData();
+    modelManager.FinalizeLoadedModels();
 
     Logger::Log("Loading physics...");
     Constants::Status status = LoadPhysics();
@@ -326,6 +326,8 @@ void agow::Render(GLFWwindow* window, glm::mat4& viewMatrix)
     // Render our ground, and any derivative items from that.
     regionManager.RenderRegions(Constants::PerspectiveMatrix, viewMatrix);
 
+    modelManager.FinalizeRender(projectionMatrix);
+
     // Render the NPCs
     npcManager.Render(&fontManager, &modelManager, projectionMatrix);
 
@@ -335,6 +337,7 @@ void agow::Render(GLFWwindow* window, glm::mat4& viewMatrix)
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);
 
+    // Render our dialog pane.
     dialogPane.Render(Constants::PerspectiveMatrix);
 }
 
@@ -390,7 +393,6 @@ Constants::Status agow::Run()
         clockStartTime = clock.getElapsedTime();
         viewMatrix = player.GetViewMatrix();
 
-        // TODO see if jitter still exists with GLFW.
         float frameTime = std::min(frameClock.restart().asSeconds(), 0.06f);
         HandleEvents(window, focusPaused, escapePaused);
         
@@ -400,7 +402,7 @@ Constants::Status agow::Run()
             float gameTime = clock.getElapsedTime().asSeconds();
             
             // Update physics.
-            physics.Step(1.0f / (float)Constants::MAX_FRAMERATE);
+            physics.Step(frameTime);
             Update(gameTime, frameTime);
 
             Render(window, viewMatrix);
