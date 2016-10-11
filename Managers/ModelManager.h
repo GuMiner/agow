@@ -50,8 +50,8 @@ class ModelManager
     GLuint projLocation;
 
     // Buffers. These are created from the image manager, and do not need to be freed.
-    GLuint mvMatrixImageId;
-    GLuint shadingColorAndSelectionImageId;
+    std::vector<GLuint> mvMatrixImageId;
+    std::vector<GLuint> shadingColorAndSelectionImageId;
 
     // Model data
     unsigned int nextModelId;

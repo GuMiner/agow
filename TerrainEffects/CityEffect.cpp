@@ -141,9 +141,9 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
 
                 // Move the building to be where the city part is.
                 // TODO also randomly color the building.
-                for (unsigned int i = 0; i < building.segments.size(); i++)
+                for (unsigned int i = 0; i < 1; i++)// building.segments.size(); i++)
                 {
-                    //physics->DynamicsWorld->addRigidBody(building.segments[i].rigidBody);
+                    physics->DynamicsWorld->addRigidBody(building.segments[i].rigidBody);
                 }
 
                 cityEffect->buildings.push_back(building);
@@ -189,14 +189,15 @@ void CityEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float el
 
 void CityEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
+    glm::mat4 projectionMatrix = perspectiveMatrix * viewMatrix;
     CityEffectData* cityEffect = (CityEffectData*)effectData;
     for (const Building& building : cityEffect->buildings)
     {
         for (const ScaledPhysicalModel& model : building.segments)
         {
             glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.rigidBody);
-            mvMatrix = mvMatrix * glm::scale(glm::mat4(), model.scaleFactor);
-            modelManager->RenderModel(perspectiveMatrix * viewMatrix, model.modelId, mvMatrix, building.color, false);
+            // mvMatrix = mvMatrix * glm::scale(glm::mat4(), model.scaleFactor);
+            modelManager->RenderModel(projectionMatrix, model.modelId, mvMatrix, building.color, false);
         }
     }
 }
