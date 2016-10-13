@@ -10,7 +10,7 @@
 
 Player::Player(ModelManager* modelManager, BasicPhysics* physics)
     : gravityWeapon(physics), pressureWeapon(physics, glm::vec2(1.0f, 10.0f)), rockWeapon(modelManager, physics, glm::vec2(10.0f, 500.0f)), sunbeamWeapon(physics), // TODO configurable
-      lastMousePos(glm::ivec2(-1, -1)), camera(-85, glm::vec2(-30, 30), glm::vec2(-14, 14)), isOnGround(true), motionType(ON_FOOT), // TODO configurable camera.
+      lastMousePos(glm::ivec2(-1, -1)), camera(-80, glm::vec2(-30, 30), glm::vec2(-14, 14)), isOnGround(true), motionType(ON_FOOT), // TODO configurable camera.
       enemyKos(0), allyKos(0), civilianKos(0)
 {
     selectedWeapon = &rockWeapon;

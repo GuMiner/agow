@@ -29,17 +29,19 @@ void main(void)
     vec4 pos2 = mix(gl_in[2].gl_Position, gl_in[3].gl_Position, gl_TessCoord.x);
     vec4 pos = mix(pos2, pos1, gl_TessCoord.y);
     
+    float offset = 1.0f / 102.0f;
+    
     // Note that as the terrain texture only contains height, so 'r' is the only valid (0-1) component.
-    pos.z += texelFetch(terrainTexture, ivec2(tc.x * 100, tc.y * 100), 0).r * depth;
+    pos.z += texture(terrainTexture, vec2(tc.x + offset, tc.y  + offset), 0).r * depth;
     
     gl_Position = projMatrix * mvMatrix * pos;  
     fragment_position = vec3(gl_Position);	
     tc_fs = tc;
     
-    float t1 = texelFetch(terrainTexture, ivec2(tes_in[0].x * 100, tes_in[0].y * 100), 0).r * depth;
-    float t2 = texelFetch(terrainTexture, ivec2(tes_in[1].x * 100, tes_in[1].y * 100), 0).r * depth;
-    float t3 = texelFetch(terrainTexture, ivec2(tes_in[2].x * 100, tes_in[2].y * 100), 0).r * depth;
-    float t4 = texelFetch(terrainTexture, ivec2(tes_in[3].x * 100, tes_in[3].y * 100), 0).r * depth;
+    float t1 = texture(terrainTexture, vec2(tes_in[0].x + offset, tes_in[0].y + offset), 0).r * depth;
+    float t2 = texture(terrainTexture, vec2(tes_in[1].x + offset, tes_in[1].y + offset), 0).r * depth;
+    float t3 = texture(terrainTexture, vec2(tes_in[2].x + offset, tes_in[2].y + offset), 0).r * depth;
+    float t4 = texture(terrainTexture, vec2(tes_in[3].x + offset, tes_in[3].y + offset), 0).r * depth;
     float maxH = max(t1, max(t2, max(t3, t4)));
     float minH = min(t1, min(t2, min(t3, t4)));
     

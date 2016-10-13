@@ -111,66 +111,46 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
 
     if (loadSubtiles && !terrainTiles[start]->loadedSubtiles)
     {
-        int subSize = GetSubTileSize() + 1;
+        int subSize = GetSubTileSize() + 2;
         for (int i = 0; i < TerrainManager::Subdivisions; i++)
         {
             for (int j = 0; j < TerrainManager::Subdivisions; j++)
             {
+                // Populate our main image
                 float* heightmap = new float[subSize * subSize];
-                for (int x = 0; x < subSize; x++)
+                for (int x = 0; x < GetSubTileSize(); x++)
                 {
-                    for (int y = 0; y < subSize; y++)
+                    for (int y = 0; y < GetSubTileSize(); y++)
                     {
-                        // Within our main image.
                         int xReal = x + i * GetSubTileSize();
                         int yReal = y + j * GetSubTileSize();
-                        glm::ivec2 tileOffset = glm::ivec2(0, 0);
                         
-                        // If x == subSize - 1, we need to pull from the X+ terrain tile.
-                        // If y == subSize - 1, we need to pull from the Y+ terrain tile.
-                        // If both == subSize - 1, as that pixel is "unimportant", we ignore.
-                        if (x != subSize - 1 && y != subSize - 1)
-                        {
-                            // Do nothing, but prevet fall-through and recursive generation.
-                        }
-                        else if (x == subSize - 1 && y != subSize - 1)
-                        {
-                            if (i == TerrainManager::Subdivisions - 1)
-                            {
-                                xReal = 0;
-                                tileOffset = glm::ivec2(1, 0);
-                            }
-                            else
-                            {
-                                xReal++;
-                            }
-
-                        }
-                        else if (x != subSize - 1 && y == subSize - 1)
-                        {
-                            if (j == TerrainManager::Subdivisions - 1)
-                            {
-                                yReal = 0;
-                                tileOffset = glm::ivec2(0, 1);
-                            }
-                            else
-                            {
-                                yReal++;
-                            }
-                        }
-                        else
-                        {
-                            // Pull the value from x = subSize - 2, y = subSize - 2;, as we don't need it really.
-                            heightmap[x + y * subSize] = heightmap[(x - 1) + (y - 1) * subSize];
-                            continue;
-                        }
-                        
-                        heightmap[x + y * subSize] =
-                            (float)((unsigned short)terrainTiles[start + tileOffset]->rawImage[(xReal + yReal * tileSize) * 4] +
-                                  (((unsigned short)terrainTiles[start + tileOffset]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                        heightmap[(x + 1) + (y + 1) * subSize] =
+                            (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
+                                  (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
                                 / (float)std::numeric_limits<unsigned short>::max();
                     }
                 }
+
+                // Populate the top and bottom band.
+                for (int x = 1; x < subSize - 1; x++)
+                {
+                    // TODO unlike the last version, this should check the current tile first, and if we go OOB, then the next terrain tile.
+                    heightmap[x + 0 * subSize] = heightmap[x + 1 * subSize];
+                    heightmap[x + (subSize - 1) * subSize] = heightmap[x + (subSize - 2) * subSize];
+                }
+
+                for (int y = 1; y < subSize - 1; y++)
+                {
+                    heightmap[0 + y * subSize] = heightmap[1 + y * subSize];
+                    heightmap[(subSize - 1) + y * subSize] = heightmap[(subSize - 2) + y * subSize];
+                }
+
+                // Fill in corners with inner corners.
+                heightmap[0 + 0 * subSize] = heightmap[1 + 1 * subSize];
+                heightmap[(subSize - 1) + (subSize - 1) * subSize] = heightmap[(subSize - 2) + (subSize - 2) * subSize];
+                heightmap[(0) + (subSize - 1) * subSize] = heightmap[(1) + (subSize - 2) * subSize];
+                heightmap[(subSize - 1) + (0) * subSize] = heightmap[(subSize - 2) + (1) * subSize];
 
                 unsigned char* types = new unsigned char[GetSubTileSize() * GetSubTileSize()];
                 for (int x = 0; x < GetSubTileSize(); x++)
@@ -183,11 +163,11 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
 
                         types[x + y * GetSubTileSize()] = terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 2];
 
-                        // Perform per-tile height modifications
-                        if (types[x + y * GetSubTileSize()] == TerrainTypes::ROADS)
-                        {
-                            heightmap[x + y * subSize] -= (0.50f / 900.0f);
-                        }
+                        // // Perform per-tile height modifications
+                        // if (types[x + y * GetSubTileSize()] == TerrainTypes::ROADS)
+                        // {
+                        //     heightmap[(x + 1) + (y + 1) * subSize] -= (0.50f / 900.0f);
+                        // }
                     }
                 }
 
@@ -201,7 +181,7 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
                 {
                     for (int y = 0; y < GetSubTileSize(); y++)
                     {
-                        realHeightmap[x + y * GetSubTileSize()] = scale * heightmap[x + y * subSize];
+                        realHeightmap[x + y * GetSubTileSize()] = scale * heightmap[(x + 1) + (y + 1) * subSize];
                     }
                 }
 
@@ -223,9 +203,11 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
 
 bool TerrainManager::LoadTerrainTile(glm::ivec2 start, TerrainTile** tile)
 {
-    // The +-x and +-y tiles must also be loaded to cache to properly generate subtile heightmaps and images.
+    // The surrounding tiles must also be loaded to cache to properly generate subtile heightmaps and images.
     if (!LoadTileToCache(glm::ivec2(std::min(start.x + 1, max.x), start.y), false) ||
+        !LoadTileToCache(glm::ivec2(std::max(start.x - 1, min.x), start.y), false) ||
         !LoadTileToCache(glm::ivec2(start.x, std::min(start.y + 1, max.y)), false) ||
+        !LoadTileToCache(glm::ivec2(start.x, std::max(start.y - 1, min.y)), false) ||
         !LoadTileToCache(start, true))
     {
         return false;

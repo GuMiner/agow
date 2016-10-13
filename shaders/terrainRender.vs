@@ -22,7 +22,7 @@ void main(void)
     
     // Figure out the texture coordinate by taking the position on the height texture and then the position in the cell.
 	// We add a pixel upon division to avoid seam errors.
-    tcs_in = (offset + (vertices[gl_VertexID].xy)) / float(textureSize + 1);
+    tcs_in = (offset + (vertices[gl_VertexID].xy)) / float(textureSize + 2);
     
     // Move the terrain cells appropriately.
     gl_Position = vertices[gl_VertexID] + vec4(float(x), float(y), 0.0, 0.0);

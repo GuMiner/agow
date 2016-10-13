@@ -264,10 +264,10 @@ unsigned int ModelManager::LoadModel(const char* rootFilename)
 
     // This is enough for 512x512/4 (65,536) models (mat4), which we should never hit.
     glActiveTexture(GL_TEXTURE1);
-    mvMatrixImageId.push_back(imageManager->CreateEmptyTexture(512, 512, GL_RGBA32F));
+    mvMatrixImageId.push_back(imageManager->CreateEmptyTexture(128, 128, GL_RGBA32F));
 
     glActiveTexture(GL_TEXTURE2);
-    shadingColorAndSelectionImageId.push_back(imageManager->CreateEmptyTexture(512, 512, GL_RGBA32F));
+    shadingColorAndSelectionImageId.push_back(imageManager->CreateEmptyTexture(128, 128, GL_RGBA32F));
 
     ++nextModelId;
     return nextModelId - 1;
@@ -315,8 +315,6 @@ void ModelManager::RenderModel(const glm::mat4& projectionMatrix, unsigned int i
     renderStore.shadingColorSelectionStore.push_back(glm::vec4(selected ? 0.40f : 0.0f, 0.0f, 0.0f, 0.0f));
 }
 
-int once = 0;
-
 // Finalizes rendering (and actually renders) all models.
 void ModelManager::FinalizeRender(const glm::mat4& projectionMatrix)
 {
@@ -332,28 +330,21 @@ void ModelManager::FinalizeRender(const glm::mat4& projectionMatrix)
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, models[i].textureId);
             glUniform1i(textureLocation, 0);
-            // 
-            // // Send model data to OpenGL
+            
+            // Send model data to OpenGL
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, imageManager->GetImage(mvMatrixImageId[i]).textureId);
-            if (once < 100)
-            {
-                std::memcpy(imageManager->GetImage(mvMatrixImageId[i]).imageData,
-                    &(modelRenderStore[i].matrixStore)[0], modelRenderStore[i].matrixStore.size() * sizeof(glm::vec4));
-                imageManager->ResendToOpenGl(mvMatrixImageId[i]);
-            }
+            std::memcpy(imageManager->GetImage(mvMatrixImageId[i]).imageData,
+                &(modelRenderStore[i].matrixStore)[0], modelRenderStore[i].matrixStore.size() * sizeof(glm::vec4));
+            imageManager->ResendToOpenGl(mvMatrixImageId[i]);
             glUniform1i(mvLocation, 1);
-            // 
-            // // Send shading color and selection data to OpenGL
+
+            // Send shading color and selection data to OpenGL
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, imageManager->GetImage(shadingColorAndSelectionImageId[i]).textureId);
-            if (once < 100)
-            {
-                std::memcpy(imageManager->GetImage(shadingColorAndSelectionImageId[i]).imageData,
-                    &(modelRenderStore[i].shadingColorSelectionStore)[0], modelRenderStore[i].shadingColorSelectionStore.size() * sizeof(glm::vec4));
-                imageManager->ResendToOpenGl(shadingColorAndSelectionImageId[i]);
-                once++;
-            }
+            std::memcpy(imageManager->GetImage(shadingColorAndSelectionImageId[i]).imageData,
+                &(modelRenderStore[i].shadingColorSelectionStore)[0], modelRenderStore[i].shadingColorSelectionStore.size() * sizeof(glm::vec4));
+            imageManager->ResendToOpenGl(shadingColorAndSelectionImageId[i]);
             glUniform1i(shadingColorLocation, 2);
             
             // Draw all the models of the specified type.
