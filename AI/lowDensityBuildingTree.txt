@@ -3,23 +3,9 @@
 #  [string]   [float] [float]        [float]        [int]   [int]
 #  model_name zFactor minScaleFactor maxScaleFactor minLayers maxLayers
 
-# Spread apart the binary tree so we have several initial options.
-root spreader1 spreader2 false
+# Either square or circle.
+root square circle false
 nothing here
-
-spreader1 ell square false
-nothing here either
-
-spreader2 circle spreader3 false
-nothing here either
-
-#   These two are going to be 1/8th instead of 1/4th common.
-spreader3 rect tee false
-nothing here either
-
-# Building bases. Note the scale-down Z factor.
-ell ellSegment null true
-models/buildings/segments/ell 0.1 0.7 1.4 1 1
 
 square squareSegment null true
 models/buildings/segments/square 0.1 0.7 1.4 1 1
@@ -27,16 +13,7 @@ models/buildings/segments/square 0.1 0.7 1.4 1 1
 circle circleSegment null true
 models/buildings/segments/circle 0.1 0.7 1.4 1 1
 
-rect rectSegment null true
-models/buildings/segments/rect 0.1 0.7 1.4 1 1
-
-tee teeSegment null true
-models/buildings/segments/tee 0.1 0.7 1.4 1 1
-
 # Building segments. Low-density means only 1 or 2 layers.
-ellSegment ellRoof pyramidRect true
-models/buildings/segments/ell 1.0 1.0 1.0 1 2
-
 squareSegment squareSegmentSplitter squareSegmentSplitter2 true
 models/buildings/segments/square 1.0 1.0 1.0 1 2
 
@@ -49,30 +26,12 @@ Allows the square building to have many roofs, part 2
 circleSegment dome pointy true
 models/buildings/segments/circle 1.0 1.0 1.0 1 2
 
-rectSegment flatRect pyramidRect true
-models/buildings/segments/rect 1.0 1.0 1.0 1 2
-
-teeSegment teeRoof pyramidRect true
-models/buildings/segments/tee 1.0 1.0 1.0 1 2
-
 # Tops of buildings. The scale factors are ignored for these as they inherit from the parent base layers.
-ellRoof null null true
-models/buildings/tops/ell 1.0 1.0 1.0 1 1
-
-teeRoof null null true
-models/buildings/tops/tee 1.0 1.0 1.0 1 1
-
 pyramid null null true
 models/buildings/tops/pyramid 1.0 1.0 1.0 1 1
 
-pyramidRect null null true
-models/buildings/tops/pyramidRect 1.0 1.0 1.0 1 1
-
 flat null null true
 models/buildings/tops/flat 1.0 1.0 1.0 1 1
-
-flatRect null null true
-models/buildings/tops/flatRect 1.0 1.0 1.0 1 1
 
 turret null null true
 models/buildings/tops/turret 1.0 1.0 1.0 1 1

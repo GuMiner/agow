@@ -76,25 +76,7 @@ bool BuildingGenerator::LoadBuildingModels(ModelManager* modelManager)
         return false;
     }
 
-    modelId = modelManager->LoadModel("models/buildings/segments/ell");
-    if (modelId == 0)
-    {
-        return false;
-    }
-
-    modelId = modelManager->LoadModel("models/buildings/segments/rect");
-    if (modelId == 0)
-    {
-        return false;
-    }
-
     modelId = modelManager->LoadModel("models/buildings/segments/square");
-    if (modelId == 0)
-    {
-        return false;
-    }
-
-    modelId = modelManager->LoadModel("models/buildings/segments/tee");
     if (modelId == 0)
     {
         return false;
@@ -107,19 +89,7 @@ bool BuildingGenerator::LoadBuildingModels(ModelManager* modelManager)
         return false;
     }
 
-    modelId = modelManager->LoadModel("models/buildings/tops/ell");
-    if (modelId == 0)
-    {
-        return false;
-    }
-
     modelId = modelManager->LoadModel("models/buildings/tops/flat");
-    if (modelId == 0)
-    {
-        return false;
-    }
-
-    modelId = modelManager->LoadModel("models/buildings/tops/flatRect");
     if (modelId == 0)
     {
         return false;
@@ -132,18 +102,6 @@ bool BuildingGenerator::LoadBuildingModels(ModelManager* modelManager)
     }
 
     modelId = modelManager->LoadModel("models/buildings/tops/pyramid");
-    if (modelId == 0)
-    {
-        return false;
-    }
-
-    modelId = modelManager->LoadModel("models/buildings/tops/pyramidRect");
-    if (modelId == 0)
-    {
-        return false;
-    }
-
-    modelId = modelManager->LoadModel("models/buildings/tops/tee");
     if (modelId == 0)
     {
         return false;
