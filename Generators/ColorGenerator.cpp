@@ -20,6 +20,16 @@ glm::vec4 ColorGenerator::GetTravellerColor()
     return glm::vec4(1.0f);
 }
 
+glm::vec3 ColorGenerator::GetTreeBranchColor()
+{
+    return glm::vec3(0.57f, 0.20f + glm::linearRand(0.0f, 0.30f), 0.10f + glm::linearRand(0.0f, 0.40f));
+}
+
+glm::vec3 ColorGenerator::GetTreeLeafColor()
+{
+    return glm::vec3(0.1f, 0.70f + glm::linearRand(0.0f, 0.30f), glm::linearRand(0.0f, 0.20f));
+}
+
 glm::vec4 ColorGenerator::GetAllyColor()
 {
     // Allies are varying shades of green.

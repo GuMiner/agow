@@ -4,15 +4,19 @@
 
 struct Branch
 {
-    Branch* parent;
+    int parentId;
+    std::vector<Branch*> children;
+
     glm::vec3 pos;
     glm::vec3 startDirection;
     
     glm::vec3 growDirection;
     unsigned int grew;
 
-    Branch(Branch* parent, glm::vec3 pos, glm::vec3 startDirection)
-        : parent(parent), pos(pos), startDirection(startDirection), growDirection(startDirection), grew(0)
+    unsigned int thickness;
+
+    Branch(int parentId, glm::vec3 pos, glm::vec3 startDirection)
+        : parentId(parentId), children(), pos(pos), startDirection(startDirection), growDirection(startDirection), grew(0), thickness(0)
     {
     }
 
@@ -76,14 +80,17 @@ class TreeGenerator
 
     bool IsBranchWithinDistance(std::vector<Branch>* branches, Branch branch, float distance);
 
+    void FindInverseBranchSizes(unsigned int currentSize, Branch* startingBranch);
+    void InvertBranchSizes(std::vector<unsigned int>* branchSizes);
+
 public:
     TreeGenerator();
 
     // Generates a random tree.
-    GenerationResults GenerateTree(const glm::vec3& pos, std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints);
+    GenerationResults GenerateTree(std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints);
 
     // Generates a tree of the specified type.
-    GenerationResults GenerateTree(TreeType type, const glm::vec3& pos, float radius, float height,
+    GenerationResults GenerateTree(TreeType type, float radius, float height,
         std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints);
 };
 

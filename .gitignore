@@ -9,6 +9,7 @@ Profiling_ProfilerOutput/
 *.xml
 rasters/
 cache/data
+cache/trees
 
 # User-specific files
 *.suo

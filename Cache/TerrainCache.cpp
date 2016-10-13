@@ -38,6 +38,28 @@ bool TerrainCache::IsInCache(const glm::ivec2& subtilePos)
     return false;
 }
 
+void TerrainCache::WriteUintVector(std::ofstream* outputStream, std::vector<unsigned int>* vector)
+{
+    unsigned int size = vector == nullptr ? 0 : vector->size();
+    outputStream->write((char*)&size, sizeof(unsigned int));
+    for (unsigned int i = 0; i < size; i++)
+    {
+        outputStream->write((char*)&((*vector)[i]), sizeof(unsigned int));
+    }
+}
+
+void TerrainCache::ReadUintVector(std::ifstream* inputStream, std::vector<unsigned int>* vector)
+{
+    unsigned int size;
+    inputStream->read((char*)&size, sizeof(unsigned int));
+    for (unsigned int i = 0; i < size; i++)
+    {
+        unsigned int value;
+        inputStream->read((char*)&value, sizeof(unsigned int));
+        vector->push_back(value);
+    }
+}
+
 void TerrainCache::WriteVectorVector(std::ofstream* outputStream, std::vector<glm::vec3>* vector)
 {
     unsigned int size = vector == nullptr ? 0 : vector->size();

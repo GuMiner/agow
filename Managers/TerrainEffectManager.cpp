@@ -22,8 +22,8 @@ TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelMa
     effects.push_back((TerrainEffect*)new SignEffect(modelManager, physics, subTileSize));
 
     // TODO configurable
-    effects.push_back((TerrainEffect*)new TreeEffect("cache/data", subTileSize));
-    effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/data", subTileSize));
+    effects.push_back((TerrainEffect*)new TreeEffect("cache/trees", subTileSize));
+    // effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/buildings", subTileSize));
 }
 
 bool TerrainEffectManager::LoadBasics()

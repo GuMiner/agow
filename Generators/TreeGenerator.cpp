@@ -87,15 +87,15 @@ float TreeGenerator::GetMinLeafDistance(glm::vec3 point, std::vector<Leaf>* leaf
 
 void TreeGenerator::GrowTrunk(std::vector<Branch>* branches, std::vector<Leaf>* leafs, float branchLength, float leafDetectionDistance, float maxHeight)
 {
-    Branch* lastBranch = nullptr;
-    branches->push_back(Branch(nullptr, glm::vec3(0, 0, 0), glm::vec3(0, 0, branchLength)));
+    branches->push_back(Branch(-1, glm::vec3(0, 0, 0), glm::vec3(0, 0, branchLength)));
     bool lastBranchCloseEnough = GetMinLeafDistance((*branches)[branches->size() - 1].end(), leafs) < leafDetectionDistance;
     
     // Grow until we're ready to add leaves or our trunk is the height of the tree!
     while (!lastBranchCloseEnough && (*branches)[branches->size() - 1].pos.z < maxHeight)
     {
         Branch* parent = &((*branches)[branches->size() - 1]);
-        branches->push_back(Branch(parent, parent->end(), parent->startDirection));
+        branches->push_back(Branch(branches->size() - 1, parent->end(), parent->startDirection));
+
         lastBranchCloseEnough = GetMinLeafDistance((*branches)[branches->size() - 1].end(), leafs) < leafDetectionDistance;
     }
 }
@@ -114,8 +114,38 @@ bool TreeGenerator::IsBranchWithinDistance(std::vector<Branch>* branches, Branch
     return false;
 }
 
+void TreeGenerator::FindInverseBranchSizes(unsigned int currentSize, Branch* branch)
+{
+    branch->thickness = currentSize;
+    ++currentSize;
+
+    for (unsigned int i = 0; i < branch->children.size(); i++)
+    {
+        FindInverseBranchSizes(currentSize, branch->children[i]);
+    }
+}
+
+void TreeGenerator::InvertBranchSizes(std::vector<unsigned int>* branchSizes)
+{
+    unsigned int maxSize = 0;
+    for (unsigned int i = 0; i < branchSizes->size(); i++)
+    {
+        if ((*branchSizes)[i] > maxSize)
+        {
+            maxSize = (*branchSizes)[i];
+        }
+    }
+
+    // Invert but ensure the min branch size is 1.
+    maxSize++;
+    for (unsigned int i = 0; i < branchSizes->size(); i++)
+    {
+        (*branchSizes)[i] = maxSize - (*branchSizes)[i];
+    }
+}
+
 // Generates a random tree.
-GenerationResults TreeGenerator::GenerateTree(const glm::vec3& pos, std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints)
+GenerationResults TreeGenerator::GenerateTree(std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints)
 {
     TreeType type = (TreeType)glm::linearRand(0, (int)TreeType::COUNT - 1);
     
@@ -123,11 +153,11 @@ GenerationResults TreeGenerator::GenerateTree(const glm::vec3& pos, std::vector<
     float radius = 2.0f + glm::linearRand(0.0f, 4.0f);
     float height = std::max(3.0f, radius + glm::linearRand(0.0f, 5.0f) - 1.0f);
 
-    return GenerateTree(type, pos, radius, height, trunkLines, trunkSizes, leafPoints);
+    return GenerateTree(type, radius, height, trunkLines, trunkSizes, leafPoints);
 }
 
 // Generates a tree of the specified type.
-GenerationResults TreeGenerator::GenerateTree(TreeType type, const glm::vec3& pos, float radius, float height,
+GenerationResults TreeGenerator::GenerateTree(TreeType type, float radius, float height,
     std::vector<glm::vec3>* trunkLines, std::vector<unsigned int>* trunkSizes, std::vector<glm::vec3>* leafPoints)
 {
     // TODO support trunk sizes by determining max parent height of branches.
@@ -181,7 +211,7 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const glm::vec3& po
                 if (distance < minDistance)
                 {
                     // The leaf is too close, so we remove it and add it to the known leaf points.
-                    leafPoints->push_back(branches[j].pos + glm::linearRand(0.0f, 1.0f) * (branches[j].end() - leaves[i].pos) + pos);
+                    leafPoints->push_back(branches[j].pos + glm::linearRand(0.0f, 1.0f) * (branches[j].end() - leaves[i].pos));
                     leavesToRemove.push_back(i);
                     ++leavesAdded;
                     leafRemoved = true;
@@ -220,7 +250,7 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const glm::vec3& po
             if (branches[i].grew != 0)
             {
                 glm::vec3 averageDirection = glm::normalize(branches[i].growDirection);
-                newBranches.push_back(Branch(&branches[i], branches[i].end(), averageDirection * branchLength * (float)(1 + branches[i].grew % 3)));
+                newBranches.push_back(Branch(i, branches[i].end(), averageDirection * branchLength * (float)(1 + branches[i].grew % 3)));
 
                 branches[i].growDirection = branches[i].startDirection;
                 branches[i].grew = 0;
@@ -243,15 +273,35 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, const glm::vec3& po
         }
     }
 
-    // Add the branches as trunk lines; note the leaves have already been added.
-    for (unsigned int i = 0; i < branches.size(); i++)
-    {
-        trunkLines->push_back(branches[i].pos + pos);
-        trunkLines->push_back(branches[i].end() + pos);
-    }
-
+    // Now that we're done with the main loop:
+    
+    // Log tree generation results.
     auto endTime = std::chrono::system_clock::now();
     std::chrono::duration<double> duration = endTime - startTime;
     Logger::Log("Tree Gen: ", (int)(duration.count() * 1000000.0f), " us, A: ", attractionPoints.size(), " I: ", iterations, " L: ", leavesAdded, " B: ", branches.size());
+
+    // Populate the children list.
+    for (unsigned int i = 0; i < branches.size(); i++)
+    {
+        if (branches[i].parentId >= 0)
+        {
+            branches[branches[i].parentId].children.push_back(&(branches[i]));
+        }
+    }
+
+    // Determine the trunk sizes recursively.
+    FindInverseBranchSizes(1, &branches[0]);
+
+    // Add the branches as trunk lines; note the leaves have already been added.
+    for (unsigned int i = 0; i < branches.size(); i++)
+    {
+        trunkLines->push_back(branches[i].pos);
+        trunkLines->push_back(branches[i].end());
+    }
+
+    // All our branch sizes are reversed, so perform the inverse of that operation.
+    InvertBranchSizes(trunkSizes);
+
+    
     return GenerationResults(type, leavesAdded, branches.size());
 }

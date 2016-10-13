@@ -5,9 +5,9 @@
 
 struct TreeCacheData
 {
-    bool hasEffect;
     std::vector<glm::vec3> branches;
     std::vector<glm::vec3> branchColors;
+    std::vector<unsigned int> branchThicknesses;
 
     std::vector<glm::vec3> leaves;
     std::vector<glm::vec3> leafColors;
@@ -15,16 +15,16 @@ struct TreeCacheData
 
 struct TreeCacheInputData
 {
-    bool hasEffect;
     std::vector<glm::vec3>* branches;
     std::vector<glm::vec3>* branchColors;
+    std::vector<unsigned int>* branchThicknesses;
 
     std::vector<glm::vec3>* leaves;
     std::vector<glm::vec3>* leafColors;
 
-    TreeCacheInputData(bool hasEffect, std::vector<glm::vec3>* branches, std::vector<glm::vec3>* branchColors,
-        std::vector<glm::vec3>* leaves, std::vector<glm::vec3>* leafColors)
-        : hasEffect(hasEffect), branches(branches), branchColors(branchColors), leaves(leaves), leafColors(leafColors)
+    TreeCacheInputData(std::vector<glm::vec3>* branches, std::vector<glm::vec3>* branchColors,
+        std::vector<unsigned int>* branchThicknesses, std::vector<glm::vec3>* leaves, std::vector<glm::vec3>* leafColors)
+        : branches(branches), branchColors(branchColors), branchThicknesses(branchThicknesses), leaves(leaves), leafColors(leafColors)
     {
     }
 };

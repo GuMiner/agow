@@ -32,6 +32,7 @@ class TreeEffect : public TerrainEffect
     int subTileSize; // In pixels
 
     TreeCache treeCache;
+    std::vector<TreeCacheData> cachedTrees;
 
     TreeProgram trunkProgram;
     TreeProgram leafProgram;

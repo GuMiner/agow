@@ -316,6 +316,8 @@ void agow::Update(float currentGameTime, float frameTime)
         }
     }
 
+    scenery.Update(frameTime);
+
     regionManager.UpdateVisibleRegion(player.GetPosition(), physics.DynamicsWorld);
     regionManager.SimulateVisibleRegions(currentGameTime, frameTime);
 
@@ -339,7 +341,7 @@ void agow::Render(GLFWwindow* window, glm::mat4& viewMatrix)
     glClearBufferfv(GL_DEPTH, 0, &one);
 
     // Render the scenery
-    scenery.Render(rotationOnlyMatrix);
+    scenery.Render(rotationOnlyMatrix, player.GetPosition());
 
     // Render our ground, and any derivative items from that.
     regionManager.RenderRegions(Constants::PerspectiveMatrix, viewMatrix);

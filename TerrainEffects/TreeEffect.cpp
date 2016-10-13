@@ -1,4 +1,5 @@
 #include <glm\gtc\random.hpp>
+#include "Generators\ColorGenerator.h"
 #include "Utils\Logger.h"
 #include "TreeEffect.h"
 
@@ -28,6 +29,45 @@ bool TreeEffect::LoadBasics(ShaderManager* shaderManager)
     leafProgram.projMatrixLocation = glGetUniformLocation(leafProgram.programId, "projMatrix");
     leafProgram.mvMatrixLocation = glGetUniformLocation(leafProgram.programId, "mvMatrix");
 
+    // TODO configurable number of trees we generate.
+    for (int i = 0; i < 100; i++)
+    {
+        TreeCacheData generatedTree;
+        glm::ivec2 treeId = glm::ivec2(0, i);
+        if (treeCache.IsInCache(treeId))
+        {
+            TreeCacheData* pointer = &generatedTree;
+            treeCache.LoadFromCache(treeId, (void**)&pointer);
+        }
+        else
+        {
+            // Generate the possible tree models to use for rendering trees.
+            TreeCacheData generatedTree;
+
+            GenerationResults results = treeGenerator.GenerateTree(&generatedTree.branches, &generatedTree.branchThicknesses, &generatedTree.leaves);
+            for (unsigned int i = 0; i < results.branches; i++)
+            {
+                // Add tree trunk colors;
+                generatedTree.branchColors.push_back(ColorGenerator::GetTreeBranchColor());
+                generatedTree.branchColors.push_back(ColorGenerator::GetTreeBranchColor());
+            }
+
+            // Add tree leaf colors.
+            for (unsigned int i = 0; i < results.leaves; i++)
+            {
+                generatedTree.leafColors.push_back(ColorGenerator::GetTreeLeafColor());
+            }
+
+            // Save to cache so we don't need to generate it next time.
+            TreeCacheInputData inputData(&generatedTree.branches, &generatedTree.branchColors, &generatedTree.branchThicknesses, 
+                &generatedTree.leaves, &generatedTree.leafColors);
+
+            treeCache.SaveToCache(treeId, &inputData);
+        }
+
+        cachedTrees.push_back(generatedTree);
+    }
+
     return true;
 }
 
@@ -36,80 +76,54 @@ bool TreeEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
     bool hasTreeEffect = false;
     TreeEffectData* treeEffect = nullptr;
 
-    bool isInCache = treeCache.IsInCache(subtileId);
-    TreeCacheData treeCacheData;
-    if (isInCache)
+    // TODO do we want to cache from the cached trees?
+    // Scan the image for tree pixels.
+    int treesInRegion = 0;
+    for (int i = 0; i < subTileSize; i++)
     {
-        // TODO this can also mean 'skip tree effect'.
-        TreeCacheData* pointer = &treeCacheData;
-        treeCache.LoadFromCache(subtileId, (void**)&pointer);
-        hasTreeEffect = treeCacheData.hasEffect;
-        if (hasTreeEffect)
+        for (int j = 0; j < subTileSize; j++)
         {
-            treeEffect = new TreeEffectData();
-            treeEffect->treeTrunks.vertices.positions = std::move(treeCacheData.branches);
-            treeEffect->treeTrunks.vertices.colors = std::move(treeCacheData.branchColors);
-
-            treeEffect->treeLeaves.vertices.positions = std::move(treeCacheData.leaves);
-            treeEffect->treeLeaves.vertices.colors = std::move(treeCacheData.leafColors);
-        }
-    }
-    else
-    {
-        // Scan the image for tree pixels.
-        for (int i = 0; i < subTileSize; i++)
-        {
-            for (int j = 0; j < subTileSize; j++)
+            // TOOD configurable density
+            if (tile->type[i + j * subTileSize] == TerrainTypes::TREES && glm::linearRand(0.0f, 1.0f) > 0.90f)
             {
-                // TOOD configurable density
-                if (tile->type[i + j * subTileSize] == TerrainTypes::TREES && glm::linearRand(0.0f, 1.0f) > 0.90f)
+                ++treesInRegion;
+                if (!hasTreeEffect)
                 {
-                    if (!hasTreeEffect)
-                    {
-                        treeEffect = new TreeEffectData();
-                        hasTreeEffect = true;
-                    }
+                    treeEffect = new TreeEffectData();
+                    hasTreeEffect = true;
+                }
 
-                    float height = tile->heightmap[i + j * subTileSize];
-                    glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j);
+                float height = tile->heightmap[i + j * subTileSize];
+                glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j);
 
-                    // TODO configurable
-                    glm::vec3 bottomColor = glm::vec3(0.57f, 0.20f + glm::linearRand(0.0f, 0.10f), 0.10f);
-                    glm::vec3 topColor = glm::vec3(0.57f, 0.20f + glm::linearRand(0.0f, 0.30f), 0.10f + glm::linearRand(0.0f, 0.40f));
-                    glm::vec3 bottomPos = glm::vec3((float)realPos.x + glm::linearRand(0.0f, 2.0f) - 1.0f, (float)realPos.y + glm::linearRand(0.0f, 2.0f) - 1.0f, height);
-                    glm::vec3 topPos = bottomPos + glm::vec3(0, 0, 1.0f);
+                glm::vec3 bottomPos = glm::vec3((float)realPos.x + glm::linearRand(-1.0f, 1.0f), (float)realPos.y + glm::linearRand(-1.0f, 1.0f), height);
 
-                     GenerationResults results = treeGenerator.GenerateTree(bottomPos,
-                         &treeEffect->treeTrunks.vertices.positions, nullptr,
-                         &treeEffect->treeLeaves.vertices.positions);
-                    for (unsigned int i = 0; i < results.branches; i++) 
-                    {
-                        // Add tree trunk colors;
-                        treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
-                        treeEffect->treeTrunks.vertices.colors.push_back(bottomColor);
-                    }
+                // Copy over a cached tree into this location.
+                const TreeCacheData& tree = cachedTrees[glm::linearRand(0, (int)(cachedTrees.size() - 1))];
 
-                    // Add tree leaf colors.
-                    for (unsigned int i = 0; i < results.leaves; i++) // 
-                    {
-                        treeEffect->treeLeaves.vertices.colors.push_back(glm::vec3(0.1f, 0.70f + glm::linearRand(0.0f, 0.30f), 0.0f));
-                    }
+                // Append the vectors that can be appended.
+                treeEffect->treeTrunks.vertices.colors.insert(treeEffect->treeTrunks.vertices.colors.begin(), tree.branchColors.begin(), tree.branchColors.end());
+                treeEffect->treeTrunks.vertices.ids.insert(treeEffect->treeTrunks.vertices.ids.begin(), tree.branchThicknesses.begin(), tree.branchThicknesses.end());
+                treeEffect->treeLeaves.vertices.colors.insert(treeEffect->treeLeaves.vertices.colors.begin(), tree.leafColors.begin(), tree.leafColors.end());
+                
+                // Translate those elements that cannot be.
+                for (unsigned int i = 0; i < tree.branches.size(); i++)
+                {
+                    treeEffect->treeTrunks.vertices.positions.push_back(tree.branches[i] + bottomPos);
+                }
+
+                for (unsigned int i = 0; i < tree.leaves.size(); i++)
+                {
+                    treeEffect->treeLeaves.vertices.positions.push_back(tree.leaves[i] + bottomPos);
                 }
             }
         }
-
-        // Save our tree data to the cache to speed up loading the next time around.
-        TreeCacheInputData inputData(hasTreeEffect,
-            hasTreeEffect ? &(treeEffect->treeTrunks.vertices.positions) : nullptr,
-            hasTreeEffect ? &(treeEffect->treeTrunks.vertices.colors) : nullptr,
-            hasTreeEffect ? &(treeEffect->treeLeaves.vertices.positions) : nullptr,
-            hasTreeEffect ? &(treeEffect->treeLeaves.vertices.colors) : nullptr);
-
-        treeCache.SaveToCache(subtileId, &inputData);
     }
 
     if (hasTreeEffect)
     {
+        Logger::Log("Parsed ", treesInRegion, " trees in [", subtileId.x, ", ", subtileId.y, "].");
+
         // Tree trunk and leave vertex data.
         glGenVertexArrays(1, &treeEffect->treeTrunks.vao);
         glBindVertexArray(treeEffect->treeTrunks.vao);

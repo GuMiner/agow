@@ -18,6 +18,9 @@ protected:
     void WriteVectorVector(std::ofstream* outputStream, std::vector<glm::vec3>* vector);
     void ReadVectorVector(std::ifstream* inputStream, std::vector<glm::vec3>* vector);
 
+    void WriteUintVector(std::ofstream* outputStream, std::vector<unsigned int>* vector);
+    void ReadUintVector(std::ifstream* inputStream, std::vector<unsigned int>* vector);
+
     virtual void SaveData(std::ofstream* outputStream, void* data) = 0;
     virtual void LoadData(std::ifstream* inputStream, void** data) = 0;
 
