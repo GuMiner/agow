@@ -116,6 +116,7 @@
     <ClInclude Include="DialogPane.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="Generators\ColorGenerator.h" />
+    <ClInclude Include="Generators\InventoryGenerator.h" />
     <ClInclude Include="Generators\NameGenerator.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Managers\ConfigManager.h" />
@@ -178,6 +179,7 @@
     <ClCompile Include="DialogPane.cpp" />
     <ClCompile Include="Events.cpp" />
     <ClCompile Include="Generators\ColorGenerator.cpp" />
+    <ClCompile Include="Generators\InventoryGenerator.cpp" />
     <ClCompile Include="Generators\NameGenerator.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Managers\ConfigManager.cpp" />

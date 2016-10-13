@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <vector>
 #include <SFML\System.hpp>
 #include <Bullet\btBulletDynamicsCommon.h>
 #include <glm\vec3.hpp>
@@ -46,7 +48,9 @@ class Player : public ICallback<UserPhysics::ObjectType>
     PressureWeapon pressureWeapon;
     RockWeapon rockWeapon;
     SunbeamWeapon sunbeamWeapon;
+
     WeaponBase* selectedWeapon;
+    std::vector<std::string> inventory;
 
 public:
     Player(ModelManager* modelManager, BasicPhysics* physics);
