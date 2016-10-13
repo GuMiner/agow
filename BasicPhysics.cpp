@@ -51,7 +51,7 @@ void BasicPhysics::LoadBasicCollisionShapes()
     delete[] playerPoints;
 }
 
-bool BasicPhysics::LoadPhysics()
+bool BasicPhysics::LoadPhysics(btIDebugDraw* debugDrawer)
 {
     collisionConfiguration = new btDefaultCollisionConfiguration();
     collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
@@ -62,6 +62,7 @@ bool BasicPhysics::LoadPhysics()
         constraintSolver, collisionConfiguration);
 
     DynamicsWorld->setGravity(btVector3(0, 0, -9.80f));
+    DynamicsWorld->setDebugDrawer(debugDrawer);
     
     btContactSolverInfo& solverInfo = DynamicsWorld->getSolverInfo();
     // solverInfo.m_numIterations = 2;

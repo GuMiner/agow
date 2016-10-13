@@ -35,7 +35,12 @@ agow::agow()
 
 Constants::Status agow::LoadPhysics()
 {
-    if (!physics.LoadPhysics())
+    if (!debugDrawer.LoadBasics(&shaderManager))
+    {
+        return Constants::Status::BAD_PHYSICS;
+    }
+
+    if (!physics.LoadPhysics(&debugDrawer))
     {
         return Constants::Status::BAD_PHYSICS;
     }
@@ -298,6 +303,19 @@ void agow::Update(float currentGameTime, float frameTime)
         player.Warp(&regionManager, physics.DynamicsWorld, player.GetTerrainPosition());
     }
 
+    if (Input::IsKeyTyped(GLFW_KEY_B))
+    {
+        if (debugDrawer.ShouldRender())
+        {
+            debugDrawer.setDebugMode(btIDebugDraw::DebugDrawModes::DBG_NoDebug);
+        }
+        else
+        {
+            // WIREFRAME will crash the debug drawer as it's way, way too much to draw.
+            debugDrawer.setDebugMode(btIDebugDraw::DebugDrawModes::DBG_DrawAabb);
+        }
+    }
+
     regionManager.UpdateVisibleRegion(player.GetPosition(), physics.DynamicsWorld);
     regionManager.SimulateVisibleRegions(currentGameTime, frameTime);
 
@@ -339,6 +357,13 @@ void agow::Render(GLFWwindow* window, glm::mat4& viewMatrix)
 
     // Render our dialog pane.
     dialogPane.Render(Constants::PerspectiveMatrix);
+
+    if (debugDrawer.ShouldRender())
+    {
+        debugDrawer.Reset();
+        physics.DynamicsWorld->debugDrawWorld();
+        debugDrawer.Render(projectionMatrix);
+    }
 }
 
 Constants::Status agow::Run()

@@ -41,7 +41,7 @@ public:
     btDiscreteDynamicsWorld *DynamicsWorld;
 
     BasicPhysics();
-    bool LoadPhysics();
+    bool LoadPhysics(btIDebugDraw* debugDrawer);
     void AddCollisionModels(std::map<CShape, const std::vector<glm::vec3>*> shapePoints);
     void Step(float timestep);
     void UnloadPhysics();

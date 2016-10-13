@@ -6,6 +6,9 @@
 #include "Config\KeyBindingConfig.h"
 #include "Config\PhysicsConfig.h"
 #include "Data\Model.h"
+#include "Generators\BuildingGenerator.h"
+#include "Generators\RockGenerator.h"
+#include "Generators\SignGenerator.h"
 #include "Managers\FontManager.h"
 #include "Managers\ImageManager.h"
 #include "Managers\ModelManager.h"
@@ -20,9 +23,7 @@
 #include "Events.h"
 #include "Input.h"
 #include "Player.h"
-#include "Generators\BuildingGenerator.h"
-#include "Generators\RockGenerator.h"
-#include "Generators\SignGenerator.h"
+#include "PhysicsDebugDrawer.h"
 #include "Scenery.h"
 #include "Statistics.h"
 
@@ -44,6 +45,7 @@ class agow
 
     // Game data
     BasicPhysics physics;
+    PhysicsDebugDrawer debugDrawer;
     DialogPane dialogPane;
     Player player;
     Statistics statistics;

@@ -133,6 +133,7 @@
     <ClInclude Include="NPC\CivilianNPC.h" />
     <ClInclude Include="NPC\EnemyNPC.h" />
     <ClInclude Include="NPC\NPC.h" />
+    <ClInclude Include="PhysicsDebugDrawer.h" />
     <ClInclude Include="Region.h" />
     <ClInclude Include="Generators\RockGenerator.h" />
     <ClInclude Include="Scenery.h" />
@@ -194,6 +195,7 @@
     <ClCompile Include="NPC\CivilianNPC.cpp" />
     <ClCompile Include="NPC\EnemyNPC.cpp" />
     <ClCompile Include="NPC\NPC.cpp" />
+    <ClCompile Include="PhysicsDebugDrawer.cpp" />
     <ClCompile Include="Region.cpp" />
     <ClCompile Include="Generators\RockGenerator.cpp" />
     <ClCompile Include="Scenery.cpp" />

@@ -153,6 +153,7 @@
     <ClCompile Include="AI\MilitaryStateMachine.cpp">
       <Filter>AI</Filter>
     </ClCompile>
+    <ClCompile Include="PhysicsDebugDrawer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -332,6 +333,7 @@
     <ClInclude Include="AI\MilitaryStateMachine.h">
       <Filter>AI</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsDebugDrawer.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="AI">
