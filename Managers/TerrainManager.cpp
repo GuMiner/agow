@@ -132,18 +132,59 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
                     }
                 }
 
-                // Populate the top and bottom band.
-                for (int x = 1; x < subSize - 1; x++)
+                // TODO we still have inner-division artifacts.
+                if (j != 0)
                 {
-                    // TODO unlike the last version, this should check the current tile first, and if we go OOB, then the next terrain tile.
-                    heightmap[x + 0 * subSize] = heightmap[x + 1 * subSize];
-                    heightmap[x + (subSize - 1) * subSize] = heightmap[x + (subSize - 2) * subSize];
+                    for (int x = 1; x < subSize - 1; x++)
+                    {
+                        int xReal = (x - 1) + i * GetSubTileSize();
+                        int yReal = (GetSubTileSize() - 1) + (j - 1) * GetSubTileSize();
+                        heightmap[x + 0 * subSize] = 
+                            (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
+                                  (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                                / (float)std::numeric_limits<unsigned short>::max();
+                    }
                 }
 
-                for (int y = 1; y < subSize - 1; y++)
+                if (j != TerrainManager::Subdivisions - 1)
                 {
-                    heightmap[0 + y * subSize] = heightmap[1 + y * subSize];
-                    heightmap[(subSize - 1) + y * subSize] = heightmap[(subSize - 2) + y * subSize];
+                    for (int x = 1; x < subSize - 1; x++)
+                    {
+                        int xReal = (x - 1) + i * GetSubTileSize();
+                        int yReal = 0 + (j + 1) * GetSubTileSize();
+                        heightmap[x + (subSize - 1) * subSize] =
+                            (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
+                                (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                            / (float)std::numeric_limits<unsigned short>::max();
+                    }
+                }
+
+                if (i != 0)
+                {
+                    for (int y = 1; y < subSize - 1; y++)
+                    {
+                        int xReal = (GetSubTileSize() - 1) + (i - 1) * GetSubTileSize();
+                        int yReal = (y - 1) + j * GetSubTileSize();
+
+                        heightmap[0 + y * subSize] =
+                            (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
+                                (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                            / (float)std::numeric_limits<unsigned short>::max();
+                    }
+                }
+                
+                if (i != TerrainManager::Subdivisions - 1)
+                {
+                    for (int y = 1; y < subSize - 1; y++)
+                    {
+                        int xReal = 0 + (i + 1) * GetSubTileSize();
+                        int yReal = (y - 1) + j * GetSubTileSize();
+
+                        heightmap[(subSize - 1) + y * subSize] =
+                            (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
+                                (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                            / (float)std::numeric_limits<unsigned short>::max();
+                    }
                 }
 
                 // Fill in corners with inner corners.
