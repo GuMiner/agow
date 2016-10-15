@@ -160,6 +160,9 @@
     <ClCompile Include="Managers\ModelLoader.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
+    <ClCompile Include="Managers\ModelRenderStore.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -344,6 +347,9 @@
       <Filter>Generators</Filter>
     </ClInclude>
     <ClInclude Include="Managers\ModelLoader.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\ModelRenderStore.h">
       <Filter>Managers</Filter>
     </ClInclude>
   </ItemGroup>

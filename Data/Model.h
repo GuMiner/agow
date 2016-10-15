@@ -34,6 +34,7 @@ struct Model
 {
     // Used internally to speed up drawing operations.
     int internalId;
+    long frameId;
 
     // The physical body to use for analysis of this object.
     // For example, the 'analysisBody' of a building segment is the entire building, 
@@ -49,7 +50,7 @@ struct Model
     bool selected;
 
     Model()
-        : internalId(-1), analysisBody(nullptr), body(nullptr), modelId(0), color(1.0f), scaleFactor(1.0f), selected(false)
+        : internalId(-1), frameId(0), analysisBody(nullptr), body(nullptr), modelId(0), color(1.0f), scaleFactor(1.0f), selected(false)
     {
     }
 };

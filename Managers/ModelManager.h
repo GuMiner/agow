@@ -1,4 +1,5 @@
 #pragma once
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -7,61 +8,34 @@
 #include <glm\vec3.hpp>
 #include <glm\vec4.hpp>
 #include <glm\mat4x4.hpp>
-#include <glm\gtc\matrix_transform.hpp>
 #include "ImageManager.h"
 #include "ShaderManager.h"
 #include "Data\Model.h"
 #include "Utils\Logger.h"
 #include "BasicPhysics.h"
+#include "ModelRenderStore.h"
 
 // TODO these should be calculated and elsewhere.
 const int MODELS_PER_RENDER = 16384;
 const int MODEL_TEXTURE_SIZE = 256;
 
-struct ModelRenderStore
+struct StaticRenderStore
 {
-    // These are created from the image manager and do not need to be freed.
-    GLuint mvMatrixImageId;
-    GLuint shadingColorAndSelectionImageId;
+    // Backing store of static models
+    ModelRenderStore backingStore;
 
-    // Stores MV matrices, split into 4 vectors per matrix.
-    std::vector<glm::vec4> matrixStore;
+    // The set of segments to render (in order to skip segments).
+    std::list<glm::ivec2> drawSegments;
 
-    // Stores the shading color (even indices) and selection bool ('R', odd incies)
-    std::vector<glm::vec4> shadingColorSelectionStore;
+    // Items that were added this frame that need to be send to the GPU.
+    std::vector<unsigned int> newItemsAdded;
 
-    ModelRenderStore(GLuint mvMatrixImageId, GLuint shadingColorAndSelectionImageId)
-        : mvMatrixImageId(mvMatrixImageId), shadingColorAndSelectionImageId(shadingColorAndSelectionImageId)
+    // Items drawn this frame. NOTE: Per C++ standard, this is guaranteed to be smallest to largest.
+    std::set<unsigned int> drawnItems;
+
+    StaticRenderStore(GLuint mvMatrixImageId, GLuint shadingImageId)
+        : backingStore(mvMatrixImageId, shadingImageId), drawSegments(), newItemsAdded(), drawnItems()
     {
-    }
-
-    unsigned int GetInstanceCount()
-    {
-        return shadingColorSelectionStore.size() / 2;
-    }
-
-    void AddModelToStore(Model* model)
-    {
-        if (GetInstanceCount() == MODELS_PER_RENDER)
-        {
-            // TODO handle this scenario so we cannot hit it.
-            Logger::LogError("Cannot render model, too many renders of this model type attempted!");
-        }
-
-        glm::mat4 mvMatrix = glm::scale(BasicPhysics::GetBodyMatrix(model->body), model->scaleFactor);
-        matrixStore.push_back(mvMatrix[0]);
-        matrixStore.push_back(mvMatrix[1]);
-        matrixStore.push_back(mvMatrix[2]);
-        matrixStore.push_back(mvMatrix[3]);
-
-        shadingColorSelectionStore.push_back(model->color);
-        shadingColorSelectionStore.push_back(glm::vec4(model->selected ? 0.40f : 0.0f));
-    }
-
-    void Clear()
-    {
-        matrixStore.clear();
-        shadingColorSelectionStore.clear();
     }
 };
 
@@ -69,6 +43,7 @@ struct ModelRenderStore
 class ModelManager
 {
     ImageManager* imageManager;
+    long frameId;
 
     // Rendering data
     GLuint vao;
@@ -79,6 +54,7 @@ class ModelManager
     GLuint modelRenderProgram;
 
     // In-shader locations
+    GLuint instanceOffsetLocation;
     GLuint textureLocation;
     GLuint shadingColorLocation;
     GLuint mvLocation;
@@ -88,8 +64,15 @@ class ModelManager
     unsigned int nextModelId;
     std::vector<TextureModel> models;
 
-    // Stores model data in preparation to rendering for dynamic objects.
+    // Stores model data in preparation to rendering for dynamic and static objects.
     std::vector<ModelRenderStore> dynamicRenderStore;
+    std::vector<StaticRenderStore> staticRenderStore;
+    
+    void AddNewStaticModel(Model* model);
+    void RenderStaticModel(Model* model);
+
+    void FinalizeDynamicRender();
+    void FinalizeStaticRender();
 
 public:
     // Clears the next model ID and initializes the local reference to the image manager.

@@ -18,7 +18,7 @@ TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelMa
 {
     effects.push_back((TerrainEffect*)new GrassEffect(subTileSize));
     effects.push_back((TerrainEffect*)new RockEffect(modelManager, physics, subTileSize));
-    effects.push_back((TerrainEffect*)new RoadEffect(subTileSize));
+    // effects.push_back((TerrainEffect*)new RoadEffect(subTileSize));
     effects.push_back((TerrainEffect*)new SignEffect(modelManager, physics, subTileSize));
 
     // TODO configurable
