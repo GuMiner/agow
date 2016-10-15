@@ -36,7 +36,8 @@ class TerrainManager
     GLuint CreateTileTexture(GLenum activeTexture, int subSize, float* heightmap);
     GLuint CreateTileTexture(GLenum activeTexture, int subSize, unsigned char* heightmap);
     bool LoadTileToCache(glm::ivec2 start, bool loadSubtiles);
-    void LoadHeightmapEdges(const glm::ivec2& start, int i, int j, int subSize, float* heightmap);
+    void LoadHeightmapEdges(const glm::ivec2& start, int i, int j, int subSize, float* heightmap, unsigned char* types);
+    void ReadTilePixel(const glm::ivec2& tile, const glm::ivec2& innerTilePos, float* heightmap, unsigned char* types);
 
     void CleanupTerrainTile(glm::ivec2 start, bool log);
 
