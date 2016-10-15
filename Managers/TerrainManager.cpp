@@ -132,83 +132,31 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
                     }
                 }
 
-                // TODO we still have inner-division artifacts.
-                if (j != 0)
-                {
-                    for (int x = 1; x < subSize - 1; x++)
-                    {
-                        int xReal = (x - 1) + i * GetSubTileSize();
-                        int yReal = (GetSubTileSize() - 1) + (j - 1) * GetSubTileSize();
-                        heightmap[x + 0 * subSize] = 
-                            (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
-                                  (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
-                                / (float)std::numeric_limits<unsigned short>::max();
-                    }
-                }
-
-                if (j != TerrainManager::Subdivisions - 1)
-                {
-                    for (int x = 1; x < subSize - 1; x++)
-                    {
-                        int xReal = (x - 1) + i * GetSubTileSize();
-                        int yReal = 0 + (j + 1) * GetSubTileSize();
-                        heightmap[x + (subSize - 1) * subSize] =
-                            (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
-                                (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
-                            / (float)std::numeric_limits<unsigned short>::max();
-                    }
-                }
-
-                if (i != 0)
-                {
-                    for (int y = 1; y < subSize - 1; y++)
-                    {
-                        int xReal = (GetSubTileSize() - 1) + (i - 1) * GetSubTileSize();
-                        int yReal = (y - 1) + j * GetSubTileSize();
-
-                        heightmap[0 + y * subSize] =
-                            (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
-                                (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
-                            / (float)std::numeric_limits<unsigned short>::max();
-                    }
-                }
-                
-                if (i != TerrainManager::Subdivisions - 1)
-                {
-                    for (int y = 1; y < subSize - 1; y++)
-                    {
-                        int xReal = 0 + (i + 1) * GetSubTileSize();
-                        int yReal = (y - 1) + j * GetSubTileSize();
-
-                        heightmap[(subSize - 1) + y * subSize] =
-                            (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
-                                (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
-                            / (float)std::numeric_limits<unsigned short>::max();
-                    }
-                }
-
-                // Fill in corners with inner corners.
-                heightmap[0 + 0 * subSize] = heightmap[1 + 1 * subSize];
-                heightmap[(subSize - 1) + (subSize - 1) * subSize] = heightmap[(subSize - 2) + (subSize - 2) * subSize];
-                heightmap[(0) + (subSize - 1) * subSize] = heightmap[(1) + (subSize - 2) * subSize];
-                heightmap[(subSize - 1) + (0) * subSize] = heightmap[(subSize - 2) + (1) * subSize];
+                // Handle edges to avoid artifacts.
+                LoadHeightmapEdges(start, i, j, subSize, heightmap);
 
                 unsigned char* types = new unsigned char[GetSubTileSize() * GetSubTileSize()];
                 for (int x = 0; x < GetSubTileSize(); x++)
                 {
                     for (int y = 0; y < GetSubTileSize(); y++)
                     {
-                        // Within our main image.
+                        // Read in the types.
                         int xReal = x + i * GetSubTileSize();
                         int yReal = y + j * GetSubTileSize();
 
                         types[x + y * GetSubTileSize()] = terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 2];
+                    }
+                }
 
-                        // // Perform per-tile height modifications
-                        // if (types[x + y * GetSubTileSize()] == TerrainTypes::ROADS)
-                        // {
-                        //     heightmap[(x + 1) + (y + 1) * subSize] -= (0.50f / 900.0f);
-                        // }
+                for (int x = 0; x < subSize; x++)
+                {
+                    for (int y = 0; y < subSize; y++)
+                    {
+                        // Perform per-tile height modifications
+                        if (types[x + y * GetSubTileSize()] == TerrainTypes::ROADS)
+                        {
+                            heightmap[x + y * subSize] -= (0.50f / 900.0f);
+                        }
                     }
                 }
 
@@ -240,6 +188,124 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
 
     Logger::Log("Loading region tile (", start.x, ", ", start.y, ") succeeded.");
     return true;
+}
+
+void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, int subSize, float* heightmap)
+{
+    if (j != 0)
+    {
+        for (int x = 1; x < subSize - 1; x++)
+        {
+            int xReal = (x - 1) + i * GetSubTileSize();
+            int yReal = (GetSubTileSize() - 1) + (j - 1) * GetSubTileSize();
+            heightmap[x + 0 * subSize] =
+                (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
+                    (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                / (float)std::numeric_limits<unsigned short>::max();
+        }
+    }
+    else if (start.y != min.y)
+    {
+        glm::ivec2 tile = glm::ivec2(start.x, start.y - 1);
+        for (int x = 1; x < subSize - 1; x++)
+        {
+            int xReal = (x - 1) + i * GetSubTileSize();
+            int yReal = (GetSubTileSize() - 1) + (TerrainManager::Subdivisions - 1) * GetSubTileSize();
+            heightmap[x + 0 * subSize] =
+                (float)((unsigned short)terrainTiles[tile]->rawImage[(xReal + yReal * tileSize) * 4] +
+                    (((unsigned short)terrainTiles[tile]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                / (float)std::numeric_limits<unsigned short>::max();
+        }
+    }
+
+    if (j != TerrainManager::Subdivisions - 1)
+    {
+        for (int x = 1; x < subSize - 1; x++)
+        {
+            int xReal = (x - 1) + i * GetSubTileSize();
+            int yReal = 0 + (j + 1) * GetSubTileSize();
+            heightmap[x + (subSize - 1) * subSize] =
+                (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
+                    (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                / (float)std::numeric_limits<unsigned short>::max();
+        }
+    }
+    else if (start.y != max.y)
+    {
+        glm::ivec2 tile = glm::ivec2(start.x, start.y + 1);
+        for (int x = 1; x < subSize - 1; x++)
+        {
+            int xReal = (x - 1) + i * GetSubTileSize();
+            int yReal = 0 + 0 * GetSubTileSize();
+            heightmap[x + (subSize - 1) * subSize] =
+                (float)((unsigned short)terrainTiles[tile]->rawImage[(xReal + yReal * tileSize) * 4] +
+                    (((unsigned short)terrainTiles[tile]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                / (float)std::numeric_limits<unsigned short>::max();
+        }
+    }
+
+    if (i != 0)
+    {
+        for (int y = 1; y < subSize - 1; y++)
+        {
+            int xReal = (GetSubTileSize() - 1) + (i - 1) * GetSubTileSize();
+            int yReal = (y - 1) + j * GetSubTileSize();
+
+            heightmap[0 + y * subSize] =
+                (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
+                    (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                / (float)std::numeric_limits<unsigned short>::max();
+        }
+    }
+    else if (start.x != min.x)
+    {
+        glm::ivec2 tile = glm::ivec2(start.x - 1, start.y);
+        for (int y = 1; y < subSize - 1; y++)
+        {
+            int xReal = (GetSubTileSize() - 1) + (TerrainManager::Subdivisions - 1) * GetSubTileSize();
+            int yReal = (y - 1) + j * GetSubTileSize();
+
+            heightmap[0 + y * subSize] =
+                (float)((unsigned short)terrainTiles[tile]->rawImage[(xReal + yReal * tileSize) * 4] +
+                    (((unsigned short)terrainTiles[tile]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                / (float)std::numeric_limits<unsigned short>::max();
+        }
+    }
+
+    if (i != TerrainManager::Subdivisions - 1)
+    {
+        for (int y = 1; y < subSize - 1; y++)
+        {
+            int xReal = 0 + (i + 1) * GetSubTileSize();
+            int yReal = (y - 1) + j * GetSubTileSize();
+
+            heightmap[(subSize - 1) + y * subSize] =
+                (float)((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4] +
+                    (((unsigned short)terrainTiles[start]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                / (float)std::numeric_limits<unsigned short>::max();
+        }
+    }
+    else if (start.x != max.x)
+    {
+        glm::ivec2 tile = glm::ivec2(start.x + 1, start.y);
+        for (int y = 1; y < subSize - 1; y++)
+        {
+            int xReal = 0 + 0 * GetSubTileSize();
+            int yReal = (y - 1) + j * GetSubTileSize();
+
+            heightmap[(subSize - 1) + y * subSize] =
+                (float)((unsigned short)terrainTiles[tile]->rawImage[(xReal + yReal * tileSize) * 4] +
+                    (((unsigned short)terrainTiles[tile]->rawImage[(xReal + yReal * tileSize) * 4 + 1]) << 8))
+                / (float)std::numeric_limits<unsigned short>::max();
+        }
+    }
+
+    // Fill in corners with sides. Not perfect, but reasonably good.
+    heightmap[0 + 0 * subSize] = (heightmap[0 + 1 * subSize] + heightmap[1 + 0 * subSize]) / 2.0f;
+    heightmap[(subSize - 1) + (subSize - 1) * subSize] = (heightmap[(subSize - 1) + (subSize - 2) * subSize] + heightmap[(subSize - 2) + (subSize - 1) * subSize]) / 2.0f;
+    heightmap[(0) + (subSize - 1) * subSize] = (heightmap[0 + (subSize - 2) * subSize] + heightmap[1 + (subSize - 1) * subSize]) / 2.0f;
+    heightmap[(subSize - 1) + (0) * subSize] = (heightmap[(subSize - 1) + 1 * subSize] + heightmap[(subSize - 2) + 0 * subSize]) / 2.0f;
+
 }
 
 bool TerrainManager::LoadTerrainTile(glm::ivec2 start, TerrainTile** tile)
