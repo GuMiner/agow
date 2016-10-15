@@ -55,6 +55,7 @@ public:
     btRigidBody* GetDynamicBody(btCollisionShape* collisionShape,const btVector3& origin, const float mass);
 
     // An actual rigid body, but with collision interaction disabled.
+    btRigidBody* GetGhostObject(btCollisionShape* collisionShape, const btVector3& origin);
     btRigidBody* GetGhostObject(const CShape shape, const btVector3& origin);
     
     // Gets the body position, converting to our coordinate system.

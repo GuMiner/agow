@@ -23,7 +23,7 @@ TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelMa
 
     // TODO configurable
     effects.push_back((TerrainEffect*)new TreeEffect("cache/trees", subTileSize));
-    // effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/buildings", subTileSize));
+    effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/buildings", subTileSize));
 }
 
 bool TerrainEffectManager::LoadBasics()

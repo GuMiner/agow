@@ -25,7 +25,7 @@ class Player : public ICallback<UserPhysics::ObjectType>
 
     // Where the viewer is currently oriented on-screen.
     Camera camera;
-    PhysicalModel physicalModel;
+    Model model;
 
     // Used for view rotation.
     glm::ivec2 lastMousePos;

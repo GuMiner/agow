@@ -13,18 +13,20 @@ uniform mat4 projMatrix;
 // Perform our position and projection transformations, and pass-through the color / texture data
 void main(void)
 {
+    const int size = 256;
+    
     // Extract out the MV matrix given our current instance.
-    int xPos0 = (gl_InstanceID * 4) % 512;
-    int yPos0 = (gl_InstanceID * 4) / 512;
+    int xPos0 = (gl_InstanceID * 4) % size;
+    int yPos0 = (gl_InstanceID * 4) / size;
     
-    int xPos1 = (gl_InstanceID * 4 + 1) % 512;
-    int yPos1 = (gl_InstanceID * 4 + 1) / 512;
+    int xPos1 = (gl_InstanceID * 4 + 1) % size;
+    int yPos1 = (gl_InstanceID * 4 + 1) / size;
     
-    int xPos2 = (gl_InstanceID * 4 + 2) % 512;
-    int yPos2 = (gl_InstanceID * 4 + 2) / 512;
+    int xPos2 = (gl_InstanceID * 4 + 2) % size;
+    int yPos2 = (gl_InstanceID * 4 + 2) / size;
     
-    int xPos3 = (gl_InstanceID * 4 + 3) % 512;
-    int yPos3 = (gl_InstanceID * 4 + 3) / 512;
+    int xPos3 = (gl_InstanceID * 4 + 3) % size;
+    int yPos3 = (gl_InstanceID * 4 + 3) / size;
     
     mat4 modelViewMatrix;
     modelViewMatrix[0] = texelFetch(mvMatrix, ivec2(xPos0, yPos0), 0);

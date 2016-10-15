@@ -32,26 +32,29 @@ float RockWeapon::GetRequiredAmmoToFire()
 void RockWeapon::FireInternal(glm::vec3 fireOrigin, glm::quat fireDirection)
 {
     // TODO add SFX and interact with everything else. Also manage projectiles list.
-    PhysicalModel* model = new PhysicalModel();;
+    Model* model = new Model();
     BasicPhysics::CShape shape;
 
     RockGenerator rockGenerator;
     rockGenerator.GetRandomRockModel(&model->modelId, &shape);
 
     glm::vec3 vel = 40.0f * PhysicsOps::ForwardsVector(fireDirection);
-    model->rigidBody = physics->GetDynamicBody(shape, btVector3(fireOrigin.x, fireOrigin.y, fireOrigin.z), 20.0f);
-    model->rigidBody->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
+    model->body = physics->GetDynamicBody(shape, btVector3(fireOrigin.x, fireOrigin.y, fireOrigin.z), 20.0f);
+    model->body->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
+    model->body->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::ROCK, this));
 
     // Save the rock to the known projectiles.
     while (projectiles.size() >= (unsigned int)maxProjectiles)
     {
-        PhysicalModel* modelToRemove = (PhysicalModel*)projectiles.front();
-        physics->DynamicsWorld->removeRigidBody(modelToRemove->rigidBody);
-        physics->DeleteBody(modelToRemove->rigidBody, false);
+        Model* modelToRemove = (Model*)projectiles.front();
+
+        delete modelToRemove->body->getUserPointer();
+        physics->DynamicsWorld->removeRigidBody(modelToRemove->body);
+        physics->DeleteBody(modelToRemove->body, false);
         projectiles.pop_front();
     }
 
-    physics->DynamicsWorld->addRigidBody(model->rigidBody);
+    physics->DynamicsWorld->addRigidBody(model->body);
     projectiles.push_back(model);
 }
 
@@ -61,8 +64,11 @@ void RockWeapon::Render(const glm::mat4& projectionMatrix)
     for (auto iter = projectiles.cbegin(); iter != projectiles.cend(); iter++)
     {
         // For the rock weapon, the projectiles are simple models.
-        PhysicalModel* model = (PhysicalModel*)(*iter);
-        glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model->rigidBody);
-        modelManager->RenderModel(projectionMatrix, model->modelId, mvMatrix, false);
+        modelManager->RenderModel((Model*)(*iter));
     }
+}
+
+void RockWeapon::Callback(UserPhysics::ObjectType callingObject, void* callbackSpecificData)
+{
+    // TODO does the rock explode when it hits stuff? Possibilities...
 }

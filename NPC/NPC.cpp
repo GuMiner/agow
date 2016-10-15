@@ -53,9 +53,12 @@ bool NPC::LoadNpcModels(ModelManager* modelManager)
 }
 
 NPC::NPC(std::string name, std::string description, Shape shape, glm::vec4 color, int startingHealth)
-    : name(name), description(description), shape(shape), color(color), health(startingHealth),
-      isSelected(false), showInteractionKeys(false), nearFieldCollisionLastFrame(false)
+    : name(name), description(description), shape(shape), model(), health(startingHealth),
+      showInteractionKeys(false), nearFieldCollisionLastFrame(false), selectionChange(false)
 {
+    model.color = color;
+    model.selected = false;
+
     nameString.color = glm::vec3(1.0f) - glm::vec3(color.x, color.y, color.z);
     interactionString.color = nameString.color * 1.10f;
 }
@@ -72,13 +75,13 @@ void NPC::LoadGraphics(FontManager* fontManager)
 void NPC::LoadNpcPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass)
 {
     BasicPhysics::CShape physicalShape = GetPhysicalShape(shape);
-    physicalModel.modelId = models[shape];
-    physicalModel.rigidBody = physics.GetDynamicBody(physicalShape, PhysicsOps::Convert(startingPosition), mass);
+    model.modelId = models[shape];
+    model.body = physics.GetDynamicBody(physicalShape, PhysicsOps::Convert(startingPosition), mass);
 
     // NPCs can't rotate from physical interactions.
-    physicalModel.rigidBody->setAngularFactor(0.0f);
+    model.body->setAngularFactor(0.0f);
     
-    physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
+    physics.DynamicsWorld->addRigidBody(model.body);
 
     nearFieldBubble = physics.GetGhostObject(BasicPhysics::CShape::NPC_NEARFIELD_BUBBLE, PhysicsOps::Convert(startingPosition));
     nearFieldBubble->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::NPC_CLOSEUP, this));
@@ -105,7 +108,7 @@ void NPC::Update(float gameTime, float elapsedTime)
 {
     nameString.posRotMatrix =
         glm::translate(glm::mat4(), glm::vec3(-0.60f, -0.60f, 0.55f)) *
-        BasicPhysics::GetBodyMatrix(physicalModel.rigidBody) *
+        BasicPhysics::GetBodyMatrix(model.body) *
         glm::scale(glm::mat4(), glm::vec3(0.20f)) *
         glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     interactionString.posRotMatrix = glm::translate(nameString.posRotMatrix, glm::vec3(0.0f, 0.0f, -0.10f));
@@ -117,19 +120,26 @@ void NPC::Update(float gameTime, float elapsedTime)
     }
     else if (showInteractionKeys)
     {
-        isSelected = false;
+        model.selected = false;
+        selectionChange = true;
         showInteractionKeys = false;
     }
 
     // TODO figure out why the fixed constraint doesn't seem to properly work.
-    nearFieldBubble->setWorldTransform(physicalModel.rigidBody->getWorldTransform());
+    nearFieldBubble->setWorldTransform(model.body->getWorldTransform());
 }
 
 void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const glm::mat4& projectionMatrix)
 {
-    glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(physicalModel.rigidBody);
-    modelManager->RenderModel(projectionMatrix, physicalModel.modelId, mvMatrix, color, isSelected);
-    
+    if (selectionChange)
+    {
+        modelManager->RenderDynamicModel(&model);
+    }
+    else
+    {
+        modelManager->RenderModel(&model);
+    }
+
     fontManager->RenderSentence(nameString.sentenceId, projectionMatrix, nameString.posRotMatrix);
 
     if (showInteractionKeys)
@@ -140,8 +150,9 @@ void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const glm
 
 void NPC::UnloadNpcPhysics(BasicPhysics physics)
 {
-    physics.DynamicsWorld->removeRigidBody(physicalModel.rigidBody);
-    physics.DeleteBody(physicalModel.rigidBody, false);
+    delete nearFieldBubble->getUserPointer();
+    physics.DynamicsWorld->removeRigidBody(model.body);
+    physics.DeleteBody(model.body, false);
 }
 
 NPC::~NPC()
@@ -154,7 +165,8 @@ void NPC::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpecif
     // This occurs when the NPC's ghost object -- representing their FOV -- is hit.
     if (collidingObject == UserPhysics::ObjectType::PLAYER)
     {
-        isSelected = true;
+        model.selected = true;
+        selectionChange = true;
         showInteractionKeys = true;
         nearFieldCollisionLastFrame = true;
     }

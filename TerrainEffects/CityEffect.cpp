@@ -3,6 +3,7 @@
 #include "Config\PhysicsConfig.h"
 #include "Generators\BuildingGenerator.h"
 #include "Managers\TerrainManager.h"
+#include "Math\PhysicsOps.h"
 #include "Utils\Logger.h"
 #include "CityEffect.h"
 
@@ -131,19 +132,36 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                 int yPos = buildingYPos + (1 + n) * 11;
 
                 // Get a building.
-                float separationRadius;
+                float separationRadius, buildingHeight;
                 float height = tile->heightmap[buildingXPos + buildingYPos * subTileSize];// -0.50f; // Ground inset, TODO configurable.
                 glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)xPos, (float)yPos);
                 glm::vec3 offset((float)realPos.x, (float)realPos.y, height);
                 Building building;
-                building.segments = buildingGenerator.GetRandomLowDensityBuilding(offset, &separationRadius);
-                building.color = glm::vec4(glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f), 0.50f + glm::linearRand(0.0f, 5.0f));
-
-                // Move the building to be where the city part is.
-                // TODO also randomly color the building.
-                for (unsigned int i = 0; i < 1; i++)// building.segments.size(); i++)
+                building.segments = buildingGenerator.GetRandomLowDensityBuilding(offset, &separationRadius, &buildingHeight);
+                building.color = glm::vec4(glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f), 0.50f + glm::linearRand(0.0f, 0.50f));
+                for (unsigned int i = 0; i < building.segments.size(); i++)
                 {
-                    physics->DynamicsWorld->addRigidBody(building.segments[i].rigidBody);
+                    building.segments[i].color = building.color;
+                }
+                
+                building.separated = false;
+
+                // Add in a detector to make the building respond to physics when necessary.
+                btVector3 halfExtents = btVector3(separationRadius, separationRadius, buildingHeight);
+                btCollisionShape* collisionShape = new btCylinderShapeZ(halfExtents);
+                btRigidBody* analysisBody = physics->GetGhostObject(collisionShape, PhysicsOps::Convert(offset));
+                analysisBody->setActivationState(ISLAND_SLEEPING);
+
+                BuildingCollisionCallbackData* collisionData = new BuildingCollisionCallbackData();
+                collisionData->effect = cityEffect;
+                collisionData->buildingId = cityEffect->buildings.size();
+
+                analysisBody->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::BUILDING_COVER, this, collisionData, true));
+                physics->DynamicsWorld->addRigidBody(analysisBody);
+
+                for (unsigned int i = 0; i < building.segments.size(); i++)
+                {
+                    building.segments[i].analysisBody = analysisBody;
                 }
 
                 cityEffect->buildings.push_back(building);
@@ -173,10 +191,19 @@ void CityEffect::UnloadEffect(void* effectData)
     // Remove the physics bodies and custom collision shapes.
     for (unsigned int i = 0; i < cityEffect->buildings.size(); i++)
     {
+        if (!cityEffect->buildings[i].separated)
+        {
+            physics->DynamicsWorld->removeRigidBody(cityEffect->buildings[i].segments[0].analysisBody);
+            physics->DeleteBody(cityEffect->buildings[i].segments[0].analysisBody, true);
+        }
+
         for (unsigned int j = 0; j < cityEffect->buildings[i].segments.size(); j++)
         {
-            //physics->DynamicsWorld->removeRigidBody(cityEffect->buildings[i].segments[j].rigidBody);
-            physics->DeleteBody(cityEffect->buildings[i].segments[j].rigidBody, true);
+            if (cityEffect->buildings[i].separated)
+            {
+                physics->DynamicsWorld->removeRigidBody(cityEffect->buildings[i].segments[j].body);
+            }
+            physics->DeleteBody(cityEffect->buildings[i].segments[j].body, true);
         }
     }
 
@@ -191,13 +218,30 @@ void CityEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, co
 {
     glm::mat4 projectionMatrix = perspectiveMatrix * viewMatrix;
     CityEffectData* cityEffect = (CityEffectData*)effectData;
-    for (const Building& building : cityEffect->buildings)
+    for (Building& building : cityEffect->buildings)
     {
-        for (const ScaledPhysicalModel& model : building.segments)
+        for (Model& model : building.segments)
         {
-            glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.rigidBody);
-            // mvMatrix = mvMatrix * glm::scale(glm::mat4(), model.scaleFactor);
-            modelManager->RenderModel(projectionMatrix, model.modelId, mvMatrix, building.color, false);
+            modelManager->RenderModel(&model);
         }
     }
+}
+
+void CityEffect::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpecificData)
+{
+    BuildingCollisionCallbackData* callbackData = (BuildingCollisionCallbackData*)callbackSpecificData;
+
+    // Doesn't matter what we collided with, this building is being split into segments now.
+    auto& segments = callbackData->effect->buildings[callbackData->buildingId].segments;
+
+    physics->DynamicsWorld->removeRigidBody(segments[0].analysisBody);
+    physics->DeleteBody(segments[0].analysisBody, true);
+
+    for (unsigned int i = 0; i < segments.size(); i++)
+    {
+        segments[i].analysisBody = segments[i].body;
+        physics->DynamicsWorld->addRigidBody(segments[i].body);
+    }
+
+    callbackData->effect->buildings[callbackData->buildingId].separated = true;
 }

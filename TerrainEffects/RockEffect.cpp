@@ -40,46 +40,47 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
                     }
 
                     // Add a non-movable rock substrate.
-                    ColoredPhysicalModel coloredModel;
+                    Model model = Model();
                     BasicPhysics::CShape shape;
 
                     RockGenerator rockGenerator;
-                    rockGenerator.GetRandomRockModel(&coloredModel.model.modelId, &shape);
+                    rockGenerator.GetRandomRockModel(&model.modelId, &shape);
 
                     // TODO randomly generated from the rock generator
-                    coloredModel.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
+                    model.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
 
                     // TODO configurable
                     // TODO randomly generated masses.
                     float height = tile->heightmap[i + j * subTileSize];
                     glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)i + glm::linearRand(0.0f, 1.0f), (float)j + glm::linearRand(0.0f, 1.0f));
-                    coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
-                    coloredModel.model.rigidBody->setActivationState(ISLAND_SLEEPING);
+                    model.body = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
+                    model.body->setActivationState(ISLAND_SLEEPING);
 
-                    rockEffect->rocks.push_back(coloredModel);
-                    physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
+                    rockEffect->rocks.push_back(model);
+                    physics->DynamicsWorld->addRigidBody(model.body);
                 }
 
                 if (rockCounter % MOVABLE_ROCK_SUBCOUNT == 0)
                 {
                     // Add a movable rock layer above the substrate
-                    ColoredPhysicalModel coloredModel;
+                    Model model = Model();
                     BasicPhysics::CShape shape;
 
                     RockGenerator rockGenerator;
-                    rockGenerator.GetRandomRockModel(&coloredModel.model.modelId, &shape);
+                    rockGenerator.GetRandomRockModel(&model.modelId, &shape);
 
                     // TODO randomly generated from the rock generator
-                    coloredModel.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
+                    model.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
 
                     // TODO configurable
                     // TODO randomly generated masses.
                     float height = tile->heightmap[i + j * subTileSize];
                     glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)i + glm::linearRand(0.0f, 1.0f), (float)j + glm::linearRand(0.0f, 1.0f));
-                    coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height + 2.0f), 30.0f);
-                    coloredModel.model.rigidBody->setActivationState(ISLAND_SLEEPING);
-                    rockEffect->rocks.push_back(coloredModel);
-                    physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
+                    model.body = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height + 2.0f), 30.0f);
+                    model.body->setActivationState(ISLAND_SLEEPING);
+
+                    rockEffect->rocks.push_back(model);
+                    physics->DynamicsWorld->addRigidBody(model.body);
                 }
             }
         }
@@ -97,12 +98,12 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
 void RockEffect::UnloadEffect(void * effectData)
 {
     RockEffectData* rockEffect = (RockEffectData*)effectData;
-    for (const ColoredPhysicalModel& model : rockEffect->rocks)
+    for (const Model& model : rockEffect->rocks)
     {
         // TODO -- we should not regenerate rigid bodies for rocky areas, but they (like cities) should go in a persistent store.
         // I'm leaving that off until I start random city generation. That will likely also entail refactoring in this class...
-        physics->DynamicsWorld->removeRigidBody(model.model.rigidBody);
-        physics->DeleteBody(model.model.rigidBody, false);
+        physics->DynamicsWorld->removeRigidBody(model.body);
+        physics->DeleteBody(model.body, false);
     }
 
     delete rockEffect;
@@ -115,9 +116,8 @@ void RockEffect::Simulate(const glm::ivec2 subtileId, void * effectData, float e
 void RockEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     RockEffectData* rockEffect = (RockEffectData*)effectData;
-    for (const ColoredPhysicalModel& model : rockEffect->rocks)
+    for (Model& model : rockEffect->rocks)
     {
-        glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.model.rigidBody);
-        modelManager->RenderModel(perspectiveMatrix * viewMatrix, model.model.modelId, mvMatrix, model.color, false);
+        modelManager->RenderModel(&model);
     }
 }

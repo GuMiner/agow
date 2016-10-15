@@ -42,8 +42,6 @@ bool TreeEffect::LoadBasics(ShaderManager* shaderManager)
         else
         {
             // Generate the possible tree models to use for rendering trees.
-            TreeCacheData generatedTree;
-
             GenerationResults results = treeGenerator.GenerateTree(&generatedTree.branches, &generatedTree.branchThicknesses, &generatedTree.leaves);
             for (unsigned int i = 0; i < results.branches; i++)
             {
@@ -129,9 +127,11 @@ bool TreeEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
         glBindVertexArray(treeEffect->treeTrunks.vao);
         glGenBuffers(1, &treeEffect->treeTrunks.positionBuffer);
         glGenBuffers(1, &treeEffect->treeTrunks.colorBuffer);
+        glGenBuffers(1, &treeEffect->treeTrunks.idBuffer);
 
         Logger::Log("Parsed ", treeEffect->treeTrunks.vertices.positions.size() / 2, " tree trunks.");
         treeEffect->treeTrunks.vertices.TransferPositionToOpenGl(treeEffect->treeTrunks.positionBuffer);
+        treeEffect->treeTrunks.vertices.TransferIdsToOpenGl(treeEffect->treeTrunks.idBuffer);
         treeEffect->treeTrunks.vertices.TransferColorToOpenGl(treeEffect->treeTrunks.colorBuffer);
 
         glGenVertexArrays(1, &treeEffect->treeLeaves.vao);
@@ -155,6 +155,7 @@ void TreeEffect::UnloadEffect(void* effectData)
     glDeleteVertexArrays(1, &treeEffect->treeTrunks.vao);
     glDeleteBuffers(1, &treeEffect->treeTrunks.positionBuffer);
     glDeleteBuffers(1, &treeEffect->treeTrunks.colorBuffer);
+    glDeleteBuffers(1, &treeEffect->treeTrunks.idBuffer);
 
     glDeleteVertexArrays(1, &treeEffect->treeLeaves.vao);
     glDeleteBuffers(1, &treeEffect->treeLeaves.positionBuffer);

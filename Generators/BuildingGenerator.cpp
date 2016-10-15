@@ -130,12 +130,13 @@ void BuildingGenerator::GetScaledModelPoints(std::vector<glm::vec3>& points, glm
 }
 
 // Returns a random low density building centered (XY) on the origin starting at Z == 0.
-std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(glm::vec3 offset, float* separationRadius)
+std::vector<Model> BuildingGenerator::GetRandomLowDensityBuilding(glm::vec3 offset, float* separationRadius, float* height)
 {
-    std::vector<ScaledPhysicalModel> resultingSegments;
+    std::vector<Model> resultingSegments;
 
     glm::vec3 overallScale = glm::vec3(1.0f);
-    float currentHeight = 0.0f;
+    
+    *height = 0.0f;
     *separationRadius = 0.0f;
 
     std::vector<BuildingDecisionData> buildingSegmentRules = lowDensityBuildingBuilder.EvaluateTreeSequence(BuildingGenerator::RandomWalkEvaluator);
@@ -149,7 +150,7 @@ std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(
             float scaleFactor = glm::linearRand(buildingRule.minScaleFactor, buildingRule.maxScaleFactor);
             overallScale *= glm::vec3(scaleFactor);
 
-            ScaledPhysicalModel model;
+            Model model = Model();
             model.scaleFactor = overallScale * glm::vec3(1.0f, 1.0f, buildingRule.zFactor);
             model.modelId = modelManager->GetModelId(buildingRule.modelName);
 
@@ -167,23 +168,26 @@ std::vector<ScaledPhysicalModel> BuildingGenerator::GetRandomLowDensityBuilding(
 
             *separationRadius = std::max(*separationRadius, boundingSphereRadius);
 
-            float delta = 0.1;
-            btVector3 buildingSegmentOrigin = btVector3(offset.x, offset.y, delta + offset.z + currentHeight - aabbMin.z());
+            float delta = 0.01;
+            btVector3 buildingSegmentOrigin = btVector3(offset.x, offset.y, delta + offset.z + *height - aabbMin.z());
             if (i == 0)
             {
                 // The building base is static.
-                model.rigidBody = basicPhysics->GetStaticBody(collisionShape, buildingSegmentOrigin);
+                model.body = basicPhysics->GetStaticBody(collisionShape, buildingSegmentOrigin);
             }
             else
             {
                 // TODO configurable mass.
-                model.rigidBody = basicPhysics->GetDynamicBody(collisionShape, buildingSegmentOrigin, 400);
+                model.body = basicPhysics->GetDynamicBody(collisionShape, buildingSegmentOrigin, 400);
             }
 
-            model.rigidBody->setActivationState(ISLAND_SLEEPING);
+            // TODO analysis body should be an overarching body that covers the entire building, which is the only part added to physics on start.
+            model.analysisBody = model.body;
+
+            model.body->setActivationState(ISLAND_SLEEPING);
 
             resultingSegments.push_back(model);
-            currentHeight += (delta + aabbMax.z() - aabbMin.z());
+            *height += (delta + aabbMax.z() - aabbMin.z());
             --layers;
         }
     }

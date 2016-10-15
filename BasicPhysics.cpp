@@ -205,6 +205,13 @@ btRigidBody* BasicPhysics::GetDynamicBody(btCollisionShape* collisionShape, cons
     return newBody;
 }
 
+btRigidBody* BasicPhysics::GetGhostObject(btCollisionShape* collisionShape, const btVector3& origin)
+{
+    btRigidBody* rigidBody = GetDynamicBody(collisionShape, origin, 1.0f);
+    rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
+    return rigidBody;
+}
+
 btRigidBody* BasicPhysics::GetGhostObject(const CShape shape, const btVector3& origin)
 {
     btRigidBody* rigidBody = GetDynamicBody(shape, origin, 1.0f);

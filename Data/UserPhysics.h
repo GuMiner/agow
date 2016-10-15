@@ -4,12 +4,14 @@
 class UserPhysics
 {
 public:
-    // Copied from PaletteWindow.cpp, MapEditor.
+    // The type of object this is
     enum ObjectType
     {
         HEIGHTMAP = 0,
         PLAYER = 1,
-        NPC_CLOSEUP = 2
+        NPC_CLOSEUP = 2,
+        BUILDING_COVER = 3,
+        ROCK = 4
     };
 
     // Returns true if source collides with target. If so, target's collision callback should be called.
@@ -33,6 +35,10 @@ public:
             default:
                 return false;
             }
+        case BUILDING_COVER:
+            return true;
+        case ROCK:
+            return false; // TODO implement rock/NPC collisions.
         default:
             return false;
         }

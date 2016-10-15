@@ -9,6 +9,7 @@ struct VertexData
     GLuint vao;
     GLuint positionBuffer;
     GLuint colorBuffer;
+    GLuint idBuffer;
 
     universalVertices vertices;
 };

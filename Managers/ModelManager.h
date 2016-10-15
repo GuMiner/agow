@@ -1,32 +1,67 @@
 #pragma once
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 #include <GL/glew.h>
 #include <glm\vec3.hpp>
 #include <glm\vec4.hpp>
 #include <glm\mat4x4.hpp>
+#include <glm\gtc\matrix_transform.hpp>
 #include "ImageManager.h"
 #include "ShaderManager.h"
 #include "Data\Model.h"
+#include "Utils\Logger.h"
+#include "BasicPhysics.h"
 
-struct PosUvPair
-{
-    unsigned int positionId;
-    unsigned int uvId;
-};
+// TODO these should be calculated and elsewhere.
+const int MODELS_PER_RENDER = 16384;
+const int MODEL_TEXTURE_SIZE = 256;
 
 struct ModelRenderStore
 {
+    // These are created from the image manager and do not need to be freed.
+    GLuint mvMatrixImageId;
+    GLuint shadingColorAndSelectionImageId;
+
     // Stores MV matrices, split into 4 vectors per matrix.
     std::vector<glm::vec4> matrixStore;
 
     // Stores the shading color (even indices) and selection bool ('R', odd incies)
     std::vector<glm::vec4> shadingColorSelectionStore;
 
+    ModelRenderStore(GLuint mvMatrixImageId, GLuint shadingColorAndSelectionImageId)
+        : mvMatrixImageId(mvMatrixImageId), shadingColorAndSelectionImageId(shadingColorAndSelectionImageId)
+    {
+    }
+
     unsigned int GetInstanceCount()
     {
         return shadingColorSelectionStore.size() / 2;
+    }
+
+    void AddModelToStore(Model* model)
+    {
+        if (GetInstanceCount() == MODELS_PER_RENDER)
+        {
+            // TODO handle this scenario so we cannot hit it.
+            Logger::LogError("Cannot render model, too many renders of this model type attempted!");
+        }
+
+        glm::mat4 mvMatrix = glm::scale(BasicPhysics::GetBodyMatrix(model->body), model->scaleFactor);
+        matrixStore.push_back(mvMatrix[0]);
+        matrixStore.push_back(mvMatrix[1]);
+        matrixStore.push_back(mvMatrix[2]);
+        matrixStore.push_back(mvMatrix[3]);
+
+        shadingColorSelectionStore.push_back(model->color);
+        shadingColorSelectionStore.push_back(glm::vec4(model->selected ? 0.40f : 0.0f));
+    }
+
+    void Clear()
+    {
+        matrixStore.clear();
+        shadingColorSelectionStore.clear();
     }
 };
 
@@ -49,32 +84,12 @@ class ModelManager
     GLuint mvLocation;
     GLuint projLocation;
 
-    // Buffers. These are created from the image manager, and do not need to be freed.
-    std::vector<GLuint> mvMatrixImageId;
-    std::vector<GLuint> shadingColorAndSelectionImageId;
-
     // Model data
     unsigned int nextModelId;
     std::vector<TextureModel> models;
 
-    // Stores model data in preparation to rendering.
-    std::vector<ModelRenderStore> modelRenderStore;
-
-    // Temporary loading structures.
-    std::vector<glm::vec2> rawUvs;
-    std::vector<PosUvPair> rawIndices;
-    std::map<unsigned int, unsigned int> indexUvMap; // [positionId] = UV Id. Maps rawIndices for faster loading access.
-    std::map<unsigned int, std::vector<PosUvPair>> uvVertexRemapping;
-
-    // Given a position index and UV coordinate index, returns the actual index to use.
-    unsigned int GetActualVertexIndex(unsigned int positionIdx, unsigned int uvIdx, universalVertices& vertices);
-
-    // Parses an individual line of an OBJ model file.
-    bool ParseLine(const std::vector<std::string>& line, universalVertices& vertices);
-
-    // Loads an OBJ model into the specified vertices, returning true on success.
-    // Note that the OBJ model must fully specify all positions / UVs *before* any indices.
-    bool LoadModel(const char* objFilename, universalVertices& vertices, int* rawPointCount, glm::vec3* minBounds, glm::vec3* maxBounds);
+    // Stores model data in preparation to rendering for dynamic objects.
+    std::vector<ModelRenderStore> dynamicRenderStore;
 
 public:
     // Clears the next model ID and initializes the local reference to the image manager.
@@ -91,11 +106,11 @@ public:
 
     unsigned int GetCurrentModelCount() const;
 
-    // Prepares for rendering the specified model given by the ID.
-    void RenderModel(const glm::mat4& projectionMatrix, unsigned int id, glm::mat4& mvMatrix, bool selected);
+    // Prepares for rendering the specified model given by the ID. Model will be placed in the static or dynamic list based on the physical state of the analysis body.
+    void RenderModel(Model* model);
 
-    // Prepares for rendering the specified model given by the ID, using the given color.
-    void RenderModel(const glm::mat4& projectionMatrix, unsigned int id, glm::mat4& mvMatrix, glm::vec4 shadingColor, bool selected);
+    // Forces rendering of the model in the dynamic list, which will apply any modifications done to the model.
+    void RenderDynamicModel(Model* model);
 
     // Finalizes rendering (and actually renders) all models.
     void FinalizeRender(const glm::mat4& projectionMatrix);

@@ -45,22 +45,22 @@ bool SignEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
                             }
 
                             // Add a barely-movable sign shape.
-                            ColoredPhysicalModel coloredModel;
+                            Model model = Model();
                             BasicPhysics::CShape shape;
 
                             SignGenerator signGenerator;
-                            signGenerator.GetRandomSignModel(&coloredModel.model.modelId, &shape);
+                            signGenerator.GetRandomSignModel(&model.modelId, &shape);
 
                             // TODO configurable.
-                            coloredModel.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
+                            model.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
 
                             // TODO configurable masses.
                             float height = tile->heightmap[i + j * subTileSize];
                             glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)(i + 1), (float)(j + 1));
-                            coloredModel.model.rigidBody = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
+                            model.body = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
 
-                            signEfect->signs.push_back(coloredModel);
-                            physics->DynamicsWorld->addRigidBody(coloredModel.model.rigidBody);
+                            signEfect->signs.push_back(model);
+                            physics->DynamicsWorld->addRigidBody(model.body);
                         }
                     }
                 }
@@ -80,10 +80,10 @@ bool SignEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
 void SignEffect::UnloadEffect(void * effectData)
 {
     SignEffectData* rockEffect = (SignEffectData*)effectData;
-    for (const ColoredPhysicalModel& model : rockEffect->signs)
+    for (const Model& model : rockEffect->signs)
     {
         // TODO -- we should not regenerate signs, they should go in a persistent store.
-        physics->DynamicsWorld->removeRigidBody(model.model.rigidBody);
+        physics->DynamicsWorld->removeRigidBody(model.body);
     }
 
     delete rockEffect;
@@ -97,9 +97,8 @@ void SignEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float el
 void SignEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
     SignEffectData* rockEffect = (SignEffectData*)effectData;
-    for (const ColoredPhysicalModel& model : rockEffect->signs)
+    for (Model& model : rockEffect->signs)
     {
-        glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(model.model.rigidBody);
-        modelManager->RenderModel(perspectiveMatrix * viewMatrix, model.model.modelId, mvMatrix, model.color, false);
+        modelManager->RenderModel(&model);
     }
 }

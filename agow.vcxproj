@@ -122,6 +122,7 @@
     <ClInclude Include="Managers\ConfigManager.h" />
     <ClInclude Include="Managers\FontManager.h" />
     <ClInclude Include="Managers\ImageManager.h" />
+    <ClInclude Include="Managers\ModelLoader.h" />
     <ClInclude Include="Managers\ModelManager.h" />
     <ClInclude Include="Managers\NpcManager.h" />
     <ClInclude Include="Managers\RegionManager.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="Managers\ConfigManager.cpp" />
     <ClCompile Include="Managers\FontManager.cpp" />
     <ClCompile Include="Managers\ImageManager.cpp" />
+    <ClCompile Include="Managers\ModelLoader.cpp" />
     <ClCompile Include="Managers\ModelManager.cpp" />
     <ClCompile Include="Managers\NpcManager.cpp" />
     <ClCompile Include="Managers\RegionManager.cpp" />

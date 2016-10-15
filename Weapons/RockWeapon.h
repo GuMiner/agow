@@ -4,10 +4,12 @@
 #include <glm\vec2.hpp>
 #include <glm\vec3.hpp>
 #include <glm\gtc\quaternion.hpp>
+#include "Data\UserPhysics.h"
 #include "Managers\ModelManager.h"
+#include "Utils\TypedCallback.h"
 #include "WeaponBase.h"
 
-class RockWeapon : public WeaponBase
+class RockWeapon : public WeaponBase, ICallback<UserPhysics::ObjectType>
 {
 public:
     enum SizeSetting
@@ -33,5 +35,7 @@ protected:
 public:
     RockWeapon::RockWeapon(ModelManager* modelManager, BasicPhysics* physics, glm::vec2 speedLimits);
     void Render(const glm::mat4& projectionMatrix) override;
+
+    virtual void Callback(UserPhysics::ObjectType callingObject, void* callbackSpecificData) override;
 };
 

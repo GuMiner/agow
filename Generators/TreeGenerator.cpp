@@ -151,7 +151,7 @@ GenerationResults TreeGenerator::GenerateTree(std::vector<glm::vec3>* trunkLines
     
     // TODO configurable
     float radius = 2.0f + glm::linearRand(0.0f, 4.0f);
-    float height = std::max(3.0f, radius + glm::linearRand(0.0f, 5.0f) - 1.0f);
+    float height = std::min(10.0f, radius + glm::linearRand(-1.0f, 8.0f));
 
     return GenerateTree(type, radius, height, trunkLines, trunkSizes, leafPoints);
 }
@@ -168,11 +168,11 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, float radius, float
     GenerateAttractionPoints(type, radius, height, &attractionPoints);
 
     // TODO configurable
-    float minDistance = 0.40f;
-    float maxDistance = 0.80f;
+    float minDistance = 0.60f;
+    float maxDistance = 0.90f;
 
-    float branchLength = 0.15f;
-    float branchClosenessLimit = 0.01f;
+    float branchLength = 0.20f;
+    float branchClosenessLimit = 0.04f;
 
     unsigned int branchLimit = 1500;
 
@@ -297,11 +297,12 @@ GenerationResults TreeGenerator::GenerateTree(TreeType type, float radius, float
     {
         trunkLines->push_back(branches[i].pos);
         trunkLines->push_back(branches[i].end());
+        trunkSizes->push_back(branches[i].thickness);
+        trunkSizes->push_back(branches[i].thickness);
     }
 
     // All our branch sizes are reversed, so perform the inverse of that operation.
     InvertBranchSizes(trunkSizes);
-
     
     return GenerationResults(type, leavesAdded, branches.size());
 }

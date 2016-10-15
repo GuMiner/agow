@@ -11,39 +11,39 @@
 Player::Player(ModelManager* modelManager, BasicPhysics* physics)
     : gravityWeapon(physics), pressureWeapon(physics, glm::vec2(1.0f, 10.0f)), rockWeapon(modelManager, physics, glm::vec2(10.0f, 500.0f)), sunbeamWeapon(physics), // TODO configurable
       lastMousePos(glm::ivec2(-1, -1)), camera(-80, glm::vec2(-30, 30), glm::vec2(-14, 14)), isOnGround(true), motionType(ON_FOOT), // TODO configurable camera.
-      enemyKos(0), allyKos(0), civilianKos(0)
+      enemyKos(0), allyKos(0), civilianKos(0), model()
 {
     selectedWeapon = &rockWeapon;
 }
 
 bool Player::LoadPlayerModel(ModelManager* modelManager)
 {
-    physicalModel.modelId = modelManager->LoadModel("models/player");
-    return physicalModel.modelId != 0;
+    model.modelId = modelManager->LoadModel("models/player");
+    return model.modelId != 0;
 }
 
 void Player::LoadPlayerPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass)
 {
-    physicalModel.rigidBody = physics.GetDynamicBody(BasicPhysics::CShape::PLAYER, PhysicsOps::Convert(startingPosition), mass);
-    physicalModel.rigidBody->forceActivationState(DISABLE_DEACTIVATION);
+    model.body = physics.GetDynamicBody(BasicPhysics::CShape::PLAYER, PhysicsOps::Convert(startingPosition), mass);
+    model.body->forceActivationState(DISABLE_DEACTIVATION);
     
     // Rotate to face the forwards direction.
-    btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
-    physicalModel.rigidBody->setAngularFactor(0.0f);
-    physicalModel.rigidBody->setFriction(2.0f); // TODO configurable.
-    physicalModel.rigidBody->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::PLAYER, this));
-    physics.DynamicsWorld->addRigidBody(physicalModel.rigidBody);
+    btTransform& worldTransform = model.body->getWorldTransform();
+    model.body->setAngularFactor(0.0f);
+    model.body->setFriction(2.0f); // TODO configurable.
+    model.body->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::PLAYER, this));
+    physics.DynamicsWorld->addRigidBody(model.body);
 
-    camera.Initialize(physicalModel.rigidBody);
+    camera.Initialize(model.body);
 }
 
 void Player::UnloadPlayerPhysics(BasicPhysics physics)
 {
     // TODO cleanup the weapons.
 
-    delete physicalModel.rigidBody->getUserPointer();
-    physics.DynamicsWorld->removeRigidBody(physicalModel.rigidBody);
-    physics.DeleteBody(physicalModel.rigidBody, false);
+    delete model.body->getUserPointer();
+    physics.DynamicsWorld->removeRigidBody(model.body);
+    physics.DeleteBody(model.body, false);
 }
 
 void Player::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpecificData)
@@ -56,18 +56,18 @@ void Player::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpe
 
 const glm::vec2 Player::GetTerrainPosition() const
 {
-    glm::vec3 bodyPos = BasicPhysics::GetBodyPosition(physicalModel.rigidBody);
+    glm::vec3 bodyPos = BasicPhysics::GetBodyPosition(model.body);
     return glm::vec2(bodyPos.x, bodyPos.y);
 }
 
 const glm::vec3 Player::GetPosition() const
 {
-    return BasicPhysics::GetBodyPosition(physicalModel.rigidBody);
+    return BasicPhysics::GetBodyPosition(model.body);
 }
 
 const glm::quat Player::GetOrientation() const
 {
-    return BasicPhysics::GetBodyRotation(physicalModel.rigidBody) * glm::rotate(glm::quat(), glm::radians(-90.0f), glm::vec3(1, 0, 0));
+    return BasicPhysics::GetBodyRotation(model.body) * glm::rotate(glm::quat(), glm::radians(-90.0f), glm::vec3(1, 0, 0));
 }
 
 const glm::quat Player::GetViewOrientation() const
@@ -85,20 +85,19 @@ void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const gl
     // TODO make these offsets configurable.
     float height = regionManager->GetPointHeight(world, mapPos);
 
-    btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
+    btTransform& worldTransform = model.body->getWorldTransform();
     
     worldTransform.setIdentity();
     worldTransform.setOrigin(btVector3(mapPos.x, mapPos.y, height + 4));
-    physicalModel.rigidBody->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-    physicalModel.rigidBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
-    physicalModel.rigidBody->activate(true); // Ensure we don't hang in midair.
+    model.body->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+    model.body->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
+    model.body->activate(true); // Ensure we don't hang in midair.
     isOnGround = false;
 }
 
 void Player::Render(ModelManager* modelManager, const glm::mat4& projectionMatrix)
 {
-    glm::mat4 mvMatrix = BasicPhysics::GetBodyMatrix(physicalModel.rigidBody);
-    modelManager->RenderModel(projectionMatrix, physicalModel.modelId, mvMatrix, false);
+    modelManager->RenderModel(&model);
 
     selectedWeapon->Render(projectionMatrix);
 }
@@ -115,17 +114,17 @@ void Player::Update(float frameTime, int terrainTypeOn)
     forwardsVector = glm::normalize(forwardsVector);
     if (Input::IsKeyPressed(GLFW_KEY_W))
     {
-        physicalModel.rigidBody->applyCentralForce(PhysicsOps::Convert(forwardsVector * PhysicsConfig::ViewSidewaysSpeed));
+        model.body->applyCentralForce(PhysicsOps::Convert(forwardsVector * PhysicsConfig::ViewSidewaysSpeed));
     }
 
     if (Input::IsKeyPressed(GLFW_KEY_S))
     {
-        physicalModel.rigidBody->applyCentralForce(PhysicsOps::Convert(-forwardsVector * PhysicsConfig::ViewSidewaysSpeed));
+        model.body->applyCentralForce(PhysicsOps::Convert(-forwardsVector * PhysicsConfig::ViewSidewaysSpeed));
     }
 
     if (Input::IsKeyPressed(GLFW_KEY_A))
     {
-        btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
+        btTransform& worldTransform = model.body->getWorldTransform();
         btQuaternion rotation = worldTransform.getRotation();
         rotation = rotation * btQuaternion(btVector3(0, 0, 1), 0.05f); // TODO configurable
         worldTransform.setRotation(rotation);
@@ -133,7 +132,7 @@ void Player::Update(float frameTime, int terrainTypeOn)
 
     if (Input::IsKeyPressed(GLFW_KEY_D))
     {
-        btTransform& worldTransform = physicalModel.rigidBody->getWorldTransform();
+        btTransform& worldTransform = model.body->getWorldTransform();
         btQuaternion rotation = worldTransform.getRotation();
         rotation = rotation * btQuaternion(btVector3(0, 0, 1), -0.05f); // TODO configurable
         worldTransform.setRotation(rotation);
@@ -144,7 +143,7 @@ void Player::Update(float frameTime, int terrainTypeOn)
     // Jump
     if (isOnGround && Input::IsKeyPressed(GLFW_KEY_SPACE))
     {
-        physicalModel.rigidBody->applyCentralImpulse(PhysicsOps::Convert(glm::vec3(0.0f, 0.0f, 200.0f)));
+        model.body->applyCentralImpulse(PhysicsOps::Convert(glm::vec3(0.0f, 0.0f, 200.0f)));
         //isOnGround = false;
     }
 
@@ -181,10 +180,10 @@ void Player::Update(float frameTime, int terrainTypeOn)
     float speedLimitSqd = terrainTypeOn == TerrainTypes::ROADS ?
         (Player::RoadSpeedLimit * Player::RoadSpeedLimit) : (Player::SpeedLimit * Player::SpeedLimit);
 
-    if (physicalModel.rigidBody->getLinearVelocity().length2() > speedLimitSqd)
+    if (model.body->getLinearVelocity().length2() > speedLimitSqd)
     {
-        btVector3 linearVelocity = physicalModel.rigidBody->getLinearVelocity();
-        physicalModel.rigidBody->setLinearVelocity(Player::SpeedLimit * linearVelocity.normalize());
+        btVector3 linearVelocity = model.body->getLinearVelocity();
+        model.body->setLinearVelocity(Player::SpeedLimit * linearVelocity.normalize());
     }
 
     camera.Update(frameTime);

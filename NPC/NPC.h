@@ -32,16 +32,16 @@ protected:
 
     std::string description;
     Shape shape;
-    glm::vec4 color;
 
     int health;
-    bool isSelected;
     bool showInteractionKeys;
 
     bool nearFieldCollisionLastFrame;
 
     btRigidBody* nearFieldBubble;
-    PhysicalModel physicalModel;
+    
+    bool selectionChange;
+    Model model;
 
     bool CanKill()
     {

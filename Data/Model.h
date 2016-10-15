@@ -19,7 +19,7 @@ struct TextureModel
     // Total number of points before remapping points were added to the end. Used to grab points for physics calculations
     int rawPointCount;
 
-    // Vertex data -- only the position, uvs, and indices fields are expected to be filled.    
+    // Vertex data -- only the position, uvs, and indices fields are expected to be filled.
     universalVertices vertices;
 
     // Offset to apply to all the indicies in this model when sending to OpenGL and rendering.
@@ -30,28 +30,26 @@ struct TextureModel
     glm::vec3 maxBounds;
 };
 
-struct PhysicalModel
+struct Model
 {
-    unsigned int modelId;
-    btRigidBody* rigidBody;
-};
+    // Used internally to speed up drawing operations.
+    int internalId;
 
-struct ScaledPhysicalModel
-{
-    // We scale drawing by this factor. The rigid body is assumed to already be scaled.
+    // The physical body to use for analysis of this object.
+    // For example, the 'analysisBody' of a building segment is the entire building, 
+    //  until the building is interacted with, at which point the 'analysisBody' == 'body'.
+    btRigidBody* analysisBody;
+
+    unsigned int modelId;
+    btRigidBody* body;
+
+    // Modifications to drawing for the item.
     glm::vec3 scaleFactor;
-    unsigned int modelId;
-    btRigidBody* rigidBody;
-};
-
-struct ColoredPhysicalModel
-{
     glm::vec4 color;
-    PhysicalModel model;
-};
+    bool selected;
 
-struct PhysicalModelSet
-{
-    unsigned int modelId;
-    std::vector<btRigidBody*> rigidBodies;
+    Model()
+        : internalId(-1), analysisBody(nullptr), body(nullptr), modelId(0), color(1.0f), scaleFactor(1.0f), selected(false)
+    {
+    }
 };

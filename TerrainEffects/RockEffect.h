@@ -6,7 +6,7 @@
 
 struct RockEffectData
 {
-    std::vector<ColoredPhysicalModel> rocks;
+    std::vector<Model> rocks;
 };
 
 class RockEffect : public TerrainEffect
