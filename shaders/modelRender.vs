@@ -8,7 +8,6 @@ out flat int instanceId;
 
 uniform sampler2D mvMatrix;
 
-uniform int instanceOffset; 
 uniform mat4 projMatrix;
 
 // Perform our position and projection transformations, and pass-through the color / texture data
@@ -16,7 +15,7 @@ void main(void)
 {
     const int size = 512;
     
-    int instance = instanceOffset + gl_InstanceID;
+    int instance = gl_InstanceID;
     
     // Extract out the MV matrix given our current instance.
     int xPos0 = (instance * 4) % size;

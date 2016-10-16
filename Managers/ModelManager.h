@@ -19,22 +19,16 @@
 const int MODELS_PER_RENDER = 65536;
 const int MODEL_TEXTURE_SIZE = 512;
 
-struct StaticRenderStore
+struct TrackingRenderStore
 {
     // Backing store of static models
     ModelRenderStore backingStore;
 
-    // The set of segments to render (in order to skip segments).
-    std::list<glm::ivec2> drawSegments;
+    std::set<unsigned int> freeIds;
+    std::set<unsigned int> renderedIds;
 
-    // Items that were added this frame that need to be send to the GPU.
-    std::vector<unsigned int> newItemsAdded;
-
-    // Items drawn this frame. NOTE: Per C++ standard, this is guaranteed to be smallest to largest.
-    std::set<unsigned int> drawnItems;
-
-    StaticRenderStore(GLuint mvMatrixImageId, GLuint shadingImageId)
-        : backingStore(mvMatrixImageId, shadingImageId), drawSegments(), newItemsAdded(), drawnItems()
+    TrackingRenderStore(GLuint mvMatrixImageId, GLuint shadingImageId)
+        : backingStore(mvMatrixImageId, shadingImageId), freeIds()
     {
     }
 };
@@ -54,7 +48,6 @@ class ModelManager
     GLuint modelRenderProgram;
 
     // In-shader locations
-    GLuint instanceOffsetLocation;
     GLuint textureLocation;
     GLuint shadingColorLocation;
     GLuint mvLocation;
@@ -72,14 +65,11 @@ class ModelManager
     std::vector<TextureModel> models;
 
     // Stores model data in preparation to rendering for dynamic and static objects.
-    std::vector<ModelRenderStore> dynamicRenderStore;
-    std::vector<StaticRenderStore> staticRenderStore;
+    std::vector<TrackingRenderStore> dynamicRenderStore;
     
-    void AddNewStaticModel(Model* model);
-    void RenderStaticModel(Model* model);
-
-    void FinalizeDynamicRender();
-    void FinalizeStaticRender();
+    void AddNewModelToRenderStore(Model* model);
+    void UpdateModelInRenderStore(Model* model);
+    void ZeroIndex(unsigned int modelId, unsigned int idx);
 
 public:
     // Clears the next model ID and initializes the local reference to the image manager.

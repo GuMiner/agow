@@ -23,15 +23,12 @@ unsigned int ModelManager::LoadModel(const char* rootFilename)
     glBindVertexArray(vao);
     glActiveTexture(GL_TEXTURE1);
     GLuint mvMatrixImageId = imageManager->CreateEmptyTexture(MODEL_TEXTURE_SIZE, MODEL_TEXTURE_SIZE, GL_RGBA32F);
-    GLuint mvMatrixImageIdStatic = imageManager->CreateEmptyTexture(MODEL_TEXTURE_SIZE, MODEL_TEXTURE_SIZE, GL_RGBA32F);
 
     glActiveTexture(GL_TEXTURE2);
-    GLuint shadingColorAndSelectionImageId = imageManager->CreateEmptyTexture(MODEL_TEXTURE_SIZE, MODEL_TEXTURE_SIZE, GL_RGBA32F);
-    GLuint shadingColorAndSelectionImageIdStatic = imageManager->CreateEmptyTexture(MODEL_TEXTURE_SIZE, MODEL_TEXTURE_SIZE, GL_RGBA32F);
+    GLuint shadingColorAndSelectionImageId = imageManager->CreateEmptyTexture(MODEL_TEXTURE_SIZE, MODEL_TEXTURE_SIZE, GL_RGBA32F);\
 
     models.push_back(textureModel);
-    dynamicRenderStore.push_back(ModelRenderStore(mvMatrixImageId, shadingColorAndSelectionImageId));
-    staticRenderStore.push_back(StaticRenderStore(mvMatrixImageIdStatic, shadingColorAndSelectionImageIdStatic));
+    dynamicRenderStore.push_back(TrackingRenderStore(mvMatrixImageId, shadingColorAndSelectionImageId));
 
     ++nextModelId;
     return nextModelId - 1;
@@ -82,72 +79,75 @@ void ModelManager::RenderModelImmediate(const glm::mat4& projectionMatrix, Model
 
 void ModelManager::RenderModel(const glm::mat4& projectionMatrix, Model* model)
 {
-    int activationState = model->analysisBody == nullptr ? model->body->getActivationState() : model->analysisBody->getActivationState();
-    if (activationState == ACTIVE_TAG || activationState == DISABLE_DEACTIVATION || activationState == WANTS_DEACTIVATION)
+    if (model->internalId == -1 || model->frameId != frameId - 1)
     {
-        RenderDynamicModel(projectionMatrix, model);
-    }
-    
-    RenderStaticModel(model);
-}
-
-void ModelManager::AddNewStaticModel(Model* model)
-{
-    StaticRenderStore& renderStore = staticRenderStore[model->modelId - 1];
-
-    // Find first free spot and set that as the internal ID.
-    if (renderStore.drawSegments.size() == 0)
-    {
-        // No items at all. This item takes first place.
-        model->internalId = 1;
-        renderStore.drawSegments.push_back(glm::ivec2(0, 1));
+        // Untracked. Add the model.
+        AddNewModelToRenderStore(model);
     }
     else
     {
-        // Add to the existing list.
-        model->internalId = staticRenderStore[model->modelId - 1].drawSegments.front().y + 1;
-        renderStore.drawSegments.front().y++;
-
-        if (renderStore.drawSegments.size() > 1)
+        // Known model. Only update if we detect it as dynamic.
+        int activationState = model->analysisBody == nullptr ? model->body->getActivationState() : model->analysisBody->getActivationState();
+        if (activationState == ACTIVE_TAG || activationState == DISABLE_DEACTIVATION || activationState == WANTS_DEACTIVATION)
         {
-            glm::ivec2 nextElement = *(renderStore.drawSegments.begin()++);
-            if (nextElement.x == renderStore.drawSegments.front().y)
-            {
-                // The next segment starts when this segment now ends. Extend that segment and remove the front segment.
-                nextElement.x = 0;
-                renderStore.drawSegments.pop_front();
-            }
+            UpdateModelInRenderStore(model);
         }
     }
 
-    // Using that ID, save the data into the backing store.
-    renderStore.backingStore.InsertInModelStore(model->internalId - 1, model);
-    renderStore.newItemsAdded.push_back(model->internalId - 1);
+    dynamicRenderStore[model->modelId - 1].renderedIds.insert(model->internalId);
+    model->frameId = frameId;
 }
 
-void ModelManager::RenderStaticModel(Model* model)
+void ModelManager::AddNewModelToRenderStore(Model* model)
 {
-    if (model->internalId == -1 || model->frameId != frameId - 1)
+    if (dynamicRenderStore[model->modelId - 1].freeIds.size() != 0)
     {
-        // We consider this a new static model if the internal ID is zero or the frame ID is not from the last frame.
-        AddNewStaticModel(model);
+        model->internalId = *(dynamicRenderStore[model->modelId - 1].freeIds.begin());
+        dynamicRenderStore[model->modelId - 1].freeIds.erase(dynamicRenderStore[model->modelId - 1].freeIds.begin());
+    }
+    else
+    {
+        model->internalId = dynamicRenderStore[model->modelId - 1].backingStore.GetInstanceCount();
     }
 
-    staticRenderStore[model->modelId - 1].drawnItems.insert(model->internalId - 1);
+    UpdateModelInRenderStore(model);
+}
 
-    // If someone removes a static item from rendering and adds it back in next frame, the frame IDs will differ.
-    // Storing the frame ID ensures our ID can be the ID in the static element array and not something more complicated.
-    model->frameId = frameId;
+void ModelManager::UpdateModelInRenderStore(Model* model)
+{
+    // Update in our backing store.
+    dynamicRenderStore[model->modelId - 1].backingStore.InsertInModelStore(model->internalId, model);
+
+    // Update in OpenGL.
+    const ImageTexture& mvMatrixImage = imageManager->GetImage(dynamicRenderStore[model->modelId - 1].backingStore.mvMatrixImageId);
+    const ImageTexture& shadingImage = imageManager->GetImage(dynamicRenderStore[model->modelId - 1].backingStore.shadingColorAndSelectionImageId);
+
+    int x4 = (model->internalId * 4) % MODEL_TEXTURE_SIZE;
+    int y4 = (model->internalId * 4) / MODEL_TEXTURE_SIZE;
+    int x2 = (model->internalId * 2) % MODEL_TEXTURE_SIZE;
+    int y2 = (model->internalId * 2) / MODEL_TEXTURE_SIZE;
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, mvMatrixImage.textureId);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x4, y4, 4, 1, GL_RGBA, GL_FLOAT, &dynamicRenderStore[model->modelId - 1].backingStore.matrixStore[model->internalId * 4]);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, shadingImage.textureId);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x2, y2, 2, 1, GL_RGBA, GL_FLOAT, &dynamicRenderStore[model->modelId - 1].backingStore.shadingColorSelectionStore[model->internalId * 2]);
+}
+
+void ModelManager::ZeroIndex(unsigned int modelId, unsigned int idx)
+{
+    // I'm not fixing this for now. Reasons:
+    //  -- For now, it only appears in one frame.
+    //  -- This is a performance hit, which so far it doesn't seem that I need. 
 }
 
 // Renders the specified model given by the ID, using the given color.
 void ModelManager::RenderDynamicModel(const glm::mat4& projectionMatrix, Model* model)
 {
-    RenderModelImmediate(projectionMatrix, model);
-
-    // This is too slow, the matrices are too large! We also don't have that much dynamic stuff per-frame.
-    // model->internalId = -1;
-    // dynamicRenderStore[model->modelId - 1].AddModelToStore(model);
+    model->internalId = -1;
+    RenderModel(projectionMatrix, model);
 }
 
 // Finalizes rendering (and actually renders) all models.
@@ -159,156 +159,44 @@ void ModelManager::FinalizeRender(const glm::mat4& projectionMatrix)
     glBindVertexArray(vao);
     glUniformMatrix4fv(projLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
-    FinalizeDynamicRender();
-    FinalizeStaticRender();
-}
-
-void ModelManager::FinalizeDynamicRender()
-{
-    glUniform1i(instanceOffsetLocation, 0);
-
     // Always send dynamic data to the GPU, every frame.
     for (unsigned int i = 0; i < dynamicRenderStore.size(); i++)
     {
-        if (dynamicRenderStore[i].matrixStore.size() != 0)
+        // Remove what didn't render and zero it's data for reuse.
+        for (unsigned int j = 0; j < dynamicRenderStore[i].backingStore.matrixStore.size(); j++)
         {
+            if (dynamicRenderStore[i].freeIds.find(j) == dynamicRenderStore[i].freeIds.end() &&
+                dynamicRenderStore[i].renderedIds.find(j) == dynamicRenderStore[i].renderedIds.end())
+            {
+                // Didn't render, zero it.
+                dynamicRenderStore[i].freeIds.insert(j);
+                ZeroIndex(i, j);
+            }
+        }
+
+        if (dynamicRenderStore[i].backingStore.matrixStore.size() != 0)
+        {
+            // Bind everything; at this point, we've already sent everything to OpenGL.
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, models[i].textureId);
             glUniform1i(textureLocation, 0);
 
-            // Send model data to OpenGL
-            int mvMatrixImageId = dynamicRenderStore[i].mvMatrixImageId;
-            int shadingImageId = dynamicRenderStore[i].shadingColorAndSelectionImageId;
+            int mvMatrixImageId = dynamicRenderStore[i].backingStore.mvMatrixImageId;
+            int shadingImageId = dynamicRenderStore[i].backingStore.shadingColorAndSelectionImageId;
             const ImageTexture& mvMatrixImage = imageManager->GetImage(mvMatrixImageId);
             const ImageTexture& shadingImage = imageManager->GetImage(shadingImageId);
 
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, mvMatrixImage.textureId);
-            std::memcpy(mvMatrixImage.imageData, &(dynamicRenderStore[i].matrixStore)[0], dynamicRenderStore[i].matrixStore.size() * sizeof(glm::vec4));
-            imageManager->ResendToOpenGl(mvMatrixImageId);
             glUniform1i(mvLocation, 1);
 
-            // Send shading color and selection data to OpenGL
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, shadingImage.textureId);
-            std::memcpy(shadingImage.imageData, &(dynamicRenderStore[i].shadingColorSelectionStore)[0], dynamicRenderStore[i].shadingColorSelectionStore.size() * sizeof(glm::vec4));
-            imageManager->ResendToOpenGl(shadingImageId);
             glUniform1i(shadingColorLocation, 2);
 
             // Draw all the models of the specified type.
             glDrawElementsInstanced(GL_TRIANGLES, models[i].vertices.indices.size(), GL_UNSIGNED_INT,
-                (const void*)(models[i].indexOffset * sizeof(GL_UNSIGNED_INT)), dynamicRenderStore[i].GetInstanceCount());
-
-            // Clear the dynamic store.
-            dynamicRenderStore[i].Clear();
-        }
-    }
-}
-
-void ModelManager::FinalizeStaticRender()
-{
-    for (unsigned int i = 0; i < staticRenderStore.size(); i++)
-    {
-        if (staticRenderStore[i].drawSegments.size() != 0)
-        {
-            // Remove items that didn't render.
-            for (auto iter = staticRenderStore[i].drawSegments.begin(); iter != staticRenderStore[i].drawSegments.end(); iter++)
-            {
-                for (int j = iter->x; j < iter->x + iter->y; j++)
-                {
-                    if (staticRenderStore[i].drawnItems.find(j) == staticRenderStore[i].drawnItems.end())
-                    {
-                        if (j == iter->x)
-                        {
-                            // We're at the start, so just push the range up.
-                            iter->x++;
-                            iter->y--;
-                            if (iter->y == 0)
-                            {
-                                // Remove this element
-                                iter = staticRenderStore[i].drawSegments.erase(iter);
-                                j = iter->x - 1;
-                            }
-
-                            continue;
-                        }
-                        else if (j == iter->x + iter->y - 1)
-                        {
-                            // We're at the end, so just pull the range down.
-                            iter->y--;
-                            if (iter->y == 0)
-                            {
-                                // Remove this element
-                                iter = staticRenderStore[i].drawSegments.erase(iter);
-                                j = iter->x - 1;
-                            }
-
-                            continue;
-                        }
-                        else
-                        {
-                            // This is an element inside the iterator. First, find what the new segment will be.
-                            glm::ivec2 nextSegment = glm::ivec2(j + 1, iter->y - (j + 1 - iter->x));
-
-                            // Now cut the current segment short.
-                            iter->y = j - iter->x;
-                            
-                            // Now add the new segment.
-                            iter++; // Item added before the current item.
-                            iter = staticRenderStore[i].drawSegments.insert(iter, nextSegment);
-                            iter--;
-                        }
-                    }
-                }
-            }
-
-            staticRenderStore[i].drawnItems.clear();
-
-            const ImageTexture& mvMatrixImage = imageManager->GetImage(staticRenderStore[i].backingStore.mvMatrixImageId);
-            const ImageTexture& shadingImage = imageManager->GetImage(staticRenderStore[i].backingStore.shadingColorAndSelectionImageId);
-
-            // Add items that were added for rendering.
-            if (true)//staticRenderStore[i].newItemsAdded.size() > 2000)
-            {
-                // Just replace the whole thing.
-                glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, mvMatrixImage.textureId);
-                std::memcpy(mvMatrixImage.imageData, &(staticRenderStore[i].backingStore.matrixStore)[0], staticRenderStore[i].backingStore.matrixStore.size() * sizeof(glm::vec4));
-                imageManager->ResendToOpenGl(staticRenderStore[i].backingStore.mvMatrixImageId);
-
-                glActiveTexture(GL_TEXTURE2);
-                glBindTexture(GL_TEXTURE_2D, shadingImage.textureId);
-                std::memcpy(shadingImage.imageData, &(dynamicRenderStore[i].shadingColorSelectionStore)[0], dynamicRenderStore[i].shadingColorSelectionStore.size() * sizeof(glm::vec4));
-                imageManager->ResendToOpenGl(staticRenderStore[i].backingStore.shadingColorAndSelectionImageId);
-            }
-            else
-            {
-                // Do an itemized replacement. TODO
-            }
-
-            // Bind all textures, but don't copy anything as that's already been done.
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, models[i].textureId);
-            glUniform1i(textureLocation, 0);
-
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, mvMatrixImage.textureId);
-            glUniform1i(mvLocation, 1);
-
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, shadingImage.textureId);
-            glUniform1i(shadingColorLocation, 2);
-
-            // Render the remainder.
-            for (glm::ivec2& renderPair : staticRenderStore[i].drawSegments)
-            {
-                // Offset at a specified instance.
-                glUniform1i(instanceOffsetLocation, renderPair.x);
-
-                // Render all instances listed.
-                glDrawElementsInstanced(GL_TRIANGLES, models[i].vertices.indices.size(), GL_UNSIGNED_INT,
-                    (const void*)(models[i].indexOffset * sizeof(GL_UNSIGNED_INT)), renderPair.y);
-            }
+                (const void*)(models[i].indexOffset * sizeof(GL_UNSIGNED_INT)), dynamicRenderStore[i].backingStore.GetInstanceCount());
         }
     }
 }
@@ -322,7 +210,6 @@ bool ModelManager::InitializeOpenGlResources(ShaderManager& shaderManager)
         return false;
     }
 
-    instanceOffsetLocation = glGetUniformLocation(modelRenderProgram, "instanceOffset");
     textureLocation = glGetUniformLocation(modelRenderProgram, "modelTexture");
     mvLocation = glGetUniformLocation(modelRenderProgram, "mvMatrix");
     projLocation = glGetUniformLocation(modelRenderProgram, "projMatrix");
