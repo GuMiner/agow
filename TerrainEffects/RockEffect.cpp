@@ -115,9 +115,10 @@ void RockEffect::Simulate(const glm::ivec2 subtileId, void * effectData, float e
 
 void RockEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
+    glm::mat4 projectionMatrix = perspectiveMatrix * viewMatrix;
     RockEffectData* rockEffect = (RockEffectData*)effectData;
     for (Model& model : rockEffect->rocks)
     {
-        modelManager->RenderModel(&model);
+        modelManager->RenderModel(projectionMatrix, &model);
     }
 }

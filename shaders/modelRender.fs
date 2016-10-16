@@ -11,7 +11,7 @@ out vec4 color;
 void main(void)
 {
     // Scale each color of the provided object by the given color.
-    const int size = 256;
+    const int size = 512;
     
     int xPos0 = (instanceId * 2) % size;
     int yPos0 = (instanceId * 2) / size;

@@ -97,7 +97,7 @@ void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const gl
 
 void Player::Render(ModelManager* modelManager, const glm::mat4& projectionMatrix)
 {
-    modelManager->RenderModel(&model);
+    modelManager->RenderModelImmediate(projectionMatrix, &model);
 
     selectedWeapon->Render(projectionMatrix);
 }

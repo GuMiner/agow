@@ -4,8 +4,8 @@
 #include "ModelRenderStore.h"
 
 // TODO these should be calculated and elsewhere.
-const int MODELS_PER_RENDER = 16384;
-const int MODEL_TEXTURE_SIZE = 256;
+const int MODELS_PER_RENDER = 65536;
+const int MODEL_TEXTURE_SIZE = 512;
 
 ModelRenderStore::ModelRenderStore(GLuint mvMatrixImageId, GLuint shadingColorAndSelectionImageId)
     : mvMatrixImageId(mvMatrixImageId), shadingColorAndSelectionImageId(shadingColorAndSelectionImageId)
@@ -38,7 +38,7 @@ void ModelRenderStore::AddModelToStore(Model* model)
 
 void ModelRenderStore::InsertInModelStore(unsigned int location, Model* model)
 {
-    if (location == matrixStore.size())
+    if (location == GetInstanceCount())
     {
         AddModelToStore(model);
     }

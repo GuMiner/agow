@@ -14,7 +14,7 @@ uniform mat4 projMatrix;
 // Perform our position and projection transformations, and pass-through the color / texture data
 void main(void)
 {
-    const int size = 256;
+    const int size = 512;
     
     int instance = instanceOffset + gl_InstanceID;
     

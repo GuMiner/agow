@@ -64,7 +64,7 @@ void RockWeapon::Render(const glm::mat4& projectionMatrix)
     for (auto iter = projectiles.cbegin(); iter != projectiles.cend(); iter++)
     {
         // For the rock weapon, the projectiles are simple models.
-        modelManager->RenderModel((Model*)(*iter));
+        modelManager->RenderModel(projectionMatrix, (Model*)(*iter));
     }
 }
 

@@ -96,9 +96,10 @@ void SignEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float el
 
 void SignEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
+    glm::mat4 projectionMatrix = perspectiveMatrix * viewMatrix;
     SignEffectData* rockEffect = (SignEffectData*)effectData;
     for (Model& model : rockEffect->signs)
     {
-        modelManager->RenderModel(&model);
+        modelManager->RenderModel(projectionMatrix, &model);
     }
 }

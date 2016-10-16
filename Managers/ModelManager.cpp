@@ -1,4 +1,5 @@
 #include <limits>
+#include <glm\gtc\matrix_transform.hpp>
 #include "Utils\Logger.h"
 #include "ModelLoader.h"
 #include "ModelManager.h"
@@ -60,12 +61,31 @@ unsigned int ModelManager::GetCurrentModelCount() const
     return nextModelId;
 }
 
-void ModelManager::RenderModel(Model* model)
+void ModelManager::RenderModelImmediate(const glm::mat4& projectionMatrix, Model* model)
+{
+    glm::mat4 mvMatrix = glm::scale(BasicPhysics::GetBodyMatrix(model->body), model->scaleFactor);
+
+    glUseProgram(directModelRenderProgram);
+    glBindVertexArray(vao);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, models[model->modelId - 1].textureId);
+    glUniform1i(directTextureLocation, 0);
+
+    glUniform4f(directShadingColorLocation, model->color.x, model->color.y, model->color.z, model->color.w);
+    glUniformMatrix4fv(directProjLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+    glUniformMatrix4fv(directMvLocation, 1, GL_FALSE, &mvMatrix[0][0]);
+    glUniform1f(directSelectionFactorLocation, model->selected ? 0.40f : 0.0f);
+
+    glDrawElements(GL_TRIANGLES, models[model->modelId - 1].vertices.indices.size(), GL_UNSIGNED_INT, (const void*)(models[model->modelId - 1].indexOffset * sizeof(GL_UNSIGNED_INT)));
+}
+
+void ModelManager::RenderModel(const glm::mat4& projectionMatrix, Model* model)
 {
     int activationState = model->analysisBody == nullptr ? model->body->getActivationState() : model->analysisBody->getActivationState();
     if (activationState == ACTIVE_TAG || activationState == DISABLE_DEACTIVATION || activationState == WANTS_DEACTIVATION)
     {
-        RenderDynamicModel(model);
+        RenderDynamicModel(projectionMatrix, model);
     }
     
     RenderStaticModel(model);
@@ -73,7 +93,7 @@ void ModelManager::RenderModel(Model* model)
 
 void ModelManager::AddNewStaticModel(Model* model)
 {
-    StaticRenderStore& renderStore = staticRenderStore[model->modelId];
+    StaticRenderStore& renderStore = staticRenderStore[model->modelId - 1];
 
     // Find first free spot and set that as the internal ID.
     if (renderStore.drawSegments.size() == 0)
@@ -85,15 +105,18 @@ void ModelManager::AddNewStaticModel(Model* model)
     else
     {
         // Add to the existing list.
-        model->internalId = staticRenderStore[model->modelId].drawSegments.front().y + 1;
+        model->internalId = staticRenderStore[model->modelId - 1].drawSegments.front().y + 1;
         renderStore.drawSegments.front().y++;
 
-        glm::ivec2 nextElement = *(renderStore.drawSegments.begin()++);
-        if (nextElement.x == renderStore.drawSegments.front().y)
+        if (renderStore.drawSegments.size() > 1)
         {
-            // The next segment starts when this segment now ends. Extend that segment and remove the front segment.
-            nextElement.x = 0;
-            renderStore.drawSegments.pop_front();
+            glm::ivec2 nextElement = *(renderStore.drawSegments.begin()++);
+            if (nextElement.x == renderStore.drawSegments.front().y)
+            {
+                // The next segment starts when this segment now ends. Extend that segment and remove the front segment.
+                nextElement.x = 0;
+                renderStore.drawSegments.pop_front();
+            }
         }
     }
 
@@ -104,13 +127,13 @@ void ModelManager::AddNewStaticModel(Model* model)
 
 void ModelManager::RenderStaticModel(Model* model)
 {
-    if (model->internalId == 0 || model)
+    if (model->internalId == -1 || model->frameId != frameId - 1)
     {
         // We consider this a new static model if the internal ID is zero or the frame ID is not from the last frame.
         AddNewStaticModel(model);
     }
 
-    staticRenderStore[model->modelId].drawnItems.insert(model->internalId - 1);
+    staticRenderStore[model->modelId - 1].drawnItems.insert(model->internalId - 1);
 
     // If someone removes a static item from rendering and adds it back in next frame, the frame IDs will differ.
     // Storing the frame ID ensures our ID can be the ID in the static element array and not something more complicated.
@@ -118,10 +141,13 @@ void ModelManager::RenderStaticModel(Model* model)
 }
 
 // Renders the specified model given by the ID, using the given color.
-void ModelManager::RenderDynamicModel(Model* model)
+void ModelManager::RenderDynamicModel(const glm::mat4& projectionMatrix, Model* model)
 {
-    model->internalId = -1;
-    dynamicRenderStore[model->modelId - 1].AddModelToStore(model);
+    RenderModelImmediate(projectionMatrix, model);
+
+    // This is too slow, the matrices are too large! We also don't have that much dynamic stuff per-frame.
+    // model->internalId = -1;
+    // dynamicRenderStore[model->modelId - 1].AddModelToStore(model);
 }
 
 // Finalizes rendering (and actually renders) all models.
@@ -221,7 +247,7 @@ bool ModelManager::InitializeOpenGlResources(ShaderManager& shaderManager)
 {
     if (!shaderManager.CreateShaderProgram("modelRender", &modelRenderProgram))
     {
-        Logger::Log("Error creating the model shader!");
+        Logger::LogError("Could not create the model shader!");
         return false;
     }
 
@@ -230,6 +256,18 @@ bool ModelManager::InitializeOpenGlResources(ShaderManager& shaderManager)
     mvLocation = glGetUniformLocation(modelRenderProgram, "mvMatrix");
     projLocation = glGetUniformLocation(modelRenderProgram, "projMatrix");
     shadingColorLocation = glGetUniformLocation(modelRenderProgram, "shadingColorAndFactor");
+
+    if (!shaderManager.CreateShaderProgram("directModelRender", &directModelRenderProgram))
+    {
+        Logger::LogError("Could not create the direct model shader!");
+        return false;
+    }
+
+    directTextureLocation = glGetUniformLocation(directModelRenderProgram, "modelTexture");
+    directMvLocation = glGetUniformLocation(directModelRenderProgram, "mvMatrix");
+    directProjLocation = glGetUniformLocation(directModelRenderProgram, "projMatrix");
+    directShadingColorLocation = glGetUniformLocation(directModelRenderProgram, "shadingColor");
+    directSelectionFactorLocation = glGetUniformLocation(directModelRenderProgram, "selectionFactor");
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);

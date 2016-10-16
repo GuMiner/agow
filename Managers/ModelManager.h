@@ -16,8 +16,8 @@
 #include "ModelRenderStore.h"
 
 // TODO these should be calculated and elsewhere.
-const int MODELS_PER_RENDER = 16384;
-const int MODEL_TEXTURE_SIZE = 256;
+const int MODELS_PER_RENDER = 65536;
+const int MODEL_TEXTURE_SIZE = 512;
 
 struct StaticRenderStore
 {
@@ -60,6 +60,13 @@ class ModelManager
     GLuint mvLocation;
     GLuint projLocation;
 
+    GLuint directModelRenderProgram;
+    GLuint directTextureLocation;
+    GLuint directShadingColorLocation;
+    GLuint directSelectionFactorLocation;
+    GLuint directMvLocation;
+    GLuint directProjLocation;
+
     // Model data
     unsigned int nextModelId;
     std::vector<TextureModel> models;
@@ -89,11 +96,14 @@ public:
 
     unsigned int GetCurrentModelCount() const;
 
+    // Immediately renders the specified model. Recommended for small numbers of items to avoid updating textures for each model.
+    void RenderModelImmediate(const glm::mat4& projectionMatrix, Model* model);
+
     // Prepares for rendering the specified model given by the ID. Model will be placed in the static or dynamic list based on the physical state of the analysis body.
-    void RenderModel(Model* model);
+    void RenderModel(const glm::mat4& projectionMatrix, Model* model);
 
     // Forces rendering of the model in the dynamic list, which will apply any modifications done to the model.
-    void RenderDynamicModel(Model* model);
+    void RenderDynamicModel(const glm::mat4& projectionMatrix, Model* model);
 
     // Finalizes rendering (and actually renders) all models.
     void FinalizeRender(const glm::mat4& projectionMatrix);

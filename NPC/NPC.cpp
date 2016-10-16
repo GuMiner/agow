@@ -133,11 +133,11 @@ void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const glm
 {
     if (selectionChange)
     {
-        modelManager->RenderDynamicModel(&model);
+        modelManager->RenderDynamicModel(projectionMatrix, &model);
     }
     else
     {
-        modelManager->RenderModel(&model);
+        modelManager->RenderModel(projectionMatrix, &model);
     }
 
     fontManager->RenderSentence(nameString.sentenceId, projectionMatrix, nameString.posRotMatrix);

@@ -222,7 +222,7 @@ void CityEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, co
     {
         for (Model& model : building.segments)
         {
-            modelManager->RenderModel(&model);
+            modelManager->RenderModel(projectionMatrix, &model);
         }
     }
 }
