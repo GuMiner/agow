@@ -160,6 +160,7 @@ void ModelManager::FinalizeRender(const glm::mat4& projectionMatrix)
     glUniformMatrix4fv(projLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
     FinalizeDynamicRender();
+    FinalizeStaticRender();
 }
 
 void ModelManager::FinalizeDynamicRender()
@@ -211,9 +212,79 @@ void ModelManager::FinalizeStaticRender()
         if (staticRenderStore[i].drawSegments.size() != 0)
         {
             // Remove items that didn't render.
+            for (auto iter = staticRenderStore[i].drawSegments.begin(); iter != staticRenderStore[i].drawSegments.end(); iter++)
+            {
+                for (int j = iter->x; j < iter->x + iter->y; j++)
+                {
+                    if (staticRenderStore[i].drawnItems.find(j) == staticRenderStore[i].drawnItems.end())
+                    {
+                        if (j == iter->x)
+                        {
+                            // We're at the start, so just push the range up.
+                            iter->x++;
+                            iter->y--;
+                            if (iter->y == 0)
+                            {
+                                // Remove this element
+                                iter = staticRenderStore[i].drawSegments.erase(iter);
+                                j = iter->x - 1;
+                            }
+
+                            continue;
+                        }
+                        else if (j == iter->x + iter->y - 1)
+                        {
+                            // We're at the end, so just pull the range down.
+                            iter->y--;
+                            if (iter->y == 0)
+                            {
+                                // Remove this element
+                                iter = staticRenderStore[i].drawSegments.erase(iter);
+                                j = iter->x - 1;
+                            }
+
+                            continue;
+                        }
+                        else
+                        {
+                            // This is an element inside the iterator. First, find what the new segment will be.
+                            glm::ivec2 nextSegment = glm::ivec2(j + 1, iter->y - (j + 1 - iter->x));
+
+                            // Now cut the current segment short.
+                            iter->y = j - iter->x;
+                            
+                            // Now add the new segment.
+                            iter++; // Item added before the current item.
+                            iter = staticRenderStore[i].drawSegments.insert(iter, nextSegment);
+                            iter--;
+                        }
+                    }
+                }
+            }
+
             staticRenderStore[i].drawnItems.clear();
 
+            const ImageTexture& mvMatrixImage = imageManager->GetImage(staticRenderStore[i].backingStore.mvMatrixImageId);
+            const ImageTexture& shadingImage = imageManager->GetImage(staticRenderStore[i].backingStore.shadingColorAndSelectionImageId);
+
             // Add items that were added for rendering.
+            if (true)//staticRenderStore[i].newItemsAdded.size() > 2000)
+            {
+                // Just replace the whole thing.
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, mvMatrixImage.textureId);
+                std::memcpy(mvMatrixImage.imageData, &(staticRenderStore[i].backingStore.matrixStore)[0], staticRenderStore[i].backingStore.matrixStore.size() * sizeof(glm::vec4));
+                imageManager->ResendToOpenGl(staticRenderStore[i].backingStore.mvMatrixImageId);
+
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_2D, shadingImage.textureId);
+                std::memcpy(shadingImage.imageData, &(dynamicRenderStore[i].shadingColorSelectionStore)[0], dynamicRenderStore[i].shadingColorSelectionStore.size() * sizeof(glm::vec4));
+                imageManager->ResendToOpenGl(staticRenderStore[i].backingStore.shadingColorAndSelectionImageId);
+            }
+            else
+            {
+                // Do an itemized replacement. TODO
+            }
 
             // Bind all textures, but don't copy anything as that's already been done.
             glActiveTexture(GL_TEXTURE0);
@@ -221,11 +292,11 @@ void ModelManager::FinalizeStaticRender()
             glUniform1i(textureLocation, 0);
 
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, imageManager->GetImage(staticRenderStore[i].backingStore.mvMatrixImageId).textureId);
+            glBindTexture(GL_TEXTURE_2D, mvMatrixImage.textureId);
             glUniform1i(mvLocation, 1);
 
             glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, imageManager->GetImage(staticRenderStore[i].backingStore.shadingColorAndSelectionImageId).textureId);
+            glBindTexture(GL_TEXTURE_2D, shadingImage.textureId);
             glUniform1i(shadingColorLocation, 2);
 
             // Render the remainder.
