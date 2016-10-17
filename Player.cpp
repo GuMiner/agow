@@ -195,8 +195,8 @@ void Player::Update(float frameTime, int terrainTypeOn)
     if (Input::IsKeyTyped(GLFW_KEY_F))
     {
         // Fire a cube for collision tests.
-        glm::quat orientation = GetOrientation();
-        glm::vec3 pos = GetPosition() + 5.0f * PhysicsOps::ForwardsVector(orientation);
-        selectedWeapon->Fire(pos, orientation);
+        glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(orientation);
+        glm::vec3 pos = GetPosition() + 5.0f * forwardsVector;
+        selectedWeapon->Fire(pos, forwardsVector);
     }
 }

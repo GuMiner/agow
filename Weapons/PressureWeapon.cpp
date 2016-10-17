@@ -17,7 +17,7 @@ float PressureWeapon::GetRequiredAmmoToFire()
     return std::pow(scale, 3.0f);
 }
 
-void PressureWeapon::FireInternal(glm::vec3 fireOrigin, glm::quat fireDirection)
+void PressureWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
 {
     // TODO add SFX and interact with everything else. Also manage projectiles list.
 }

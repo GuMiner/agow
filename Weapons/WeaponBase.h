@@ -26,17 +26,17 @@ protected:
     bool fireAttempt;
     bool CanFire();
     virtual float GetRequiredAmmoToFire() = 0;
-    virtual void FireInternal(glm::vec3 fireOrigin, glm::quat fireDirection) = 0;
+    virtual void FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection) = 0;
 
     std::deque<void*> projectiles;
 
 public:
     WeaponBase(BasicPhysics* physics, std::string name, float ammoLimit, bool continualFire, float fireRateInSeconds, float cooldownInSeconds);
-    void Update(float elapsedTime);
+    virtual void Update(float elapsedTime);
     
     // Reloads, returning the amount of ammo not loaded.
     float Reload(float newAmmo);
-    void Fire(glm::vec3 fireOrigin, glm::quat fireDirection);
+    void Fire(glm::vec3 fireOrigin, glm::vec3 fireDirection);
     
     virtual void Render(const glm::mat4& projectionMatrix) = 0;
 };

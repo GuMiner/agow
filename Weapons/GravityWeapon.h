@@ -9,7 +9,7 @@ class GravityWeapon : public WeaponBase
 {
 protected:
     virtual float GetRequiredAmmoToFire() override;
-    virtual void FireInternal(glm::vec3 fireOrigin, glm::quat fireDirection) override;
+    virtual void FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection) override;
 
 public:
     GravityWeapon::GravityWeapon(BasicPhysics* physics);

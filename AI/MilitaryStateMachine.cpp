@@ -1,7 +1,8 @@
+#include "Utils\Logger.h"
 #include "MilitaryStateMachine.h"
 
-MilitaryStateMachine::MilitaryStateMachine()
-    : state(State::Survey), timeInState(0.0f)
+MilitaryStateMachine::MilitaryStateMachine(const std::string parentNpcName)
+    : parentNpcName(parentNpcName), state(State::Survey), timeInState(0.0f)
 {
 }
 
@@ -90,6 +91,12 @@ void MilitaryStateMachine::Update(float elapsedTime)
         if (isTargettedAlly() && !hasReachedAlly())
         {
             UpdateState(State::Follow);
+            break;
+        }
+
+        if (!isNearbyEnemy())
+        {
+            UpdateState(State::Survey);
             break;
         }
 
@@ -201,6 +208,7 @@ MilitaryStateMachine::State MilitaryStateMachine::GetState()
 
 void MilitaryStateMachine::UpdateState(State newState)
 {
+    Logger::Log(parentNpcName, " switching to state ", newState, " from state ", state);
     hasNewState = true;
     state = newState;
 }

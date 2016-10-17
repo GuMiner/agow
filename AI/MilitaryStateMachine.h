@@ -7,19 +7,20 @@ class MilitaryStateMachine
 public:
     enum State
     {
-        FireAtNearest,
-        FireAtTargetted,
-        TakeCover,
-        Flee,
-        ThrowExplosive,
+        FireAtNearest = 0,
+        FireAtTargetted = 1,
+        TakeCover = 2,
+        Flee = 3,
+        ThrowExplosive = 4,
         // TravelToFlank, // Future work.
         // TravelToProtect,
-        Follow,
-        Survey,
-        CallForBackup
+        Follow = 7,
+        Survey = 8,
+        CallForBackup = 9
     };
 
 private:
+    std::string parentNpcName;
     State state;
     float timeInState;
 
@@ -41,7 +42,7 @@ private:
     void UpdateState(State newState);
 
 public:
-    MilitaryStateMachine();
+    MilitaryStateMachine(const std::string parentNpcName);
 
     void SetCallbackFunctions(std::function<bool()> hasMovedToTarget, std::function<bool()> hasReachedAlly,
         std::function<bool()> hasThrownExplosive, std::function<bool()> hasCalledForBackup,

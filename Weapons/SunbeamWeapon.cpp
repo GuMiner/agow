@@ -14,7 +14,7 @@ float SunbeamWeapon::GetRequiredAmmoToFire()
     return 0.0f;
 }
 
-void SunbeamWeapon::FireInternal(glm::vec3 fireOrigin, glm::quat fireDirection)
+void SunbeamWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
 {
     // TODO add SFX and interact with everything else. Also manage projectiles list.
 }

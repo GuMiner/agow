@@ -138,16 +138,10 @@ void ModelManager::UpdateModelInRenderStore(Model* model)
 
 void ModelManager::ZeroIndex(unsigned int modelId, unsigned int idx)
 {
+    // TODO reconsider.
     // I'm not fixing this for now. Reasons:
     //  -- For now, it only appears in one frame.
     //  -- This is a performance hit, which so far it doesn't seem that I need. 
-}
-
-// Renders the specified model given by the ID, using the given color.
-void ModelManager::RenderDynamicModel(const glm::mat4& projectionMatrix, Model* model)
-{
-    model->internalId = -1;
-    RenderModel(projectionMatrix, model);
 }
 
 // Finalizes rendering (and actually renders) all models.

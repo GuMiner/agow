@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm\gtc\quaternion.hpp>
+#include "Weapons\PlasmaWeapon.h"
 #include "Utils\Logger.h"
 #include "Map.h"
 #include "agow.h"
@@ -27,9 +28,8 @@ PhysicsOps agow::PhysicsOp;
 agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       physics(), shaderManager(), imageManager(), modelManager(&imageManager),
-      regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", 1000, glm::ivec2(5, 17), glm::ivec2(40, 52), 15), // All pulled from the Contour tiler, TODO move to config, make distance ~10
-      scenery(), npcManager(),
-      player(&modelManager, &physics) // TODO configurable
+      regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", 1000, glm::ivec2(5, 17), glm::ivec2(40, 52), 15), // All pulled from the Contour tiler, TODO configurable, make distance ~10
+      scenery(), player(&modelManager, &physics), npcManager(&player, &physics)
 {
 }
 
@@ -191,6 +191,12 @@ Constants::Status agow::LoadAssets()
 
     Logger::Log("Key NPC loading...");
     npcManager.LoadGraphics(&fontManager);
+
+    Logger::Log("Custom weapons loading...");
+    if (!PlasmaWeapon::LoadGraphics(&shaderManager))
+    {
+        return Constants::Status::BAD_SHADERS;
+    }
 
     Logger::Log("Building generator loading...");
     if (!BuildingGenerator::LoadBuilder("AI/lowDensityBuildingTree.txt", "AI/highDensityBuildingTree.txt"))
@@ -444,10 +450,16 @@ Constants::Status agow::Run()
         }
     }
 
+    UnloadGraphics();
     glfwDestroyWindow(window);
     window = nullptr;
 
     return Constants::Status::OK;
+}
+
+void agow::UnloadGraphics()
+{
+    PlasmaWeapon::UnloadGraphics();
 }
 
 void agow::Deinitialize()

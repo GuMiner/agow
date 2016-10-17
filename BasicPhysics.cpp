@@ -40,6 +40,8 @@ void BasicPhysics::LoadBasicCollisionShapes()
 
     CollisionShapes[CShape::SMALL_CUBE] = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
     
+    CollisionShapes[CShape::WEAPON_PLASMA] = new btSphereShape(0.50f);
+
     const int playerPointCount = 4;
     glm::vec3* playerPoints = new glm::vec3[playerPointCount];
     playerPoints[0] = glm::vec3(0.0f, 0.0f, 0.7825f);

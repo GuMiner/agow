@@ -162,6 +162,7 @@
     <ClInclude Include="version.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Weapons\GravityWeapon.h" />
+    <ClInclude Include="Weapons\PlasmaWeapon.h" />
     <ClInclude Include="Weapons\PressureWeapon.h" />
     <ClInclude Include="Weapons\RockWeapon.h" />
     <ClInclude Include="Weapons\SunbeamWeapon.h" />
@@ -226,6 +227,7 @@
     <ClCompile Include="agow.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Weapons\GravityWeapon.cpp" />
+    <ClCompile Include="Weapons\PlasmaWeapon.cpp" />
     <ClCompile Include="Weapons\PressureWeapon.cpp" />
     <ClCompile Include="Weapons\RockWeapon.cpp" />
     <ClCompile Include="Weapons\SunbeamWeapon.cpp" />

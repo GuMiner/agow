@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "Utils\Logger.h"
 #include "WeaponBase.h"
 
 WeaponBase::WeaponBase(BasicPhysics* physics, std::string name, float ammoLimit, bool continualFire, float fireRateInSeconds, float cooldownInSeconds)
@@ -37,6 +38,7 @@ bool WeaponBase::CanFire()
     // We cannot fire if we are low on ammo.
     if (storedAmmo < GetRequiredAmmoToFire())
     {
+        Logger::Log("Out of ammo for weapon ", name);
         return false;
     }
 
@@ -55,7 +57,7 @@ bool WeaponBase::CanFire()
     return true;
 }
 
-void WeaponBase::Fire(glm::vec3 fireOrigin, glm::quat fireDirection)
+void WeaponBase::Fire(glm::vec3 fireOrigin, glm::vec3 fireDirection)
 {
     fireAttempt = true;
     if (CanFire())

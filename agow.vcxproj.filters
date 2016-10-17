@@ -163,6 +163,9 @@
     <ClCompile Include="Managers\ModelRenderStore.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
+    <ClCompile Include="Weapons\PlasmaWeapon.cpp">
+      <Filter>Weapons</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -351,6 +354,9 @@
     </ClInclude>
     <ClInclude Include="Managers\ModelRenderStore.h">
       <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapons\PlasmaWeapon.h">
+      <Filter>Weapons</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

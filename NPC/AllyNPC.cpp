@@ -7,13 +7,14 @@
 AllyNPC::AllyNPC()
     : NPC(NameGenerator::GetRandomName(), "",
         (NPC::Shape)glm::linearRand(0, (int)NPC::Shape::COUNT - 1),
-        ColorGenerator::GetAllyColor(), 5) // TODO configurable
+        ColorGenerator::GetAllyColor(), 5), // TODO configurable
+    state(GetName())
 {
 }
 
 std::string AllyNPC::GetDescription() const
 {
-    return std::string("Ally is currently ") + state.GetStateDescription();
+    return name + std::string(" is ") + state.GetStateDescription();
 }
 
 void AllyNPC::Update(float gameTime, float elapsedTime)

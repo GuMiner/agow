@@ -92,9 +92,6 @@ public:
     // Prepares for rendering the specified model given by the ID. Model will be placed in the static or dynamic list based on the physical state of the analysis body.
     void RenderModel(const glm::mat4& projectionMatrix, Model* model);
 
-    // Forces rendering of the model in the dynamic list, which will apply any modifications done to the model.
-    void RenderDynamicModel(const glm::mat4& projectionMatrix, Model* model);
-
     // Finalizes rendering (and actually renders) all models.
     void FinalizeRender(const glm::mat4& projectionMatrix);
 

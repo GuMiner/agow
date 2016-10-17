@@ -53,7 +53,7 @@ bool NPC::LoadNpcModels(ModelManager* modelManager)
 }
 
 NPC::NPC(std::string name, std::string description, Shape shape, glm::vec4 color, int startingHealth)
-    : name(name), description(description), shape(shape), model(), health(startingHealth),
+    : name(name), description(description), shape(shape), model(), health(startingHealth), startingHealth(startingHealth),
       showInteractionKeys(false), nearFieldCollisionLastFrame(false), selectionChange(false)
 {
     model.color = color;
@@ -90,18 +90,40 @@ void NPC::LoadNpcPhysics(BasicPhysics physics, glm::vec3 startingPosition, float
 
 bool NPC::Converse(DialogPane* dialogPane)
 {
-    // TODO -- this should integrate with the story graph (to setup next).
+    // This model is selected.
+    if (showInteractionKeys)
+    {
+        // TODO -- this should integrate with the story graph (to setup next).
+        dialogPane->QueueText(StyleText(GetDescription(), StyleText::Effect::NORMAL));
+        return true;
+    }
+    
     return false;
 }
 
-std::string  NPC::GetName() const
+std::string NPC::GetName() const
 {
     return name;
+}
+
+glm::vec3 NPC::GetPosition() const
+{
+    return BasicPhysics::GetBodyPosition(model.body);
 }
 
 std::string NPC::GetDescription() const
 {
     return description;
+}
+
+bool NPC::CanKill() const
+{
+    return health != INVULNERABLE;
+}
+
+bool NPC::IsAlive() const
+{
+    return !CanKill() || health > 0;
 }
 
 void NPC::Update(float gameTime, float elapsedTime)
@@ -111,7 +133,7 @@ void NPC::Update(float gameTime, float elapsedTime)
         BasicPhysics::GetBodyMatrix(model.body) *
         glm::scale(glm::mat4(), glm::vec3(0.20f)) *
         glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    interactionString.posRotMatrix = glm::translate(nameString.posRotMatrix, glm::vec3(0.0f, 0.0f, -0.10f));
+    interactionString.posRotMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -0.20f)) * nameString.posRotMatrix;
 
     // This works as physics updates are last. TODO make this more deterministic.
     if (nearFieldCollisionLastFrame)
@@ -133,13 +155,10 @@ void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const glm
 {
     if (selectionChange)
     {
-        modelManager->RenderDynamicModel(projectionMatrix, &model);
+        model.body->setActivationState(ACTIVE_TAG);
     }
-    else
-    {
-        modelManager->RenderModel(projectionMatrix, &model);
-    }
-
+    
+    modelManager->RenderModel(projectionMatrix, &model);
     fontManager->RenderSentence(nameString.sentenceId, projectionMatrix, nameString.posRotMatrix);
 
     if (showInteractionKeys)

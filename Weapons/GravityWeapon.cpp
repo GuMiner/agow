@@ -14,7 +14,7 @@ float GravityWeapon::GetRequiredAmmoToFire()
     return 0.0f;
 }
 
-void GravityWeapon::FireInternal(glm::vec3 fireOrigin, glm::quat fireDirection)
+void GravityWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
 {
     // TODO add SFX and interact with everything else. Also manage projectiles list.
 }

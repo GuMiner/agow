@@ -34,6 +34,7 @@ protected:
     Shape shape;
 
     int health;
+    int startingHealth;
     bool showInteractionKeys;
 
     bool nearFieldCollisionLastFrame;
@@ -43,11 +44,7 @@ protected:
     bool selectionChange;
     Model model;
 
-    bool CanKill()
-    {
-        return health != INVULNERABLE;
-    }
-
+    bool CanKill() const;
     static BasicPhysics::CShape GetPhysicalShape(Shape shape);
 
 public:
@@ -60,10 +57,12 @@ public:
     
     bool Converse(DialogPane* dialogPane);
     std::string GetName() const;
+    glm::vec3 GetPosition() const;
     virtual std::string GetDescription() const;
+    bool IsAlive() const;
 
     virtual void Update(float gameTime, float elapsedTime);
-    void Render(FontManager* fontManager, ModelManager* modelManager, const glm::mat4& projectionMatrix);
+    virtual void Render(FontManager* fontManager, ModelManager* modelManager, const glm::mat4& projectionMatrix);
 
     void UnloadNpcPhysics(BasicPhysics physics);
     virtual ~NPC();

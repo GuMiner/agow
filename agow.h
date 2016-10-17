@@ -89,6 +89,9 @@ public:
     // Runs the game loop.
     Constants::Status Run();
 
+    // Unloads any OpenGL assets that were statically loaded.
+    void UnloadGraphics();
+
     // Deinitializes data that must be freed before program exit.
     void Deinitialize();
 };

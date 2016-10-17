@@ -33,6 +33,7 @@ public:
         ROCK_SPHERE_TWO,
         ROCK_SPHERE_THREE,
         ROCK_TETRAHEDRON,
+        WEAPON_PLASMA,
         SIGN_STOP,
         PLAYER
     };

@@ -6,6 +6,7 @@
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>
 #include <glm\vec3.hpp>
+#include <glm\mat4x4.hpp>
 #include "Data\TextDataTypes.h"
 #include "Utils\Vertex.h"
 #include "ShaderManager.h"

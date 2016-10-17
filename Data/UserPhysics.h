@@ -11,7 +11,8 @@ public:
         PLAYER = 1,
         NPC_CLOSEUP = 2,
         BUILDING_COVER = 3,
-        ROCK = 4
+        ROCK = 4,
+        PLASMA_BALL = 5
     };
 
     // Returns true if source collides with target. If so, target's collision callback should be called.
@@ -39,6 +40,8 @@ public:
             return true;
         case ROCK:
             return false; // TODO implement rock/NPC collisions.
+        case PLASMA_BALL:
+            return false; // TODO implement plasma ball / NPC collisions.
         default:
             return false;
         }
