@@ -130,6 +130,7 @@
     <ClInclude Include="Managers\ShaderManager.h" />
     <ClInclude Include="Managers\TerrainEffectManager.h" />
     <ClInclude Include="Managers\TerrainManager.h" />
+    <ClInclude Include="Managers\VehicleManager.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Math\PhysicsOps.h" />
     <ClInclude Include="NPC\AllyNPC.h" />
@@ -159,6 +160,11 @@
     <ClInclude Include="Utils\TypedCallback.h" />
     <ClInclude Include="Utils\Vertex.h" />
     <ClInclude Include="agow.h" />
+    <ClInclude Include="Vehicles\Car.h" />
+    <ClInclude Include="Vehicles\Motorcycle.h" />
+    <ClInclude Include="Vehicles\Tank.h" />
+    <ClInclude Include="Vehicles\Truck.h" />
+    <ClInclude Include="Vehicles\Vehicle.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Weapons\GravityWeapon.h" />
@@ -196,6 +202,7 @@
     <ClCompile Include="Managers\ShaderManager.cpp" />
     <ClCompile Include="Managers\TerrainEffectManager.cpp" />
     <ClCompile Include="Managers\TerrainManager.cpp" />
+    <ClCompile Include="Managers\VehicleManager.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Math\PhysicsOps.cpp" />
     <ClCompile Include="NPC\AllyNPC.cpp" />
@@ -226,6 +233,11 @@
     <ClCompile Include="Utils\Vertex.cpp" />
     <ClCompile Include="agow.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Vehicles\Car.cpp" />
+    <ClCompile Include="Vehicles\Motorcycle.cpp" />
+    <ClCompile Include="Vehicles\Tank.cpp" />
+    <ClCompile Include="Vehicles\Truck.cpp" />
+    <ClCompile Include="Vehicles\Vehicle.cpp" />
     <ClCompile Include="Weapons\GravityWeapon.cpp" />
     <ClCompile Include="Weapons\PlasmaWeapon.cpp" />
     <ClCompile Include="Weapons\PressureWeapon.cpp" />

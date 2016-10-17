@@ -86,39 +86,34 @@ float normalNoise(vec2 v)
 // Creates pseudorandom stars.
 void main(void)
 {
-    
     // Map our cube to a sphere.
     vec3 spherePos = normalize(uvwPos);
     
-    vec3 realColor = spherePos / 0.5f + vec3(0.5f);
-    color = vec4(realColor, 1.0f);
     float phi = atan(spherePos.y, spherePos.x) + 3.14159f; // 0 - 2pi
     float theta = acos(spherePos.z); // 0 to pi.
     
-    // These factors control the star size and shape.
-	ivec2 uvwId = ivec2(phi * 140, theta * 220);
-	bool isStar = 
-        uvwId.x % 3 == 0 && 
-        uvwId.y % 5 == 0 && 
-        normalNoise(vec2(uvwId.x, uvwId.y) + vec2(uvwId.x * uvwId.y, -uvwId.x * uvwId.y)) > 1.55f;
-	
-	// Generate a 'random' star color.
-	vec3 starColor = 
-		vec3(0.75f + 0.25f * normalNoise(vec2(uvwId.x + 7.0f, uvwId.y)),
-			 0.75f + 0.25f * normalNoise(vec2(uvwId.x + 5.0f, uvwId.y)),
-			 0.75f + 0.25f * normalNoise(vec2(uvwId.x + 3.0f, uvwId.y)));
-			 
-	vec3 backgroundColor = vec3(0.078f, 0.047f, 0.188f);
-	
-	if (isStar)
-	{
-		color = vec4(starColor, 1.0f);
-		
-		// Apply the flavor color to all the stars found.
-		color = color * vec4(flavorColor.xyz, 1.0f) * flavorColor.w;
-	}
+	ivec2 uvwId = ivec2((phi + 2) * 16, (theta + 3) * 22);
+    float noise = snoise(vec2((phi + 2) * 16, (theta + 3) * 22));
+    bool isStar = noise > 0.85 ? true : false;
+    
+    // Generate a 'random' star color.
+    vec3 starColor = 
+        vec3(0.75f) + 0.25f * vec3(
+            normalNoise(vec2(uvwId.x + 7.0f, uvwId.y)),
+            normalNoise(vec2(uvwId.x + 5.0f, uvwId.y)),
+            normalNoise(vec2(uvwId.x + 3.0f, uvwId.y)));
+            
+    vec3 backgroundColor = vec3(0.078f, 0.047f, 0.188f);
+    
+    if (isStar)
+    {
+        color = vec4(starColor, 1.0f);
+        
+        // Apply the flavor color to all the stars found.
+        color = color * vec4(flavorColor.xyz, 1.0f) * flavorColor.w;
+    }
     else
-	{
-		color = vec4(backgroundColor, 1.0f);
-	}
+    {
+        color = vec4(backgroundColor, 1.0f);
+    }
 }

@@ -166,6 +166,24 @@
     <ClCompile Include="Weapons\PlasmaWeapon.cpp">
       <Filter>Weapons</Filter>
     </ClCompile>
+    <ClCompile Include="Vehicles\Car.cpp">
+      <Filter>Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="Vehicles\Motorcycle.cpp">
+      <Filter>Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="Vehicles\Tank.cpp">
+      <Filter>Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="Vehicles\Truck.cpp">
+      <Filter>Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="Vehicles\Vehicle.cpp">
+      <Filter>Vehicles</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers\VehicleManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -358,6 +376,24 @@
     <ClInclude Include="Weapons\PlasmaWeapon.h">
       <Filter>Weapons</Filter>
     </ClInclude>
+    <ClInclude Include="Vehicles\Car.h">
+      <Filter>Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="Vehicles\Motorcycle.h">
+      <Filter>Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="Vehicles\Tank.h">
+      <Filter>Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="Vehicles\Truck.h">
+      <Filter>Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="Vehicles\Vehicle.h">
+      <Filter>Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers\VehicleManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="AI">
@@ -392,6 +428,9 @@
     </Filter>
     <Filter Include="NPC">
       <UniqueIdentifier>{89fe5591-ec64-4977-9e38-c223de96e8ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vehicles">
+      <UniqueIdentifier>{5a33eb81-a62c-4a38-8dc4-8781d11a24ac}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
