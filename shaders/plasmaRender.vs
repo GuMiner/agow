@@ -1,5 +1,7 @@
 #version 400
 
+uniform float frameTime;
+
 // TODO this is rather inefficent.
 uniform vec3 position;
 uniform mat4 projMatrix;
@@ -739,6 +741,6 @@ vec3(0.0000000e+0, -3.0616170e-17, -0.50000000));
     
     int index = indices[gl_VertexID];
     vec3 vertex = vertices[index - 1];
-    gl_Position = projMatrix * vec4(position + vertex, 1.0f);
+    gl_Position = projMatrix * vec4(position + vertex * (0.90f + (cos(frameTime) + 1.0f) * 0.10f), 1.0f);
     uvwPos = vertex;
 }

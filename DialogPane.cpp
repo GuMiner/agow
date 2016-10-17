@@ -1,6 +1,7 @@
 #include <sstream>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Math\PhysicsOps.h"
+#include <sstream>
 #include "Utils\Logger.h"
 #include "DialogPane.h"
 
@@ -19,6 +20,11 @@ bool DialogPane::LoadBasics(FontManager* fontManager, ShaderManager* shaderManag
         Logger::LogError("Bad dialog shader!");
         return false;
     }
+
+    // TODO configurable and not duplicated below.
+    queuedPagesText.sentenceId = fontManager->CreateNewSentence();
+    queuedPagesText.posRotMatrix = glm::translate(glm::mat4(), glm::vec3(0.529f, 0.25f, -1.0f)) * GetEffectScale(StyleText::Effect::NORMAL);
+    queuedPagesText.color = glm::vec3(0.90f, 1.0f, 0.90f);
 
     glGenVertexArrays(1, &dialogVao);
     glBindVertexArray(dialogVao);
@@ -48,6 +54,7 @@ void DialogPane::QueueText(const std::vector<StyleText>& newText)
     }
 
     isVisible = true;
+    UpdateQueuedPages();
 }
 
 // TODO improve so that it trims on word boundaries.
@@ -63,10 +70,8 @@ void DialogPane::TrimToFit(StyleText text, std::vector<StyleText>* textLines)
         {
             if (laggingSentence.str().length() != 0)
             {
-                StyleText styleText;
-                styleText.text = laggingSentence.str();
+                StyleText styleText = StyleText(text.speakerName, laggingSentence.str(), text.effect);
                 styleText.color = text.color;
-                styleText.effect = text.effect;
                 textLines->push_back(styleText);
             }
             else
@@ -88,10 +93,8 @@ void DialogPane::TrimToFit(StyleText text, std::vector<StyleText>* textLines)
     if (laggingSentence.str().length() != 0)
     {
         // Skip enormous characters.
-        StyleText styleText;
-        styleText.text = laggingSentence.str();
+        StyleText styleText = StyleText(text.speakerName, laggingSentence.str(), text.effect);
         styleText.color = text.color;
-        styleText.effect = text.effect;
         textLines->push_back(styleText);
     }
 
@@ -106,9 +109,28 @@ glm::mat4 DialogPane::GetEffectScale(StyleText::Effect effect)
         return glm::scale(glm::mat4(), glm::vec3(0.016f));
     case StyleText::ITALICS:
         return glm::scale(glm::mat4(), glm::vec3(0.018f)) * PhysicsOps::Shear(0.0f, 1.0f);
-    default:
     case StyleText::NORMAL:
+    default:
         return glm::scale(glm::mat4(), glm::vec3(0.020f));
+    }
+}
+
+void DialogPane::UpdateQueuedPages()
+{
+    // After all that, update the queued pages display.
+    if (isVisible)
+    {
+        std::stringstream queuedPages;
+        if (dialogs.size() == 0)
+        {
+            queuedPages << "@";
+        }
+        else
+        {
+            queuedPages << dialogs.size();
+        }
+
+        fontManager->UpdateSentence(queuedPagesText.sentenceId, queuedPages.str(), DialogPane::PixelHeight, queuedPagesText.color);
     }
 }
 
@@ -120,6 +142,9 @@ void DialogPane::Advance()
     {
         fontManager->DeleteSentence(dialogText.front().sentenceId);
         dialogText.pop_front();
+
+        fontManager->DeleteSentence(speakerNames.front().sentenceId);
+        speakerNames.pop_front();
     }
 
     // Next, if there is no text left load in new text.
@@ -138,9 +163,11 @@ void DialogPane::Advance()
             TrimToFit(styleText[i], &sublines);
             for (unsigned int j = 0; j < sublines.size(); j++)
             {
+                float yMin = 0.30f;
+
                 // Create a proper sentence in the position for display, given that MaxLines are displayed at a time and we page in blocks.
-                float yPos = ((float)((DialogPane::MaxLines - 1) - (j % DialogPane::MaxLines)) / (float)(DialogPane::MaxLines - 1)) * 0.12f + 0.30f;
-                float xPos = 0.24f;
+                float yPos = ((float)((DialogPane::MaxLines - 1) - (j % DialogPane::MaxLines)) / (float)(DialogPane::MaxLines - 1)) * 0.12f + yMin;
+                float xPos = 0.15f;
                 RenderableSentence sentence;
                 sentence.sentenceId = fontManager->CreateNewSentence();
                 sentence.color = sublines[j].color;
@@ -149,7 +176,14 @@ void DialogPane::Advance()
                 fontManager->UpdateSentence(sentence.sentenceId, sublines[j].text, DialogPane::PixelHeight, sentence.color);
                 dialogText.push_back(sentence);
 
-                Logger::Log("Adding phrase \"", sublines[j].text, "\", line ", j, ", [", xPos, ",", yPos, "].");
+                RenderableSentence speakerSentence;
+                speakerSentence.sentenceId = fontManager->CreateNewSentence();
+                speakerSentence.color = glm::vec3(1.0f);
+                speakerSentence.posRotMatrix = glm::translate(glm::mat4(), glm::vec3(xPos, 0.25f, -1.0f)) * GetEffectScale(StyleText::Effect::NORMAL);
+                fontManager->UpdateSentence(speakerSentence.sentenceId, sublines[j].speakerName, DialogPane::PixelHeight, speakerSentence.color);
+                speakerNames.push_back(speakerSentence);
+
+                Logger::Log("Adding ", sublines[j].speakerName ,"'s phrase \"", sublines[j].text, "\", line ", j, ", [", xPos, ",", yPos, "].");
             }
         }
         
@@ -161,6 +195,8 @@ void DialogPane::Advance()
     {
         isVisible = false;
     }
+
+    UpdateQueuedPages();
 }
 
 void DialogPane::Render(glm::mat4& perspectiveMatrix)
@@ -170,7 +206,7 @@ void DialogPane::Render(glm::mat4& perspectiveMatrix)
         // Render the dialog pane, which just draws a rectangle with stuffs.
         glUseProgram(programId);
         glBindVertexArray(dialogVao);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLES, 0, 15);
 
         // Render the lines visible.
         int linesRendered = 0;
@@ -178,6 +214,11 @@ void DialogPane::Render(glm::mat4& perspectiveMatrix)
         {
             fontManager->RenderSentence(iter->sentenceId, perspectiveMatrix, iter->posRotMatrix);
         }
+
+        // Only render the first speaker name, they are all identical per-line. This may change in the future.
+        fontManager->RenderSentence(speakerNames.cbegin()->sentenceId, perspectiveMatrix, speakerNames.cbegin()->posRotMatrix);
+
+        fontManager->RenderSentence(queuedPagesText.sentenceId, perspectiveMatrix, queuedPagesText.posRotMatrix);
     }
 }
 

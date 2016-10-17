@@ -16,7 +16,7 @@ class DialogPane : public ICallback<EventType>
 {
     const int PixelHeight = 20;
     const int MaxLines = 6;
-    const float MaxSentenceLength = 25.0f; // on-screen viewpoint.
+    const float MaxSentenceLength = 33.0f; // on-screen viewpoint.
     FontManager* fontManager;
 
     std::deque<std::vector<StyleText>> dialogs;
@@ -25,6 +25,8 @@ class DialogPane : public ICallback<EventType>
 
     // Note that the dialog rectangle is fixed and rendered by the shader itself.
     std::deque<RenderableSentence> dialogText;
+    std::deque<RenderableSentence> speakerNames;
+    RenderableSentence queuedPagesText;
 
     // Shader for rendering the dialog pane itself.
     GLuint programId;
@@ -33,6 +35,8 @@ class DialogPane : public ICallback<EventType>
     // Trims a single line of style text to fit within the max sentence length as multiple lines.
     void TrimToFit(StyleText text, std::vector<StyleText>* textLines);
     glm::mat4 GetEffectScale(StyleText::Effect effect);
+
+    void UpdateQueuedPages();
 
 public:
     DialogPane();

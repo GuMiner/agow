@@ -13,6 +13,7 @@ struct StyleText
     };
 
     std::string text;
+    std::string speakerName;
     glm::vec3 color;
     Effect effect;
 
@@ -21,8 +22,8 @@ struct StyleText
     }
 
     // Creates bland-system-level conversational text.
-    StyleText(std::string text, Effect effect)
-        : text(text), color(glm::vec3(0.0f, 1.0f, 0.0f)), effect(effect)
+    StyleText(std::string speakerName, std::string text, Effect effect)
+        : speakerName(speakerName), text(text), color(glm::vec3(0.0f, 1.0f, 0.0f)), effect(effect)
     {
     }
 };

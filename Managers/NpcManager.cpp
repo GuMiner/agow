@@ -81,9 +81,9 @@ void NpcManager::Converse(Events* events, DialogPane* dialogPane)
     }
 
     // TODO configurable.
-    dialogPane->QueueText(StyleText("There is no one to talk to.", StyleText::Effect::MINI));
+    dialogPane->QueueText(StyleText("[HUD]", "There is no one to talk to.", StyleText::Effect::MINI));
     events->AddSingleEvent(TypedCallback<EventType>(EventType::ADD_DIALOG, dialogPane,
-        new DialogData(StyleText("[Except for me].", StyleText::Effect::ITALICS)), true), 8.0f);
+        new DialogData(StyleText("[HUD]", "[Except for me].", StyleText::Effect::ITALICS)), true), 8.0f);
 }
 
 void NpcManager::Update(float gameTime, float frameTime)

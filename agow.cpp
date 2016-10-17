@@ -54,7 +54,8 @@ Constants::Status agow::LoadPhysics()
     npcManager.LoadNpcPhysics(physics, &regionManager);
     
     glm::vec2 spawnPoint = Map::GetPoint(Map::PLAYER);
-    player.LoadPlayerPhysics(physics, glm::vec3(spawnPoint.x, spawnPoint.y, 200), 70);
+    float spawnHeight = 2.0f + regionManager.GetPointHeight(physics.DynamicsWorld, spawnPoint);
+    player.LoadPlayerPhysics(physics,glm::vec3(spawnPoint.x, spawnPoint.y, spawnHeight), 70);
 
     return Constants::Status::OK;
 }
@@ -177,6 +178,12 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_STATS;
     }
 
+    Logger::Log("Loading dialog shaders...");
+    if (!dialogPane.LoadBasics(&fontManager, &shaderManager))
+    {
+        return Constants::Status::BAD_DIALOG;
+    }
+
     Logger::Log("Region graphics loading...");
     if (!regionManager.InitializeGraphics())
     {
@@ -244,23 +251,20 @@ Constants::Status agow::LoadAssets()
         return status;
     }
 
-    Logger::Log("Loading dialog shaders...");
-    if (!dialogPane.LoadBasics(&fontManager, &shaderManager))
-    {
-        return Constants::Status::BAD_DIALOG;
-    }
-
     StyleText styleText;
+    styleText.speakerName = "Synthia Superfast";
     styleText.color = glm::vec3(1.0f, 1.0f, 0.0f);
     styleText.effect = StyleText::Effect::NORMAL;
     styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing.");
     dialogPane.QueueText(styleText);
 
+    styleText.speakerName = "Georgia Grandisimo";
     styleText.color = glm::vec3(1.0f, 0.0f, 1.0f);
     styleText.effect = StyleText::Effect::MINI;
     styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing.");
     dialogPane.QueueText(styleText);
 
+    styleText.speakerName = "Alberta Awsaleisa";
     styleText.color = glm::vec3(0.0f, 1.0f, 1.0f);
     styleText.effect = StyleText::Effect::ITALICS;
     styleText.text = std::string("This is a very long test string that will probably be paged into several substrings but I don't really know as it is only for testing.  but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing. but I don't really know as it is only for testing.");

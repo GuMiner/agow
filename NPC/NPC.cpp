@@ -94,7 +94,7 @@ bool NPC::Converse(DialogPane* dialogPane)
     if (showInteractionKeys)
     {
         // TODO -- this should integrate with the story graph (to setup next).
-        dialogPane->QueueText(StyleText(GetDescription(), StyleText::Effect::NORMAL));
+        dialogPane->QueueText(StyleText(GetName(), GetDescription(), StyleText::Effect::NORMAL));
         return true;
     }
     

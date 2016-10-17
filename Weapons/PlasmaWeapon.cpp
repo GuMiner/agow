@@ -7,7 +7,7 @@
 PlasmaProgram PlasmaWeapon::program;
 
 PlasmaWeapon::PlasmaWeapon(BasicPhysics* physics)
-    : WeaponBase(physics, "Plasma Fyre", 1000.0f, false, 0.3f, 0.0f),
+    : WeaponBase(physics, "Plasma Fyre", 2000000.0f, false, 0.3f, 0.0f),
       maxDistance(50.0f), maxProjectiles(100) // TODO configurable
 {
 }
