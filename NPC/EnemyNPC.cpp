@@ -139,7 +139,7 @@ void EnemyNPC::Update(float gameTime, float elapsedTime)
             // TODO configurable.
             projectileOrigin = GetPosition();
             direction = glm::normalize(target - projectileOrigin);
-            projectileOrigin += (direction * 2.0f);
+            projectileOrigin += (direction * 2.0f) + glm::vec3(0.0f, 0.0f, 1.0f);
 
             mainWeapon.Fire(projectileOrigin, direction);
             break;

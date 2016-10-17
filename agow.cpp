@@ -131,7 +131,7 @@ Constants::Status agow::LoadGraphics()
     LogGraphicsSettings();
 
     // TODO configurable.
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Enable alpha blending
     glEnable(GL_BLEND);
@@ -297,6 +297,7 @@ void agow::HandleEvents(GLFWwindow* window, bool& focusPaused, bool& escapePause
     }
 }
 
+bool fillMode = true;
 void agow::Update(float currentGameTime, float frameTime)
 {
     player.Update(frameTime, regionManager.GetPointTerrainType(physics.DynamicsWorld, player.GetTerrainPosition()));
@@ -320,6 +321,20 @@ void agow::Update(float currentGameTime, float frameTime)
             // WIREFRAME will crash the debug drawer as it's way, way too much to draw.
             debugDrawer.setDebugMode(btIDebugDraw::DebugDrawModes::DBG_DrawAabb);
         }
+    }
+
+    if (Input::IsKeyTyped(GLFW_KEY_G))
+    {
+        if (fillMode)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        else
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+
+        fillMode = !fillMode;
     }
 
     scenery.Update(frameTime);

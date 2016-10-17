@@ -73,7 +73,7 @@ void MilitaryStateMachine::Update(float elapsedTime)
         break;
     case State::FireAtNearest: 
         isEnemyAlive = isEnemyStillAlive();
-        if (isEnemyAlive * elapsedTime > 5.0f)
+        if (isEnemyAlive && elapsedTime > 5.0f)
         {
             // Take cover if we haven't killed the enemy quickly.
             UpdateState(State::TakeCover);
@@ -94,6 +94,7 @@ void MilitaryStateMachine::Update(float elapsedTime)
             break;
         }
 
+        // Stop shooting if there is nobody to shoot.
         if (!isNearbyEnemy())
         {
             UpdateState(State::Survey);
@@ -104,7 +105,7 @@ void MilitaryStateMachine::Update(float elapsedTime)
         break;
     case State::FireAtTargetted:
         isEnemyAlive = isEnemyStillAlive();
-        if (isEnemyAlive * elapsedTime > 5.0f)
+        if (isEnemyAlive && elapsedTime > 5.0f)
         {
             // Take cover if we haven't killed the enemy recently.
             UpdateState(State::TakeCover);
@@ -113,6 +114,13 @@ void MilitaryStateMachine::Update(float elapsedTime)
         else if (!isEnemyAlive)
         {
             // Survey once the enemy is dead.
+            UpdateState(State::Survey);
+            break;
+        }
+
+        // Stop shooting if there is nobody to shoot.
+        if (!isTargettedEnemy())
+        {
             UpdateState(State::Survey);
             break;
         }

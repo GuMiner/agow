@@ -67,7 +67,7 @@ void Scenery::Render(glm::mat4& projectionMatrix, const glm::vec3& playerPositio
     glUniform4f(stars.flavorColorLocation, stars.flavorColor.x, stars.flavorColor.y, stars.flavorColor.z, stars.flavorColorStrength);
     glUniformMatrix4fv(stars.projMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
-    // 36 == cube.
+    // 12 == cube.
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // Render the clouds

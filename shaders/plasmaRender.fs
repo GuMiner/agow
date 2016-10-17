@@ -115,5 +115,6 @@ void main(void)
 {
     // Map our cube to a sphere.
     vec3 spherePos = normalize(uvwPos);
-    color = vec4(0.1f, 0.1f, snoise(spherePos * sin(frameTime)), 1.0f);
+    float randColor = snoise(spherePos * sin(frameTime));
+    color = vec4(0.1f, randColor, 0.1, 1.0f);
 }

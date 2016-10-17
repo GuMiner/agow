@@ -40,7 +40,7 @@ void BasicPhysics::LoadBasicCollisionShapes()
 
     CollisionShapes[CShape::SMALL_CUBE] = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
     
-    CollisionShapes[CShape::WEAPON_PLASMA] = new btSphereShape(0.50f);
+    CollisionShapes[CShape::WEAPON_PLASMA] = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
 
     const int playerPointCount = 4;
     glm::vec3* playerPoints = new glm::vec3[playerPointCount];
@@ -67,7 +67,7 @@ bool BasicPhysics::LoadPhysics(btIDebugDraw* debugDrawer)
     DynamicsWorld->setDebugDrawer(debugDrawer);
     
     btContactSolverInfo& solverInfo = DynamicsWorld->getSolverInfo();
-    // solverInfo.m_numIterations = 2;
+    solverInfo.m_numIterations = 10;
 
     // Our basic collision shapes are hardcoded, and any model-based shapes are passed-in directly.
     LoadBasicCollisionShapes();

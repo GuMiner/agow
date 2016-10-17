@@ -40,7 +40,6 @@ bool PlasmaWeapon::LoadGraphics(ShaderManager* shaderManager)
 
 void PlasmaWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
 {
-    // TODO configurable.
     PlasmaProjectileData* projectile = new PlasmaProjectileData();
     projectile->body = physics->GetDynamicBody(BasicPhysics::CShape::WEAPON_PLASMA, PhysicsOps::Convert(fireOrigin), 1.0f);
     projectile->flightTime = 0.0f;
@@ -48,6 +47,8 @@ void PlasmaWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
     glm::vec3 vel = 10.0f * fireDirection;
     projectile->body->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
     projectile->body->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::PLASMA_BALL, this));
+    // projectile->body->setCcdMotionThreshold(0.3f);
+    // projectile->body->setCcdSweptSphereRadius(0.2f);
 
     // Save the rock to the known projectiles.
     while (projectiles.size() >= (unsigned int)maxProjectiles)
@@ -89,7 +90,7 @@ void PlasmaWeapon::Render(const glm::mat4& projectionMatrix)
         glUniformMatrix4fv(program.projMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
         // 36 == cube.
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, 1440);
     }
 }
 
