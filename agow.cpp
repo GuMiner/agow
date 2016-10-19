@@ -57,6 +57,11 @@ Constants::Status agow::LoadPhysics()
     float spawnHeight = 2.0f + regionManager.GetPointHeight(physics.DynamicsWorld, spawnPoint);
     player.LoadPlayerPhysics(physics,glm::vec3(spawnPoint.x, spawnPoint.y, spawnHeight), 70);
 
+    testCar.offset.x = (spawnPoint.x + 5.0f);
+    testCar.offset.y = (spawnPoint.y + 5.0f);
+    testCar.offset.z = (spawnHeight + 3.0f);
+    testCar.SetupPhysics(&physics);
+
     return Constants::Status::OK;
 }
 
@@ -229,6 +234,12 @@ Constants::Status agow::LoadAssets()
         return Constants::Status::BAD_MODEL;
     }
 
+    Logger::Log("Car loading...");
+    if (!Car::LoadModels(&modelManager))
+    {
+        return Constants::Status::BAD_MODEL;
+    }
+
     Logger::Log("Player model loading...");
     if (!player.LoadPlayerModel(&modelManager))
     {
@@ -378,6 +389,9 @@ void agow::Render(GLFWwindow* window, glm::mat4& viewMatrix)
 
     // Player rendering
     player.Render(&modelManager, projectionMatrix);
+
+    // TODO test code
+    testCar.Render(&modelManager, projectionMatrix);
 
     // Renders the statistics. Note that this just takes the perspective matrix, not accounting for the viewer position.
     statistics.RenderStats(Constants::PerspectiveMatrix);

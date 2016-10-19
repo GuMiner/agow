@@ -17,6 +17,7 @@
 #include "Managers\ShaderManager.h"
 #include "Math\PhysicsOps.h"
 #include "Utils\Constants.h"
+#include "Vehicles\Car.h"
 
 #include "BasicPhysics.h"
 #include "DialogPane.h"
@@ -50,6 +51,9 @@ class agow
     Player player;
     Statistics statistics;
     Scenery scenery;
+
+    // TODO test code remove (need to redesign this extensively when it's not so late).
+    Car testCar;
 
     Events events;
     
