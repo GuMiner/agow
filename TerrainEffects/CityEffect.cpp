@@ -2,6 +2,7 @@
 #include <glm\gtc\random.hpp>
 #include "Config\PhysicsConfig.h"
 #include "Generators\BuildingGenerator.h"
+#include "Generators\ColorGenerator.h"
 #include "Managers\TerrainManager.h"
 #include "Math\PhysicsOps.h"
 #include "Utils\Logger.h"
@@ -120,6 +121,7 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
         {
             hasCityEffect = true;
             cityEffect = new CityEffectData();
+            cityEffect->isHighDensity = glm::linearRand(0.0f, 1.0f) > 0.75f; // TODO configurable.
         }
 
         int buildingXPos = std::get<0>(*iter);
@@ -133,13 +135,15 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                 int yPos = buildingYPos + (1 + n) * 11;
 
                 // Get a building.
-                float separationRadius, buildingHeight;
+                float buildingFootprintSize, buildingHeight;
                 float height = tile->heightmap[buildingXPos + buildingYPos * TerrainTile::SubtileSize];// -0.50f; // Ground inset, TODO configurable.
                 glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(xPos, yPos));
                 glm::vec3 offset((float)realPos.x, (float)realPos.y, height);
                 Building building;
-                building.segments = buildingGenerator.GetRandomLowDensityBuilding(offset, &separationRadius, &buildingHeight);
-                building.color = glm::vec4(glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f), 0.50f + glm::linearRand(0.0f, 0.50f));
+                building.segments = cityEffect->isHighDensity ? 
+                    buildingGenerator.GetRandomHighDensityBuilding(offset, &buildingFootprintSize, &buildingHeight) :
+                    buildingGenerator.GetRandomLowDensityBuilding(offset, &buildingFootprintSize, &buildingHeight);
+                building.color = ColorGenerator::GetBuildingColor();
                 for (unsigned int i = 0; i < building.segments.size(); i++)
                 {
                     building.segments[i].color = building.color;
@@ -148,9 +152,9 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                 building.separated = false;
 
                 // Add in a detector to make the building respond to physics when necessary.
-                btVector3 halfExtents = btVector3(separationRadius, separationRadius, buildingHeight);
-                btCollisionShape* collisionShape = new btCylinderShapeZ(halfExtents);
-                btRigidBody* analysisBody = physics->GetGhostObject(collisionShape, PhysicsOps::Convert(offset));
+                btVector3 halfExtents = btVector3(buildingFootprintSize / 2.0f, buildingFootprintSize / 2.0f, buildingHeight / 2.0f);
+                btCollisionShape* collisionShape = new btBoxShape(halfExtents);
+                btRigidBody* analysisBody = physics->GetGhostObject(collisionShape, PhysicsOps::Convert(offset + glm::vec3(0, 0, buildingHeight / 2.0f)));
                 analysisBody->setActivationState(ISLAND_SLEEPING);
 
                 BuildingCollisionCallbackData* collisionData = new BuildingCollisionCallbackData();
@@ -241,6 +245,7 @@ void CityEffect::Callback(UserPhysics::ObjectType collidingObject, void* callbac
     for (unsigned int i = 0; i < segments.size(); i++)
     {
         segments[i].analysisBody = segments[i].body;
+        segments[i].body->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::BUILDING_SEGMENT));
         physics->DynamicsWorld->addRigidBody(segments[i].body);
     }
 

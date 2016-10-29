@@ -45,6 +45,9 @@ public:
 
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();
+
+    // Reloads the terrain shader. Useful for fast iterative improvements.
+    bool ReloadTerrainShader();
     
     // Loads a single tile.
     bool LoadTerrainTile(glm::ivec2 start, TerrainTile** tile);

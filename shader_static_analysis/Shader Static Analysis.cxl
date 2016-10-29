@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <FileVersion>1</FileVersion>
 <CodeXL>
-    <ProjectName>Project1</ProjectName>
+    <ProjectName>Shader Static Analysis</ProjectName>
     <ApplicationPath>CodeXLEmptyString</ApplicationPath>
     <StoreApp>no</StoreApp>
     <WorkingDirectory>CodeXLEmptyString</WorkingDirectory>
@@ -11,9 +11,9 @@
     <LastActiveMode>Analyze Mode</LastActiveMode>
     <IsRemoteSession>no</IsRemoteSession>
     <RemoteDaemonHostName>CodeXLEmptyString</RemoteDaemonHostName>
-    <RemoteDaemonPortNumber>0</RemoteDaemonPortNumber>
-    <RecentlyUsedRemoteIPAddresses>;</RecentlyUsedRemoteIPAddresses>
-    <LastSessionType>CodeXLEmptyString</LastSessionType>
+    <RemoteDaemonPortNumber>27015</RemoteDaemonPortNumber>
+    <RecentlyUsedRemoteIPAddresses>;;</RecentlyUsedRemoteIPAddresses>
+    <LastSessionType>CPU: Time-based Sampling</LastSessionType>
     <ProfileName>CodeXLEmptyString</ProfileName>
     <ApplicationEnvironmentVariables></ApplicationEnvironmentVariables>
     <ProductExtensions>
@@ -37,8 +37,8 @@
             <ProfileScope>0</ProfileScope>
             <ProfileEntireDuration>true</ProfileEntireDuration>
             <ProfilePaused>false</ProfilePaused>
-            <ProfileStartDelay>-1</ProfileStartDelay>
-            <ProfileEndAfter>-1</ProfileEndAfter>
+            <ProfileStartDelay>0</ProfileStartDelay>
+            <ProfileEndAfter>0</ProfileEndAfter>
             <ProfileTerminateAfter>false</ProfileTerminateAfter>
         </SharedProfile>
         <CpuProfile>
@@ -100,11 +100,11 @@
                 <WriteDataTimeOut>F</WriteDataTimeOut>
                 <TimeOutInterval>100</TimeOutInterval>
                 <RuleTree>
-                    <Detect_non-optimized_data_transfer>T</Detect_non-optimized_data_transfer>
-                    <Detect_resource_leaks>T</Detect_resource_leaks>
                     <Detect_non-optimized_work_size>T</Detect_non-optimized_work_size>
-                    <Detect_deprecated_API_calls>T</Detect_deprecated_API_calls>
                     <Detect_failed_API_calls>T</Detect_failed_API_calls>
+                    <Detect_deprecated_API_calls>T</Detect_deprecated_API_calls>
+                    <Detect_resource_leaks>T</Detect_resource_leaks>
+                    <Detect_non-optimized_data_transfer>T</Detect_non-optimized_data_transfer>
                     <Detect_redundant_synchronization>T</Detect_redundant_synchronization>
                     <Detect_unnecessary_blocking_writes>T</Detect_unnecessary_blocking_writes>
                 </RuleTree>
@@ -453,7 +453,7 @@
                 <FileInfo>
                     <SourceFileId>16</SourceFileId>
                     <FilePath>C:\Users\Gustave\Desktop\agow\shaders\plasmaRender.vs</FilePath>
-                    <FileType>-1</FileType>
+                    <FileType>14</FileType>
                     <ExecutionPath />
                     <ExecutionDevices />
                     <ShaderPlatform>DirectX</ShaderPlatform>
@@ -541,7 +541,7 @@
                 <FileInfo>
                     <SourceFileId>24</SourceFileId>
                     <FilePath>C:\Users\Gustave\Desktop\agow\shaders\terrainRender.vs</FilePath>
-                    <FileType>-1</FileType>
+                    <FileType>14</FileType>
                     <ExecutionPath />
                     <ExecutionDevices />
                     <ShaderPlatform>DirectX</ShaderPlatform>
@@ -626,14 +626,36 @@
                     <ShaderEntryPoint />
                     <ShaderGLType />
                 </FileInfo>
+                <FileInfo>
+                    <SourceFileId>32</SourceFileId>
+                    <FilePath>C:\Users\Gustave\Desktop\agow\shaders\terrainRender.tc</FilePath>
+                    <FileType>14</FileType>
+                    <ExecutionPath />
+                    <ExecutionDevices />
+                    <ShaderPlatform>OpenCL</ShaderPlatform>
+                    <ShaderProfile />
+                    <ShaderEntryPoint />
+                    <ShaderGLType />
+                </FileInfo>
+                <FileInfo>
+                    <SourceFileId>33</SourceFileId>
+                    <FilePath>C:\Users\Gustave\Desktop\agow\shaders\terrainRender.te</FilePath>
+                    <FileType>14</FileType>
+                    <ExecutionPath />
+                    <ExecutionDevices />
+                    <ShaderPlatform>OpenCL</ShaderPlatform>
+                    <ShaderProfile />
+                    <ShaderEntryPoint />
+                    <ShaderGLType />
+                </FileInfo>
             </FilesSection>
             <ProgramSection>
                 <Program>
-                    <ProgramName>glProgram01</ProgramName>
+                    <ProgramName>PlasmaBall</ProgramName>
                     <ProgramType>ProgramGL_Rendering</ProgramType>
                     <SourceFiles>
                         <SourceFile>
-                            <SourceFileId>-1</SourceFileId>
+                            <SourceFileId>16</SourceFileId>
                             <stage>vertex</stage>
                         </SourceFile>
                         <SourceFile>
@@ -649,25 +671,25 @@
                             <stage>geom</stage>
                         </SourceFile>
                         <SourceFile>
-                            <SourceFileId>-1</SourceFileId>
+                            <SourceFileId>15</SourceFileId>
                             <stage>frag</stage>
                         </SourceFile>
                     </SourceFiles>
                 </Program>
                 <Program>
-                    <ProgramName>glProgram02</ProgramName>
+                    <ProgramName>TerrainRender</ProgramName>
                     <ProgramType>ProgramGL_Rendering</ProgramType>
                     <SourceFiles>
                         <SourceFile>
-                            <SourceFileId>-1</SourceFileId>
+                            <SourceFileId>24</SourceFileId>
                             <stage>vertex</stage>
                         </SourceFile>
                         <SourceFile>
-                            <SourceFileId>-1</SourceFileId>
+                            <SourceFileId>33</SourceFileId>
                             <stage>tese</stage>
                         </SourceFile>
                         <SourceFile>
-                            <SourceFileId>-1</SourceFileId>
+                            <SourceFileId>32</SourceFileId>
                             <stage>tesc</stage>
                         </SourceFile>
                         <SourceFile>
@@ -675,7 +697,7 @@
                             <stage>geom</stage>
                         </SourceFile>
                         <SourceFile>
-                            <SourceFileId>-1</SourceFileId>
+                            <SourceFileId>23</SourceFileId>
                             <stage>frag</stage>
                         </SourceFile>
                     </SourceFiles>

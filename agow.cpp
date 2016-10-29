@@ -28,7 +28,7 @@ PhysicsOps agow::PhysicsOp;
 agow::agow()
     : graphicsConfig("config/graphics.txt"), keyBindingConfig("config/keyBindings.txt"), physicsConfig("config/physics.txt"),
       physics(), shaderManager(), imageManager(), modelManager(&imageManager),
-      regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", glm::ivec2(5, 17), glm::ivec2(40, 52), 15), // All pulled from the Contour tiler, TODO configurable, make distance ~10
+      regionManager(&shaderManager, &modelManager, &physics, "ContourTiler/rasters", glm::ivec2(5, 17), glm::ivec2(40, 52), 10), // All pulled from the Contour tiler, TODO configurable, make distance ~10
       scenery(), player(&modelManager, &physics), npcManager(&player, &physics)
 {
 }
@@ -310,6 +310,11 @@ void agow::HandleEvents(GLFWwindow* window, bool& focusPaused, bool& escapePause
     if (Input::IsKeyTyped(GLFW_KEY_C))
     {
         npcManager.Converse(&events, &dialogPane);
+    }
+
+    if (Input::IsKeyTyped(GLFW_KEY_T))
+    {
+        std::cout << "Reload status: " << regionManager.GetTerrainManager().ReloadTerrainShader() << std::endl;
     }
 }
 

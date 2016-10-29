@@ -31,6 +31,8 @@ public:
     RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance);
     bool InitializeGraphics();
     
+    TerrainManager& GetTerrainManager();
+
     // Returns the sector the user is currently in.
     glm::ivec2 GetCurrentCenterTile(const glm::vec3& position) const;
 

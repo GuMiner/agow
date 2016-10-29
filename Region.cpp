@@ -74,10 +74,22 @@ void Region::Simulate(TerrainManager* terrainManager, glm::ivec2 tilePos, float 
     terrainManager->Simulate(pos, tilePos - (pos * TerrainTile::Subdivisions), elapsedSeconds);
 }
 
-void Region::RenderRegion(glm::ivec2 tilePos, TerrainManager* terrainManager, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix) const
+void Region::RenderRegion(glm::ivec2 tilePos, const glm::vec3& playerPosition, const glm::vec2& playerDirection, TerrainManager* terrainManager, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix) const
 {
-    glm::mat4 mvMatrix = glm::translate(glm::mat4(), glm::vec3((float)(tilePos.x * TerrainTile::SubtileSize), (float)(tilePos.y * TerrainTile::SubtileSize), 0));
-    terrainManager->RenderTile(pos, tilePos - (pos * TerrainTile::Subdivisions), perspectiveMatrix, viewMatrix, mvMatrix);
+    // TODO investigate how to make this work and apply to city buildings.
+    // glm::vec2 playerFlatPos = glm::vec2(playerPosition.x, playerPosition.y);
+    // glm::vec2 tileOrigin = glm::vec2((float)tilePos.x, (float)tilePos.y) * (float)TerrainTile::SubtileSize;
+    // glm::vec2 tileXP = tileOrigin + glm::vec2(TerrainTile::SubtileSize, 0) - playerFlatPos;
+    // glm::vec2 tileYP = tileOrigin + glm::vec2(0, TerrainTile::SubtileSize) - playerFlatPos;
+    // glm::vec2 tileXPYP = tileOrigin + glm::vec2(TerrainTile::SubtileSize, TerrainTile::SubtileSize) - playerFlatPos;
+    // tileOrigin -= -playerFlatPos;
+    if (true)
+        // glm::dot(tileOrigin, playerDirection) > 0 && glm::dot(tileXP, playerDirection) > 0 &&
+        // glm::dot(tileYP, playerDirection) > 0 && glm::dot(tileXPYP, playerDirection) > 0)
+    {
+        glm::mat4 mvMatrix = glm::translate(glm::mat4(), glm::vec3((float)(tilePos.x * TerrainTile::SubtileSize), (float)(tilePos.y * TerrainTile::SubtileSize), 0));
+        terrainManager->RenderTile(pos, tilePos - (pos * TerrainTile::Subdivisions), perspectiveMatrix, viewMatrix, mvMatrix);
+    }
 }
 
 void Region::CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld)

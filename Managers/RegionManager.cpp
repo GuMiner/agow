@@ -15,6 +15,11 @@ bool RegionManager::InitializeGraphics()
     return terrainManager.LoadBasics();
 }
 
+TerrainManager& RegionManager::GetTerrainManager()
+{
+    return terrainManager;
+}
+
 float RegionManager::GetPointHeight(btDynamicsWorld* dynamicsWorld, const glm::vec2 point)
 {
     glm::ivec2 region = glm::ivec2((int)point.x, (int)point.y) / TerrainTile::TileSize;
@@ -150,18 +155,8 @@ void RegionManager::RenderRegions(const glm::mat4& perspectiveMatrix, const glm:
 {
     for (const glm::ivec2& visibleTile : visibleTiles)
     {
-        glm::vec2 playerFlatPos = glm::vec2(playerPosition.x, playerPosition.y);
-        glm::vec2 tileOrigin = glm::vec2((float)visibleTile.x, (float)visibleTile.y) * (float)TerrainTile::SubtileSize;
-        glm::vec2 tileXP = tileOrigin + glm::vec2(TerrainTile::SubtileSize, 0) - playerFlatPos;
-        glm::vec2 tileYP = tileOrigin + glm::vec2(0, TerrainTile::SubtileSize) - playerFlatPos;
-        glm::vec2 tileXPYP = tileOrigin + glm::vec2(TerrainTile::SubtileSize, TerrainTile::SubtileSize) - playerFlatPos;
-        tileOrigin -= -playerFlatPos;
-        if (glm::dot(tileOrigin, playerDirection) > 0 && glm::dot(tileXP, playerDirection) > 0 &&
-            glm::dot(tileYP, playerDirection) > 0 && glm::dot(tileXPYP, playerDirection) > 0)
-        {
-            glm::ivec2 region = visibleTile / TerrainTile::Subdivisions;
-            loadedRegions[region]->RenderRegion(visibleTile, &terrainManager, perspectiveMatrix, viewMatrix);
-        }
+        glm::ivec2 region = visibleTile / TerrainTile::Subdivisions;
+        loadedRegions[region]->RenderRegion(visibleTile, playerPosition, playerDirection, &terrainManager, perspectiveMatrix, viewMatrix);
     }
 }
 

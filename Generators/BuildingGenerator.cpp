@@ -129,17 +129,15 @@ void BuildingGenerator::GetScaledModelPoints(std::vector<glm::vec3>& points, glm
     }
 }
 
-// Returns a random low density building centered (XY) on the origin starting at Z == 0.
-std::vector<Model> BuildingGenerator::GetRandomLowDensityBuilding(glm::vec3 offset, float* separationRadius, float* height)
+std::vector<Model> BuildingGenerator::GetRandomBuilding(DecisionTree<BuildingDecisionData>& builder, const glm::vec3& offset, float* separationRadius, float* height)
 {
     std::vector<Model> resultingSegments;
 
     glm::vec3 overallScale = glm::vec3(1.0f);
-    
-    *height = 0.0f;
-    *separationRadius = 0.0f;
 
-    std::vector<BuildingDecisionData> buildingSegmentRules = lowDensityBuildingBuilder.EvaluateTreeSequence(BuildingGenerator::RandomWalkEvaluator);
+    *height = 0.0f;
+
+    std::vector<BuildingDecisionData> buildingSegmentRules = builder.EvaluateTreeSequence(BuildingGenerator::RandomWalkEvaluator);
     for (unsigned int i = 0; i < buildingSegmentRules.size(); i++)
     {
         const BuildingDecisionData& buildingRule = buildingSegmentRules[i];
@@ -157,16 +155,10 @@ std::vector<Model> BuildingGenerator::GetRandomLowDensityBuilding(glm::vec3 offs
             std::vector<glm::vec3> scaledPoints;
             GetScaledModelPoints(scaledPoints, model.scaleFactor, model.modelId);
             btCollisionShape* collisionShape = new btConvexHullShape((btScalar*)&scaledPoints[0], scaledPoints.size(), sizeof(glm::vec3));
-            
+
             btVector3 aabbMin;
             btVector3 aabbMax;
             collisionShape->getAabb(btTransform::getIdentity(), aabbMin, aabbMax);
-
-            btVector3 boundingSphereCenter;
-            btScalar boundingSphereRadius;
-            collisionShape->getBoundingSphere(boundingSphereCenter, boundingSphereRadius);
-
-            *separationRadius = std::max(*separationRadius, boundingSphereRadius);
 
             float delta = 0.01;
             btVector3 buildingSegmentOrigin = btVector3(offset.x, offset.y, delta + offset.z + *height - aabbMin.z());
@@ -181,9 +173,8 @@ std::vector<Model> BuildingGenerator::GetRandomLowDensityBuilding(glm::vec3 offs
                 model.body = basicPhysics->GetDynamicBody(collisionShape, buildingSegmentOrigin, 400);
             }
 
-            // TODO analysis body should be an overarching body that covers the entire building, which is the only part added to physics on start.
-            model.analysisBody = model.body;
-
+            // Consumers must setup the analysis body themselves
+            model.analysisBody = nullptr;
             model.body->setActivationState(ISLAND_SLEEPING);
 
             resultingSegments.push_back(model);
@@ -192,6 +183,19 @@ std::vector<Model> BuildingGenerator::GetRandomLowDensityBuilding(glm::vec3 offs
         }
     }
 
+    *separationRadius = 10.0f * overallScale.x; // TODO configurable -- this is a model constant.
     Logger::Log("Generated building with ", resultingSegments.size(), " segments, from ", buildingSegmentRules.size(), " rules, with a separation radius of ", *separationRadius, ".");
     return resultingSegments;
+}
+
+// Same as the low-density, but with a high-density building.
+std::vector<Model> BuildingGenerator::GetRandomHighDensityBuilding(glm::vec3 offset, float* buildingFootprintSize, float* height)
+{
+    return GetRandomBuilding(highDensityBuildingBuilder, offset, buildingFootprintSize, height);
+}
+
+// Returns a random low density building centered (XY) on the origin starting at Z == 0.
+std::vector<Model> BuildingGenerator::GetRandomLowDensityBuilding(glm::vec3 offset, float* buildingFootprintSize, float* height)
+{
+    return GetRandomBuilding(lowDensityBuildingBuilder, offset, buildingFootprintSize, height);
 }

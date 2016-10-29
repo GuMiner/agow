@@ -14,10 +14,12 @@ glm::vec4 ColorGenerator::GetGrassColor()
     return glm::vec4(1.0f);
 }
 
-glm::vec4 ColorGenerator::GetTravellerColor()
+glm::vec3 ColorGenerator::GetTravellerColor()
 {
-    // TODO implement
-    return glm::vec4(1.0f);
+    const glm::vec3 low(22, 85, 148);
+    const glm::vec3 high(182, 213, 243);
+    float shadingFactor = glm::linearRand(0.0f, 1.0f);
+    return (low + (high - low) * shadingFactor) / 255.0f;
 }
 
 glm::vec3 ColorGenerator::GetTreeBranchColor()
@@ -49,4 +51,22 @@ glm::vec4 ColorGenerator::GetEnemyColor()
     // Enemies are shades of red.
     float greenAndBlue = glm::linearRand(0.0f, 0.40f);
     return glm::vec4(0.70f + glm::linearRand(0.0f, 0.30f), greenAndBlue, greenAndBlue, 1.0f);
+}
+
+glm::vec4 ColorGenerator::GetBuildingColor()
+{
+    float alpha = 0.70f + glm::linearRand(0.0f, 0.20f);
+
+    // Buildings are silver and gold. 
+    bool isSilver = glm::linearRand(0.0f, 1.0f) > 0.40f;
+    if (isSilver)
+    {
+        float shadingColor = glm::linearRand(0.55f, 0.85f);
+        return glm::vec4(shadingColor, shadingColor, shadingColor, alpha);
+    }
+    else
+    {
+        float scale = glm::linearRand(0.0f, 1.0f);
+        return glm::vec4(0.52f + scale * 0.292f, 0.607f + scale * 0.13f, 0.263f + scale * 0.349f, alpha);
+    }
 }

@@ -3,6 +3,41 @@
 #  [string]   [float] [float]        [float]        [int]   [int]
 #  model_name zFactor minScaleFactor maxScaleFactor minLayers maxLayers
 
-# TODO
-root null null false
+# Either square or circle.
+root square circle false
 nothing here
+
+square squareSegment null true
+models/buildings/segments/square 0.1 0.7 1.4 1 1
+
+circle circleSegment null true
+models/buildings/segments/circle 0.1 0.7 1.4 1 1
+
+# Building segments. High-density means up to 20 layers
+squareSegment squareSegmentSplitter squareSegmentSplitter2 true
+models/buildings/segments/square 1.0 1.0 1.0 5 20
+
+squareSegmentSplitter pyramid flat false
+Allows the square building to have many roofs.
+
+squareSegmentSplitter2 turret dome false
+Allows the square building to have many roofs, part 2
+
+circleSegment dome pointy true
+models/buildings/segments/circle 1.0 1.0 1.0 5 20
+
+# Tops of buildings. The scale factors are ignored for these as they inherit from the parent base layers.
+pyramid null null true
+models/buildings/tops/pyramid 1.0 1.0 1.0 1 1
+
+flat null null true
+models/buildings/tops/flat 1.0 1.0 1.0 1 1
+
+turret null null true
+models/buildings/tops/turret 1.0 1.0 1.0 1 1
+
+dome null null true
+models/buildings/tops/dome 1.0 1.0 1.0 1 1
+
+pointy null null true
+models/buildings/tops/pointy 1.0 1.0 1.0 1 1

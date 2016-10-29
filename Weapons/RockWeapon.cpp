@@ -48,7 +48,6 @@ void RockWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
     {
         Model* modelToRemove = (Model*)projectiles.front();
 
-        delete modelToRemove->body->getUserPointer();
         physics->DynamicsWorld->removeRigidBody(modelToRemove->body);
         physics->DeleteBody(modelToRemove->body, false);
         projectiles.pop_front();

@@ -31,12 +31,17 @@ class BuildingGenerator
     ModelManager* modelManager;
     BasicPhysics* basicPhysics;
     void GetScaledModelPoints(std::vector<glm::vec3>& points, glm::vec3 scaleFactor, unsigned int modelId);
+
+    std::vector<Model> GetRandomBuilding(DecisionTree<BuildingDecisionData>& builder, const glm::vec3& offset, float* buildingFootprintSize, float* height);
 public:
     BuildingGenerator(ModelManager* modelManager, BasicPhysics* basicPhysics);
     static bool LoadBuildingModels(ModelManager* modelManager);
     static bool LoadBuilder(std::string lowDensityFile, std::string highDensityFile);
 
     // Returns a random low density building centered (XY) on the origin starting at Z == 0.
-    std::vector<Model> GetRandomLowDensityBuilding(glm::vec3 offset, float* separationRadius, float* height);
+    std::vector<Model> GetRandomLowDensityBuilding(glm::vec3 offset, float* buildingFootprintSize, float* height);
+
+    // Same as the low-density, but with a high-density building.
+    std::vector<Model> GetRandomHighDensityBuilding(glm::vec3 offset, float* buildingFootprintSize, float* height);
 };
 

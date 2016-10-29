@@ -17,6 +17,7 @@ struct Building
 struct CityEffectData
 {
     std::vector<Building> buildings;
+    bool isHighDensity;
 };
 
 struct BuildingCollisionCallbackData

@@ -41,7 +41,6 @@ void Player::UnloadPlayerPhysics(BasicPhysics physics)
 {
     // TODO cleanup the weapons.
 
-    delete model.body->getUserPointer();
     physics.DynamicsWorld->removeRigidBody(model.body);
     physics.DeleteBody(model.body, false);
 }

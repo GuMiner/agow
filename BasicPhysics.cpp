@@ -279,6 +279,11 @@ void BasicPhysics::DeleteBody(btRigidBody* body, bool eraseCollisionShape) const
         delete body->getCollisionShape();
     }
 
+    if (body->getUserPointer() != nullptr)
+    {
+        delete body->getUserPointer();
+    }
+
     delete body->getMotionState();
     delete body;
 }

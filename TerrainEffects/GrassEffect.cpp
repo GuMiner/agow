@@ -73,8 +73,8 @@ bool GrassEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* t
         glGenBuffers(1, &grassEffect->colorBuffer);
 
         Logger::Log("Parsed ", grassEffect->grassStalks.positions.size() / 2, " grass stalks.");
-        grassEffect->grassStalks.TransferPositionToOpenGl(grassEffect->positionBuffer);
-        grassEffect->grassStalks.TransferColorToOpenGl(grassEffect->colorBuffer);
+        grassEffect->grassStalks.TransferStaticPositionToOpenGl(grassEffect->positionBuffer);
+        grassEffect->grassStalks.TransferStaticColorToOpenGl(grassEffect->colorBuffer);
         *effectData = grassEffect;
     }
 

@@ -9,10 +9,12 @@ public:
     // Effects
     static glm::vec4 GetRockColor();
     static glm::vec4 GetGrassColor();
-    static glm::vec4 GetTravellerColor();
+    static glm::vec3 GetTravellerColor();
 
     static glm::vec3 GetTreeBranchColor();
     static glm::vec3 GetTreeLeafColor();
+
+    static glm::vec4 GetBuildingColor();
 
     // NPCs
     static glm::vec4 GetAllyColor();

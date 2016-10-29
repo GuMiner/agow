@@ -801,7 +801,6 @@ void PlasmaWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
     {
         PlasmaProjectileData* projectileToRemove = (PlasmaProjectileData*)projectiles.front();
 
-        delete projectileToRemove->body->getUserPointer();
         physics->DynamicsWorld->removeRigidBody(projectileToRemove->body);
         physics->DeleteBody(projectileToRemove->body, false);
         projectiles.pop_front();

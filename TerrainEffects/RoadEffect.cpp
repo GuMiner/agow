@@ -1,4 +1,5 @@
 #include <glm\gtc\random.hpp>
+#include "Generators\ColorGenerator.h"
 #include "Utils\Logger.h"
 #include "RoadEffect.h"
 
@@ -46,13 +47,12 @@ bool RoadEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                     }
 
                     float height = tile->heightmap[pixelId];
-                    glm::ivec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j));
-
+                    
                     // TODO configurable
-                    glm::vec3 bottomColor = glm::vec3(0.0f, 0.50f, glm::linearRand(0.0f, 0.20f) + 0.80f);
-                    glm::vec3 topColor = glm::vec3(0.40f + glm::linearRand(0.0f, 0.60f), 0.0f, 0.20f + glm::linearRand(0.0f, 0.40f));
-                    glm::vec3 position = glm::vec3((float)realPos.x, (float)realPos.y, height + 0.1f);
-                    glm::vec2 velocity = glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)) * 40.0f;
+                    glm::vec3 bottomColor = ColorGenerator::GetTravellerColor();
+                    glm::vec3 topColor = ColorGenerator::GetTravellerColor() * 1.10f;
+                    glm::vec3 position = glm::vec3((float)i, (float)j, height + 0.1f);
+                    glm::vec2 velocity = glm::vec2(glm::linearRand(-1.0f, 1.0f), glm::linearRand(-1.0f, 1.0f)) * 1.0f;
 
                     glm::vec3 endPosition = position + glm::normalize(glm::vec3(velocity.x, velocity.y, 0.0f));
 
@@ -78,7 +78,7 @@ bool RoadEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
 
         Logger::Log("Parsed ", roadEffect->travellers.positions.size() / 2, " road travellers.");
         roadEffect->travellers.TransferPositionToOpenGl(roadEffect->positionBuffer);
-        roadEffect->travellers.TransferColorToOpenGl(roadEffect->colorBuffer);
+        roadEffect->travellers.TransferStaticColorToOpenGl(roadEffect->colorBuffer);
         *effectData = roadEffect;
     }
 
@@ -100,7 +100,7 @@ float RoadEffect::MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* road
 
     // This logic causes a slight pause when a boundary is hit, which looks logical.
     bool hitEdgeBoundary = false;
-    glm::ivec2 subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId / 10;
+    glm::ivec2 subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y);
     if (subTilePos.x < 0 || subTilePos.x >= TerrainTile::SubtileSize)
     {
         roadEffect->positions[i] -= (roadEffect->velocities[i] * elapsedSeconds);
@@ -115,7 +115,8 @@ float RoadEffect::MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* road
         hitEdgeBoundary = true;
     }
 
-    subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId / 10;
+    // Ensure we're within bounds.
+    subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y);
     subTilePos.x = std::max(std::min(subTilePos.x, TerrainTile::SubtileSize - 1), 0);
     subTilePos.y = std::max(std::min(subTilePos.y, TerrainTile::SubtileSize - 1), 0);
 
@@ -131,7 +132,7 @@ float RoadEffect::MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* road
             // Whichever coordinates were different, we bounce. This isn't strictly correct, as if we went through a corner of a pixel, we shouldn't bounce one axis.
             // However, the subsequent step (angular distortion) is very incorrect (or correct, depending on your viewpoint)
             bool angleXDistortion = false;
-            subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId / 10;
+            subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y);
             if (subTilePos.x != offRoad.x)
             {
                 roadEffect->velocities[i].x *= -1.0f;
@@ -183,7 +184,7 @@ void RoadEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float el
     }
 
     glBindVertexArray(roadEffect->vao);
-    roadEffect->travellers.TransferPositionToOpenGl(roadEffect->positionBuffer);
+    roadEffect->travellers.TransferUpdatePositionToOpenGl(roadEffect->positionBuffer);
 }
 
 void RoadEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)

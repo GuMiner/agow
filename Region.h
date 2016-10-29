@@ -26,7 +26,7 @@ public:
     int GetPointType(const glm::ivec2 tilePos, const glm::ivec2 fullPos) const;
 
     void Simulate(TerrainManager* terrainManager, glm::ivec2 tilePos, float elapsedSeconds);
-    void RenderRegion(glm::ivec2 tilePos, TerrainManager* terrainManager, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix) const;
+    void RenderRegion(glm::ivec2 tilePos, const glm::vec3& playerPosition, const glm::vec2& playerDirection, TerrainManager* terrainManager, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix) const;
 
     void CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld);
     virtual ~Region();

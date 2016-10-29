@@ -255,9 +255,9 @@ void ModelManager::FinalizeLoadedModels()
         indexOffset += models[i].vertices.indices.size();
     }
 
-    temporaryCopyVertices.TransferPositionToOpenGl(positionBuffer);
-    temporaryCopyVertices.TransferUvsToOpenGl(uvBuffer);
-    temporaryCopyVertices.TransferIndicesToOpenGl(indexBuffer);
+    temporaryCopyVertices.TransferStaticPositionToOpenGl(positionBuffer);
+    temporaryCopyVertices.TransferStaticUvsToOpenGl(uvBuffer);
+    temporaryCopyVertices.TransferStaticIndicesToOpenGl(indexBuffer);
 }
 
 // Deletes all initialized OpenGL resources.

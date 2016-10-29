@@ -7,29 +7,48 @@
 #include "Utils\ImageUtils.h"
 
 TerrainManager::TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, std::string terrainRootFolder)
-    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), terrainEffects(shaderManager, modelManager, basicPhysics)
+    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), terrainEffects(shaderManager, modelManager, basicPhysics), terrainRenderProgram(0)
 {
 }
 
 bool TerrainManager::LoadBasics()
 {
-    if (!shaderManager->CreateShaderProgramWithTesselation("terrainRender", &terrainRenderProgram))
+    if (!ReloadTerrainShader())
     {
-        Logger::LogError("Failed to load the basic terrain rendering shader; cannot continue.");
         return false;
     }
-
-    terrainTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainTexture");
-    terrainTypeTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainType");
-    gameTimeLocation = glGetUniformLocation(terrainRenderProgram, "gameTime");
-    projLocation = glGetUniformLocation(terrainRenderProgram, "projMatrix");
-    mvLocation = glGetUniformLocation(terrainRenderProgram, "mvMatrix");
 
     if (!terrainEffects.LoadBasics())
     {
         Logger::LogError("Failed to load the terrain effects initial setup; cannot continue.");
         return false;
     }
+
+    return true;
+}
+
+bool TerrainManager::ReloadTerrainShader()
+{
+    GLuint shaderProgram;
+    if (!shaderManager->CreateShaderProgramWithTesselation("terrainRender", &shaderProgram))
+    {
+        Logger::LogError("Failed to load the basic terrain rendering shader; cannot continue.");
+        return false;
+    }
+
+    if (terrainRenderProgram != 0)
+    {
+        // Unload so we can attempt a reload.
+        glDeleteProgram(terrainRenderProgram);
+        terrainRenderProgram = 0;
+    }
+
+    terrainRenderProgram = shaderProgram;
+    terrainTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainTexture");
+    terrainTypeTexLocation = glGetUniformLocation(terrainRenderProgram, "terrainType");
+    gameTimeLocation = glGetUniformLocation(terrainRenderProgram, "gameTime");
+    projLocation = glGetUniformLocation(terrainRenderProgram, "projMatrix");
+    mvLocation = glGetUniformLocation(terrainRenderProgram, "mvMatrix");
 
     return true;
 }
@@ -121,6 +140,7 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
                 // Fill in edges and corners to avoid artifacts.
                 LoadHeightmapEdges(start, i, j, subSize, heightmap, types);
 
+                // Normalize lakes
                 for (int x = 0; x < subSize; x++)
                 {
                     for (int y = 0; y < subSize; y++)
@@ -129,11 +149,7 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
                         switch (types[x + y * subSize])
                         {
                         case TerrainTypes::ROADS:
-                            heightmap[x + y * subSize] -= (0.50f / 900.0f);
-                            break;
                         case TerrainTypes::RIVER:
-                            heightmap[x + y * subSize] -= (1.0f / 900.0f);
-                            break;
                         case TerrainTypes::CITY:
                         case TerrainTypes::DIRTLAND:
                         case TerrainTypes::GRASSLAND:
@@ -144,7 +160,46 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
                             break;
                         default:
                             // Lake isn't guaranteed to be the last item, 
-                            heightmap[x + y * subSize] -= (2.0f / 900.0f);
+                            types[x + y * subSize] = TerrainTypes::LAKE;
+                            break;
+                        }
+                    }
+                }
+
+                for (int x = 0; x < subSize; x++)
+                {
+                    for (int y = 0; y < subSize; y++)
+                    {
+                        int xMinus = std::max(0, --x) + y * subSize;
+                        int xPlus = std::min(subSize - 1, ++x) + y * subSize;
+                        int yMinus = x + std::max(0, --y) * subSize;
+                        int yPlus = x + std::min(subSize - 1, ++y) * subSize;
+
+                        // Perform per-tile height modifications
+                        switch (types[x + y * subSize])
+                        {
+                        case TerrainTypes::ROADS:
+                            heightmap[x + y * subSize] -= (0.50f / 900.0f);
+                            break;
+                        case TerrainTypes::RIVER:
+                            if (types[xMinus] == TerrainTypes::RIVER &&
+                                types[xPlus] == TerrainTypes::RIVER &&
+                                types[yMinus] == TerrainTypes::RIVER &&
+                                types[yPlus] == TerrainTypes::RIVER)
+                            {
+                                heightmap[x + y * subSize] -= (1.0f / 900.0f);
+                            }
+                            break;
+                        case TerrainTypes::LAKE:
+                            if (types[xMinus] == TerrainTypes::LAKE &&
+                                types[xPlus] == TerrainTypes::LAKE &&
+                                types[yMinus] == TerrainTypes::LAKE &&
+                                types[yPlus] == TerrainTypes::LAKE)
+                            {
+                                heightmap[x + y * subSize] -= (2.0f / 900.0f);
+                            }
+                            break;
+                        default:
                             break;
                         }
                     }
@@ -483,6 +538,8 @@ void TerrainManager::UnloadTerrainTile(glm::ivec2 start)
 
 TerrainManager::~TerrainManager()
 {
+    glDeleteProgram(terrainRenderProgram);
+
     // Cleanup any allocated terrain tiles.
     for (auto iter = terrainTiles.begin(); iter != terrainTiles.end(); iter++)
     {
