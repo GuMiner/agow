@@ -17,13 +17,13 @@ TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelMa
     : shaderManager(shaderManager), modelManager(modelManager), physics(basicPhysics)
 {
     effects.push_back((TerrainEffect*)new GrassEffect());
-    // effects.push_back((TerrainEffect*)new RockEffect(modelManager, physics));
-    // effects.push_back((TerrainEffect*)new RoadEffect());
-    // effects.push_back((TerrainEffect*)new SignEffect(modelManager, physics));
+    effects.push_back((TerrainEffect*)new RockEffect(modelManager, physics));
+    effects.push_back((TerrainEffect*)new RoadEffect());
+    effects.push_back((TerrainEffect*)new SignEffect(modelManager, physics));
     // 
     // // TODO configurable
-    // effects.push_back((TerrainEffect*)new TreeEffect("cache/trees"));
-    // effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/buildings"));
+    effects.push_back((TerrainEffect*)new TreeEffect("cache/trees"));
+    // TODO crashes effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/buildings"));
 }
 
 bool TerrainEffectManager::LoadBasics()

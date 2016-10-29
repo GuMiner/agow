@@ -15,7 +15,7 @@ bool RockEffect::LoadBasics(ShaderManager* shaderManager)
     return true;
 }
 
-bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * tile)
+bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile)
 {
     bool hasRockEffect = false;
     RockEffectData* rockEffect = nullptr;
