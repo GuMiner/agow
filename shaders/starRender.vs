@@ -26,7 +26,7 @@ void main(void)
         0, 1, 5, 0, 5, 4,
         2, 3, 7, 2, 7, 6);
         
-    float distance = 10000.0f;
+    float distance = 650.0f;
     
     int index = indices[gl_VertexID];
     vec3 vertex = vertices[index];

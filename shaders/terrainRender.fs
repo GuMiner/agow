@@ -8,7 +8,6 @@ uniform float gameTime;
 
 smooth in vec2 tc_fs;
 smooth in vec3 fragment_position;
-flat in float scaleFactor;
 
 out vec4 color;
 
@@ -133,7 +132,7 @@ void main(void)
 		float factorMin = 0.80;
 		float factorScale = 0.20f;
 		float factor = factorMin + factorScale * cos(fragment_position.x*frequencyX*cos(gameTime * scaleSpeedX) + gameTime*speed) * sin(fragment_position.y*frequencyY*sin(gameTime*scaleSpeedY) + gameTime*speed);
-		color = vec4(vec3(color) * scaleFactor * vec3(typeColor), 1.0);
+		color = vec4(vec3(color) * vec3(typeColor), 1.0);
 		color.r *= factor;
 		color.g *= 1.0f;
 		color.b *= factor;
@@ -151,30 +150,13 @@ void main(void)
 		float factorMin = 0.70;
 		float factorScale = 0.30f;
 		float factor = factorMin + factorScale * cos(fragment_position.x*frequencyX*cos(gameTime * scaleSpeedX) + gameTime*speed) * sin(fragment_position.y*frequencyY*sin(gameTime*scaleSpeedY) + gameTime*speed);
-		color = vec4(vec3(color) * scaleFactor * vec3(typeColor), 1.0);
+		color = vec4(vec3(color) * vec3(typeColor), 1.0);
 		color.r *= factor;
 		color.g *= 1.0f;
 		color.b *= factor;
     }
 	else
 	{
-		color = vec4(vec3(color) * scaleFactor * vec3(typeColor), 1.0);
+		color = vec4(vec3(color) * vec3(typeColor), 1.0);
 	}
-    
-    /*
-    // Apply lighting calculations.
-    color = vec4(0.5f, 0.5f, 0.5f, 1.0f); 
-    color *= scaleFactor;
-    color.w = 1.0;
-    
-    */
-    /*
-    if (true) // fract(vertexId) < 0.2)
-    {
-        color = vec4(vec3((( - min) / (max - min)) * 0.6 + 0.2), 1.0);
-    }
-    else
-    {
-        color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    }*/
 }
