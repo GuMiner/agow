@@ -7,6 +7,7 @@
 #include "Managers\ShaderManager.h"
 #include "Managers\TerrainManager.h"
 #include <glm\vec3.hpp>
+#include <glm\vec2.hpp>
 #include "BasicPhysics.h"
 #include "Region.h"
 
@@ -24,7 +25,7 @@ class RegionManager
     int tileViewDistance;
 
     glm::ivec2 lastCenterTile;
-    void ComputeVisibleTiles(glm::ivec2 centerTile, std::vector<glm::ivec2>* visibleTiles) const;
+    void ComputeVisibleTiles(const glm::ivec2& centerTile, const glm::vec2& playerOrientation, std::vector<glm::ivec2>* visibleTiles) const;
 
 public:
     RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance);
@@ -39,9 +40,9 @@ public:
     // Returns the terrain type at the specified point. Returns LAKE if out of bounds.
     int GetPointTerrainType(btDynamicsWorld* dynamicsWorld, const glm::vec2 point);
 
-    void UpdateVisibleRegion(const glm::vec3& playerPosition, btDynamicsWorld* dynamicsWorld);
+    void UpdateVisibleRegion(const glm::vec3& playerPosition, const glm::vec2& playerOrientation, btDynamicsWorld* dynamicsWorld);
     void SimulateVisibleRegions(float gameTime, float elapsedSeconds);
-    void RenderRegions(const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix);
+    void RenderRegions(const glm::mat4& perspectiveMatrix, const glm::vec3& playerPosition, const glm::vec2& playerDirection, const glm::mat4& viewMatrix);
 
     void CleanupPhysics(btDynamicsWorld* dynamicsWorld);
     virtual ~RegionManager();

@@ -63,6 +63,7 @@ public:
     const glm::vec2 GetTerrainPosition() const;
     const glm::vec3 GetPosition() const;
     const glm::quat GetOrientation() const;
+    const glm::vec2 Get2DOrientation() const;
     const glm::quat GetViewOrientation() const;
     const glm::mat4 GetViewMatrix() const;
 

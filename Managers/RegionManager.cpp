@@ -62,7 +62,7 @@ glm::ivec2 RegionManager::GetCurrentCenterTile(const glm::vec3& position) const
     return glm::ivec2((int)position.x, (int)position.y) / TerrainTile::SubtileSize;
 }
 
-void RegionManager::ComputeVisibleTiles(glm::ivec2 centerTile, std::vector<glm::ivec2>* visibleTiles) const
+void RegionManager::ComputeVisibleTiles(const glm::ivec2& centerTile, const glm::vec2& playerOrientation, std::vector<glm::ivec2>* visibleTiles) const
 {
     // Visible tiles are defined as those within the *radius* of the center tile, given the view distance.
     int minX = std::max(min.x, centerTile.x - tileViewDistance / 2);
@@ -73,7 +73,11 @@ void RegionManager::ComputeVisibleTiles(glm::ivec2 centerTile, std::vector<glm::
     {
         for (int j = minY; j < maxY; j++)
         {
-            if (std::pow(i - centerTile.x, 2) + std::pow(j - centerTile.y, 2) < std::pow(tileViewDistance / 2, 2))
+            bool isForwards = true;
+            // bool isForwards = (i == centerTile.x && j == centerTile.y) || 
+            //     glm::dot(playerOrientation, glm::normalize(glm::vec2((float)i, (float)j) - glm::vec2((float)centerTile.x, (float)centerTile.y))) > -0.5f;
+            bool isInViewCircle = std::pow(i - centerTile.x, 2) + std::pow(j - centerTile.y, 2) < std::pow(tileViewDistance / 2, 2);
+            if (isForwards && isInViewCircle)
             {
                 visibleTiles->push_back(glm::ivec2(i, j));
             }
@@ -81,7 +85,7 @@ void RegionManager::ComputeVisibleTiles(glm::ivec2 centerTile, std::vector<glm::
     }
 }
 
-void RegionManager::UpdateVisibleRegion(const glm::vec3& playerPosition, btDynamicsWorld* dynamicsWorld)
+void RegionManager::UpdateVisibleRegion(const glm::vec3& playerPosition, const glm::vec2& playerOrientation, btDynamicsWorld* dynamicsWorld)
 {
     // Update what's visible, skipping if we haven't changed center tiles.
     glm::ivec2 centerTile = GetCurrentCenterTile(playerPosition);
@@ -93,7 +97,7 @@ void RegionManager::UpdateVisibleRegion(const glm::vec3& playerPosition, btDynam
     lastCenterTile = centerTile;
 
     visibleTiles.clear();
-    ComputeVisibleTiles(centerTile, &visibleTiles);
+    ComputeVisibleTiles(centerTile, playerOrientation, &visibleTiles);
 
     // Load regions we have not loaded yet.
     std::set<glm::ivec2, iVec2Comparer> visibleRegions;
@@ -142,12 +146,22 @@ void RegionManager::SimulateVisibleRegions(float gameTime, float elapsedSeconds)
     }
 }
 
-void RegionManager::RenderRegions(const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix)
+void RegionManager::RenderRegions(const glm::mat4& perspectiveMatrix, const glm::vec3& playerPosition, const glm::vec2& playerDirection, const glm::mat4& viewMatrix)
 {
     for (const glm::ivec2& visibleTile : visibleTiles)
     {
-        glm::ivec2 region = visibleTile / TerrainTile::Subdivisions;
-        loadedRegions[region]->RenderRegion(visibleTile, &terrainManager, perspectiveMatrix, viewMatrix);
+        glm::vec2 playerFlatPos = glm::vec2(playerPosition.x, playerPosition.y);
+        glm::vec2 tileOrigin = glm::vec2((float)visibleTile.x, (float)visibleTile.y) * (float)TerrainTile::SubtileSize;
+        glm::vec2 tileXP = tileOrigin + glm::vec2(TerrainTile::SubtileSize, 0) - playerFlatPos;
+        glm::vec2 tileYP = tileOrigin + glm::vec2(0, TerrainTile::SubtileSize) - playerFlatPos;
+        glm::vec2 tileXPYP = tileOrigin + glm::vec2(TerrainTile::SubtileSize, TerrainTile::SubtileSize) - playerFlatPos;
+        tileOrigin -= -playerFlatPos;
+        if (glm::dot(tileOrigin, playerDirection) > 0 && glm::dot(tileXP, playerDirection) > 0 &&
+            glm::dot(tileYP, playerDirection) > 0 && glm::dot(tileXPYP, playerDirection) > 0)
+        {
+            glm::ivec2 region = visibleTile / TerrainTile::Subdivisions;
+            loadedRegions[region]->RenderRegion(visibleTile, &terrainManager, perspectiveMatrix, viewMatrix);
+        }
     }
 }
 

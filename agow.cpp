@@ -298,7 +298,8 @@ void agow::HandleEvents(GLFWwindow* window, bool& focusPaused, bool& escapePause
     if (Input::IsKeyTyped(GLFW_KEY_I))
     {
         glm::vec3 pos = player.GetPosition();
-        std::cout << "[" << pos.x << " " << pos.y << " " << pos.z << "]" << std::endl;
+        glm::vec2 orientation = player.Get2DOrientation();
+        std::cout << "[" << pos.x << " " << pos.y << " " << pos.z << "] " << orientation.x << " | " << orientation.y << std::endl;
     }
 
     if (Input::IsKeyTyped(GLFW_KEY_N))
@@ -354,7 +355,7 @@ void agow::Update(float currentGameTime, float frameTime)
 
     scenery.Update(frameTime);
 
-    regionManager.UpdateVisibleRegion(player.GetPosition(), physics.DynamicsWorld);
+    regionManager.UpdateVisibleRegion(player.GetPosition(), player.Get2DOrientation(), physics.DynamicsWorld);
     regionManager.SimulateVisibleRegions(currentGameTime, frameTime);
 
     // Update useful statistics that are fancier than the standard GUI
@@ -380,7 +381,7 @@ void agow::Render(GLFWwindow* window, glm::mat4& viewMatrix)
     scenery.Render(rotationOnlyMatrix, player.GetPosition());
 
     // Render our ground, and any derivative items from that.
-    regionManager.RenderRegions(Constants::PerspectiveMatrix, viewMatrix);
+    regionManager.RenderRegions(Constants::PerspectiveMatrix, player.GetPosition(), player.Get2DOrientation(), viewMatrix);
 
     modelManager.FinalizeRender(projectionMatrix);
 

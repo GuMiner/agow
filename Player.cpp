@@ -75,6 +75,12 @@ const glm::quat Player::GetViewOrientation() const
     return camera.GetViewOrientation();
 }
 
+const glm::vec2 Player::Get2DOrientation() const
+{
+    glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(GetOrientation());
+    return glm::normalize(glm::vec2(forwardsVector.x, forwardsVector.y));
+}
+
 const glm::mat4 Player::GetViewMatrix() const
 {
     return camera.GetViewMatrix();
