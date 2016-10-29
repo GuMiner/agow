@@ -27,8 +27,6 @@ struct BuildingCollisionCallbackData
 
 class CityEffect : public TerrainEffect, ICallback<UserPhysics::ObjectType>
 {
-    int subTileSize; // In pixels
-
     ModelManager* modelManager;
     BasicPhysics* physics;
 

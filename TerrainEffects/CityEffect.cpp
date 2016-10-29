@@ -25,8 +25,8 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
     // V1: Placed in square regions according to the size of the building generated.
     std::vector<std::tuple<int, int, int>> squareRegionsFound;
 
-    bool* checkedTiles = new bool[subTileSize * subTileSize];
-    for (int i = 0; i < subTileSize * subTileSize; i++)
+    bool* checkedTiles = new bool[TerrainTile::SubtileSize * TerrainTile::SubtileSize];
+    for (int i = 0; i < TerrainTile::SubtileSize * TerrainTile::SubtileSize; i++)
     {
         checkedTiles[i] = false;
     }
@@ -47,7 +47,7 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                 int regionSize = 1;
 
                 bool endOfRegion = false;
-                auto isInBounds = [&]() { return (i + regionSize < subTileSize && j + regionSize < subTileSize); };
+                auto isInBounds = [&]() { return (i + regionSize < TerrainTile::SubtileSize && j + regionSize < TerrainTile::SubtileSize); };
                 while (!endOfRegion && isInBounds())
                 {
                     // Check horizontal. Also go one additional pixel to get the corner pixel.
@@ -134,7 +134,7 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
 
                 // Get a building.
                 float separationRadius, buildingHeight;
-                float height = tile->heightmap[buildingXPos + buildingYPos * subTileSize];// -0.50f; // Ground inset, TODO configurable.
+                float height = tile->heightmap[buildingXPos + buildingYPos * TerrainTile::SubtileSize];// -0.50f; // Ground inset, TODO configurable.
                 glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(xPos, yPos));
                 glm::vec3 offset((float)realPos.x, (float)realPos.y, height);
                 Building building;

@@ -415,8 +415,8 @@ Constants::Status agow::Run()
     GLFWmonitor* monitor = GraphicsConfig::IsFullscreen ? glfwGetPrimaryMonitor() : nullptr;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_DEPTH_BITS, 8);
-    glfwWindowHint(GLFW_STENCIL_BITS, 8);
+    glfwWindowHint(GLFW_DEPTH_BITS, 16);
+    glfwWindowHint(GLFW_STENCIL_BITS, 16);
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 

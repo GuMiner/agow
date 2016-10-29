@@ -14,8 +14,6 @@ struct GrassEffectData
 
 class GrassEffect : public TerrainEffect
 {
-    int subTileSize; // In pixels
-
     GLuint programId;
 
     GLuint projMatrixLocation;

@@ -41,12 +41,11 @@ bool GrassEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* t
                 }
                 
                 float height = tile->heightmap[pixelId];
-                glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j));
-
+                
                 // TODO configurable
                 glm::vec3 bottomColor = glm::vec3(0.0f, 0.90f + glm::linearRand(0.0f, 0.10f), 0.0f);
                 glm::vec3 topColor = glm::vec3(0.0f, 0.50f + glm::linearRand(0.0f, 0.30f), 0.20f + glm::linearRand(0.0f, 0.60f));
-                glm::vec3 bottomPos = glm::vec3((float)realPos.x + glm::linearRand(-0.5f, 0.5f), (float)realPos.y + glm::linearRand(-0.5f, 0.5f), height);
+                glm::vec3 bottomPos = glm::vec3((float)i + glm::linearRand(-0.5f, 0.5f), (float)j + glm::linearRand(-0.5f, 0.5f), height);
                 glm::vec3 topPos = bottomPos + glm::vec3(glm::linearRand(-0.10f, 0.10f), glm::linearRand(-0.10f, 0.10f), 0.15f + 0.50f * glm::linearRand(0.0f, 1.0f));
 
                 // Add grass

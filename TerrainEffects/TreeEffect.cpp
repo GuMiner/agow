@@ -94,9 +94,7 @@ bool TreeEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                 }
 
                 float height = tile->heightmap[i + j * TerrainTile::SubtileSize];
-                glm::ivec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j));
-
-                glm::vec3 bottomPos = glm::vec3((float)realPos.x + glm::linearRand(-1.0f, 1.0f), (float)realPos.y + glm::linearRand(-1.0f, 1.0f), height);
+                glm::vec3 bottomPos = glm::vec3((float)i + glm::linearRand(-1.0f, 1.0f), (float)j + glm::linearRand(-1.0f, 1.0f), height);
 
                 // Copy over a cached tree into this location.
                 const TreeCacheData& tree = cachedTrees[glm::linearRand(0, (int)(cachedTrees.size() - 1))];
