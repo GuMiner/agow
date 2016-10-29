@@ -30,15 +30,13 @@ class TerrainEffectManager
     ModelManager* modelManager;
     BasicPhysics* physics;
 
-    int subTileSize; // In pixels
-
     std::vector<TerrainEffect*> effects;
     std::map<glm::ivec2, std::vector<TerrainEffectData*>, iVec2Comparer> subtileEffectData;
 
     void CleanupSubTileEffects(glm::ivec2 start, bool log);
 
 public:
-    TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, int subTileSize);
+    TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics);
 
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();

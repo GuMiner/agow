@@ -18,6 +18,8 @@ struct PlasmaProjectileData
 struct PlasmaProgram
 {
     GLuint programId;
+    GLuint positionBuffer;
+    GLuint indexBuffer;
     GLuint projMatrixLocation;
     GLuint positionLocation;
     GLuint frameTimeLocation;
@@ -28,6 +30,11 @@ struct PlasmaProgram
 class PlasmaWeapon : public WeaponBase, ICallback<UserPhysics::ObjectType>
 {
     static PlasmaProgram program;
+
+    static const unsigned int BallVerticesCount = 242;
+    static const unsigned int BallIndicesCount = 1440;
+    static glm::vec3 ballVertices[BallVerticesCount];
+    static unsigned int ballIndices[BallIndicesCount];
 
 protected:
     float maxDistance;

@@ -5,8 +5,8 @@
 #include "Utils\Logger.h"
 #include "RockEffect.h"
 
-RockEffect::RockEffect(ModelManager* modelManager, BasicPhysics* physics, int subTileSize)
-    : modelManager(modelManager), physics(physics), subTileSize(subTileSize)
+RockEffect::RockEffect(ModelManager* modelManager, BasicPhysics* physics)
+    : modelManager(modelManager), physics(physics)
 {
 }
 
@@ -24,11 +24,12 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
     int rockCounter = 1;
     const long ROCK_SUBCOUNT = 8;
     const long MOVABLE_ROCK_SUBCOUNT = 16;
-    for (int i = 0; i < subTileSize; i++)
+    for (int i = 0; i < TerrainTile::SubtileSize; i++)
     {
-        for (int j = 0; j < subTileSize; j++)
+        for (int j = 0; j < TerrainTile::SubtileSize; j++)
         {
-            if (tile->type[i + j * subTileSize] == TerrainTypes::ROCKS)
+            int pixelId = tile->GetPixelId(glm::ivec2(i, j));
+            if (tile->type[pixelId] == TerrainTypes::ROCKS)
             {
                 ++rockCounter;
                 if (rockCounter % ROCK_SUBCOUNT == 0)
@@ -51,8 +52,8 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
 
                     // TODO configurable
                     // TODO randomly generated masses.
-                    float height = tile->heightmap[i + j * subTileSize];
-                    glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)i + glm::linearRand(0.0f, 1.0f), (float)j + glm::linearRand(0.0f, 1.0f));
+                    float height = tile->heightmap[pixelId];
+                    glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j)) + glm::vec2(glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f));
                     model.body = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
                     model.body->setActivationState(ISLAND_SLEEPING);
 
@@ -74,8 +75,8 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
 
                     // TODO configurable
                     // TODO randomly generated masses.
-                    float height = tile->heightmap[i + j * subTileSize];
-                    glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)i + glm::linearRand(0.0f, 1.0f), (float)j + glm::linearRand(0.0f, 1.0f));
+                    float height = tile->heightmap[pixelId];
+                    glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j)) + glm::vec2(glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f));
                     model.body = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height + 2.0f), 30.0f);
                     model.body->setActivationState(ISLAND_SLEEPING);
 

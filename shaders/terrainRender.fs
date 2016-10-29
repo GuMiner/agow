@@ -118,7 +118,7 @@ void main(void)
         color = vec4(0.4f, 0.4f, 0.4f, 1.0f);
     }
     
-	int type = GetNearestType(int(texelFetch(terrainType, ivec2(tc_fs.x * 100, tc_fs.y * 100), 0).r * 255.0f));
+	int type = GetNearestType(int(texelFetch(terrainType, ivec2(tc_fs.x * 100 + 1, tc_fs.y * 100 + 1), 0).r * 255.0f));
 	vec4 typeColor = GetTypeColor(type);
 	
 	if (type == LAKE)

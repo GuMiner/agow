@@ -30,8 +30,6 @@ struct TreeProgram
 
 class TreeEffect : public TerrainEffect
 {
-    int subTileSize; // In pixels
-
     TreeCache treeCache;
     std::vector<TreeCacheData> cachedTrees;
 
@@ -40,9 +38,9 @@ class TreeEffect : public TerrainEffect
     TreeGenerator treeGenerator;
 
 public:
-    TreeEffect(const std::string& cacheFolder, int subTileSize);
+    TreeEffect(const std::string& cacheFolder);
     virtual bool LoadBasics(ShaderManager* shaderManager) override;
-    virtual bool LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * tile) override;
+    virtual bool LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile) override;
     virtual void UnloadEffect(void* effectData) override;
     virtual void Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds) override;
     virtual void Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix) override;

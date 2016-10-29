@@ -17,7 +17,6 @@ class TerrainManager
 
     ShaderManager* shaderManager;
     std::string rootFolder;
-    int tileSize; // In pixels
 
     GLuint terrainRenderProgram;
 
@@ -42,11 +41,7 @@ class TerrainManager
     void CleanupTerrainTile(glm::ivec2 start, bool log);
 
 public:
-    TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, int tileSize);
-    
-    static const int Subdivisions = 10;
-    int GetTileSize() const;
-    int GetSubTileSize() const;
+    TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder);
 
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();

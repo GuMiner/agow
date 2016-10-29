@@ -2,8 +2,7 @@
 #include "Utils\Logger.h"
 #include "GrassEffect.h"
 
-GrassEffect::GrassEffect(int subTileSize)
-    : subTileSize(subTileSize)
+GrassEffect::GrassEffect()
 {
 }
 
@@ -28,11 +27,12 @@ bool GrassEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* t
     GrassEffectData* grassEffect = nullptr;
 
     // Scan the image for grass pixels.
-    for (int i = 0; i < subTileSize; i++)
+    for (int i = 0; i < TerrainTile::SubtileSize; i++)
     {
-        for (int j = 0; j < subTileSize; j++)
+        for (int j = 0; j < TerrainTile::SubtileSize; j++)
         {
-            if (tile->type[i + j * subTileSize] == TerrainTypes::GRASSLAND)
+            int pixelId = tile->GetPixelId(glm::ivec2(i, j));
+            if (tile->type[pixelId] == TerrainTypes::GRASSLAND)
             {
                 if (!hasGrassEffect)
                 {
@@ -40,8 +40,8 @@ bool GrassEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* t
                     hasGrassEffect = true;
                 }
                 
-                float height = tile->heightmap[i + j * subTileSize];
-                glm::vec2 realPos = glm::vec2((float)subtileId.x * 0.10f + (float)i, (float)subtileId.y * 0.10f + (float)j) - glm::vec2(10, 40); // TODO where did this offset come from?
+                float height = tile->heightmap[pixelId];
+                glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j));
 
                 // TODO configurable
                 glm::vec3 bottomColor = glm::vec3(0.0f, 0.90f + glm::linearRand(0.0f, 0.10f), 0.0f);

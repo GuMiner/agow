@@ -10,7 +10,7 @@ glm::vec2 Map::GetPoint(POI point)
     switch (point)
     {
     case POI::PLAYER:
-        return glm::vec2(12000, 44000);
+        return glm::vec2(12200, 44000);
     case POI::GEAR_SCIENTIST:
         return glm::vec2(12020, 44000);
     case POI::INTELLIGENCE_SCIENTIST:

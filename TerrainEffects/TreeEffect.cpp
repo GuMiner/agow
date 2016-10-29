@@ -1,10 +1,11 @@
 #include <glm\gtc\random.hpp>
 #include "Generators\ColorGenerator.h"
+#include "Managers\TerrainManager.h"
 #include "Utils\Logger.h"
 #include "TreeEffect.h"
 
-TreeEffect::TreeEffect(const std::string& cacheFolder, int subTileSize)
-    : treeCache(cacheFolder, "trees"), subTileSize(subTileSize)
+TreeEffect::TreeEffect(const std::string& cacheFolder)
+    : treeCache(cacheFolder, "trees")
 {
 }
 
@@ -77,12 +78,13 @@ bool TreeEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
     // TODO do we want to cache from the cached trees?
     // Scan the image for tree pixels.
     int treesInRegion = 0;
-    for (int i = 0; i < subTileSize; i++)
+    for (int i = 0; i < TerrainTile::SubtileSize; i++)
     {
-        for (int j = 0; j < subTileSize; j++)
+        for (int j = 0; j < TerrainTile::SubtileSize; j++)
         {
             // TOOD configurable density
-            if (tile->type[i + j * subTileSize] == TerrainTypes::TREES && glm::linearRand(0.0f, 1.0f) > 0.90f)
+            int pixelId = tile->GetPixelId(glm::ivec2(i, j));
+            if (tile->type[pixelId] == TerrainTypes::TREES && glm::linearRand(0.0f, 1.0f) > 0.90f)
             {
                 ++treesInRegion;
                 if (!hasTreeEffect)
@@ -91,8 +93,8 @@ bool TreeEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                     hasTreeEffect = true;
                 }
 
-                float height = tile->heightmap[i + j * subTileSize];
-                glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j);
+                float height = tile->heightmap[i + j * TerrainTile::SubtileSize];
+                glm::ivec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j));
 
                 glm::vec3 bottomPos = glm::vec3((float)realPos.x + glm::linearRand(-1.0f, 1.0f), (float)realPos.y + glm::linearRand(-1.0f, 1.0f), height);
 

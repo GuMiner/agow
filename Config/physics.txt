@@ -12,7 +12,3 @@ ViewSidewaysSpeed 2000.0
 
 ViewRotateUpFactor 0.1
 ViewRotateAroundFactor 0.1
-
-# Physics size of the terrain size. 
-# *This always will equal the graphics size*
-TerrainSize 1000

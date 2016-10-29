@@ -10,6 +10,7 @@ struct IndividualCar
     Model wheels[4];
 
     btHinge2Constraint* wheelConstraints[4];
+    btPoint2PointConstraint* wheelConnectors[4];
 };
 
 class Car : public Vehicle

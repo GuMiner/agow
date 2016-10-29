@@ -13,17 +13,17 @@
 #include "Utils\ImageUtils.h"
 
 
-TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, int subTileSize)
-    : shaderManager(shaderManager), modelManager(modelManager), physics(basicPhysics), subTileSize(subTileSize)
+TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics)
+    : shaderManager(shaderManager), modelManager(modelManager), physics(basicPhysics)
 {
-    effects.push_back((TerrainEffect*)new GrassEffect(subTileSize));
-    effects.push_back((TerrainEffect*)new RockEffect(modelManager, physics, subTileSize));
-    // effects.push_back((TerrainEffect*)new RoadEffect(subTileSize));
-    effects.push_back((TerrainEffect*)new SignEffect(modelManager, physics, subTileSize));
-
-    // TODO configurable
-    effects.push_back((TerrainEffect*)new TreeEffect("cache/trees", subTileSize));
-    effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/buildings", subTileSize));
+    effects.push_back((TerrainEffect*)new GrassEffect());
+    // effects.push_back((TerrainEffect*)new RockEffect(modelManager, physics));
+    // effects.push_back((TerrainEffect*)new RoadEffect());
+    // effects.push_back((TerrainEffect*)new SignEffect(modelManager, physics));
+    // 
+    // // TODO configurable
+    // effects.push_back((TerrainEffect*)new TreeEffect("cache/trees"));
+    // effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/buildings"));
 }
 
 bool TerrainEffectManager::LoadBasics()

@@ -1,12 +1,12 @@
 #include "Utils\Logger.h"
 #include "RegionManager.h"
 
-RegionManager::RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, int tileSize, glm::ivec2 min, glm::ivec2 max, int tileViewDistance)
-    : terrainManager(min, max, shaderManager, modelManager, physics, terrainRootFolder, tileSize),
+RegionManager::RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance)
+    : terrainManager(min, max, shaderManager, modelManager, physics, terrainRootFolder),
       loadedRegions(), visibleTiles(), tileViewDistance(tileViewDistance)
 {
-    this->min = min * TerrainManager::Subdivisions;
-    this->max = max * TerrainManager::Subdivisions;
+    this->min = min * TerrainTile::Subdivisions;
+    this->max = max * TerrainTile::Subdivisions;
     lastCenterTile = glm::ivec2(min);
 }
 
@@ -17,49 +17,49 @@ bool RegionManager::InitializeGraphics()
 
 float RegionManager::GetPointHeight(btDynamicsWorld* dynamicsWorld, const glm::vec2 point)
 {
-    glm::ivec2 region = glm::ivec2((int)point.x, (int)point.y) / terrainManager.GetTileSize();
-    if (region.x * TerrainManager::Subdivisions < min.x || region.x * TerrainManager::Subdivisions > max.x || region.y * TerrainManager::Subdivisions < min.y || region.y * TerrainManager::Subdivisions > max.y)
+    glm::ivec2 region = glm::ivec2((int)point.x, (int)point.y) / TerrainTile::TileSize;
+    glm::ivec2 subtileRegion = glm::ivec2((int)point.x, (int)point.y) / TerrainTile::SubtileSize;
+    if (subtileRegion.x < min.x || subtileRegion.x > max.x || subtileRegion.y < min.y || subtileRegion.y > max.y)
     {
-        Logger::LogWarn("Attempted to get the height of a point outside the subtile boundaries: [", region.x * TerrainManager::Subdivisions, ", ", region.y * TerrainManager::Subdivisions, "].");
+        Logger::LogWarn("Attempted to get the height of a point outside the subtile boundaries: [", region.x, ", ", region.y, "].");
         return 0;
     }
 
     // Load the region if it hasn't been loaded already.
     if (loadedRegions.find(region) == loadedRegions.end())
     {
-        loadedRegions[region] = new Region(region, &terrainManager, TerrainManager::Subdivisions);
+        loadedRegions[region] = new Region(region, &terrainManager);
     }
 
     std::vector<glm::ivec2> tileMap;
-    tileMap.push_back(glm::ivec2((int)point.x, (int)point.y) / (terrainManager.GetTileSize() / TerrainManager::Subdivisions));
+    tileMap.push_back(subtileRegion);
     loadedRegions[region]->EnsureHeightmapsLoaded(dynamicsWorld, &tileMap);
     return loadedRegions[region]->GetPointHeight(tileMap[0], glm::ivec2((int)point.x, (int)point.y));
 }
 
 int RegionManager::GetPointTerrainType(btDynamicsWorld* dynamicsWorld, const glm::vec2 point)
 {
-    glm::ivec2 region = glm::ivec2((int)point.x, (int)point.y) / terrainManager.GetTileSize();
-    if (region.x * TerrainManager::Subdivisions < min.x || region.x * TerrainManager::Subdivisions > max.x || region.y * TerrainManager::Subdivisions < min.y || region.y * TerrainManager::Subdivisions > max.y)
+    glm::ivec2 region = glm::ivec2((int)point.x, (int)point.y) / TerrainTile::TileSize;
+    glm::ivec2 subtileRegion = glm::ivec2((int)point.x, (int)point.y) / TerrainTile::SubtileSize;
+    if (subtileRegion.x < min.x || subtileRegion.x > max.x || subtileRegion.y < min.y || subtileRegion.y  > max.y)
     {
-        Logger::LogWarn("Attempted to get the terrain type of a point outside the subtile boundaries: [", region.x * TerrainManager::Subdivisions, ", ", region.y * TerrainManager::Subdivisions, "].");
+        Logger::LogWarn("Attempted to get the terrain type of a point outside the subtile boundaries: [", region.x, ", ", region.y, "].");
         return TerrainTypes::LAKE;
     }
 
     // Load the region if it hasn't been loaded already.
     if (loadedRegions.find(region) == loadedRegions.end())
     {
-        loadedRegions[region] = new Region(region, &terrainManager, TerrainManager::Subdivisions);
+        loadedRegions[region] = new Region(region, &terrainManager);
     }
 
-    glm::ivec2 regionPos = glm::ivec2((int)point.x, (int)point.y) / (terrainManager.GetTileSize() / TerrainManager::Subdivisions);
-    return loadedRegions[region]->GetPointType(regionPos, glm::ivec2((int)point.x, (int)point.y));
+    return loadedRegions[region]->GetPointType(subtileRegion, glm::ivec2((int)point.x, (int)point.y));
 }
 
 glm::ivec2 RegionManager::GetCurrentCenterTile(const glm::vec3& position) const
 {
     // Round down.
-    int scaleDownFactor = terrainManager.GetTileSize() / TerrainManager::Subdivisions;
-    return glm::ivec2((int)position.x, (int)position.y) / scaleDownFactor;
+    return glm::ivec2((int)position.x, (int)position.y) / TerrainTile::SubtileSize;
 }
 
 void RegionManager::ComputeVisibleTiles(glm::ivec2 centerTile, std::vector<glm::ivec2>* visibleTiles) const
@@ -99,7 +99,7 @@ void RegionManager::UpdateVisibleRegion(const glm::vec3& playerPosition, btDynam
     std::set<glm::ivec2, iVec2Comparer> visibleRegions;
     for (const glm::ivec2& visibleTile : visibleTiles)
     {
-        visibleRegions.insert(visibleTile / TerrainManager::Subdivisions);
+        visibleRegions.insert(visibleTile / TerrainTile::Subdivisions);
     }
 
     Logger::Log("Center (", centerTile.x, ", ", centerTile.y, "): visible tile results: found a total of ", visibleTiles.size(), " tiles in ", visibleRegions.size(), " regions.");
@@ -107,7 +107,7 @@ void RegionManager::UpdateVisibleRegion(const glm::vec3& playerPosition, btDynam
     {
         if (loadedRegions.find(visibleRegion) == loadedRegions.end())
         {
-            loadedRegions[visibleRegion] = new Region(visibleRegion, &terrainManager, TerrainManager::Subdivisions);
+            loadedRegions[visibleRegion] = new Region(visibleRegion, &terrainManager);
         }
 
         loadedRegions[visibleRegion]->EnsureHeightmapsLoaded(dynamicsWorld, &visibleTiles);
@@ -137,7 +137,7 @@ void RegionManager::SimulateVisibleRegions(float gameTime, float elapsedSeconds)
 
     for (const glm::ivec2& visibleTile : visibleTiles)
     {
-        glm::ivec2 region = visibleTile / TerrainManager::Subdivisions;
+        glm::ivec2 region = visibleTile / TerrainTile::Subdivisions;
         loadedRegions[region]->Simulate(&terrainManager, visibleTile, elapsedSeconds);
     }
 }
@@ -146,7 +146,7 @@ void RegionManager::RenderRegions(const glm::mat4& perspectiveMatrix, const glm:
 {
     for (const glm::ivec2& visibleTile : visibleTiles)
     {
-        glm::ivec2 region = visibleTile / TerrainManager::Subdivisions;
+        glm::ivec2 region = visibleTile / TerrainTile::Subdivisions;
         loadedRegions[region]->RenderRegion(visibleTile, &terrainManager, perspectiveMatrix, viewMatrix);
     }
 }

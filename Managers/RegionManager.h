@@ -27,7 +27,7 @@ class RegionManager
     void ComputeVisibleTiles(glm::ivec2 centerTile, std::vector<glm::ivec2>* visibleTiles) const;
 
 public:
-    RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, int tileSize, glm::ivec2 min, glm::ivec2 max, int tileViewDistance);
+    RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance);
     bool InitializeGraphics();
     
     // Returns the sector the user is currently in.

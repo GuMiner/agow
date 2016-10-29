@@ -2,8 +2,7 @@
 #include "Utils\Logger.h"
 #include "RoadEffect.h"
 
-RoadEffect::RoadEffect(int subTileSize)
-    : subTileSize(subTileSize)
+RoadEffect::RoadEffect()
 {
 }
 
@@ -29,11 +28,12 @@ bool RoadEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
     // Scan the image for road pixels.
     int roadCounter = 1;
     const long ROAD_SUBCOUNT = 10;
-    for (int i = 0; i < subTileSize; i++)
+    for (int i = 0; i < TerrainTile::SubtileSize; i++)
     {
-        for (int j = 0; j < subTileSize; j++)
+        for (int j = 0; j <  TerrainTile::SubtileSize; j++)
         {
-            if (tile->type[i + j * subTileSize] == TerrainTypes::ROADS)
+            int pixelId = tile->GetPixelId(glm::ivec2(i, j));
+            if (tile->type[pixelId] == TerrainTypes::ROADS)
             {
                 ++roadCounter;
 
@@ -45,8 +45,8 @@ bool RoadEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                         roadEffect = new RoadEffectData(tile);
                     }
 
-                    float height = tile->heightmap[i + j * subTileSize];
-                    glm::ivec2 realPos = subtileId / 10 + glm::ivec2(i, j); // -glm::ivec2(1, 4); // TODO figure out where this came from.
+                    float height = tile->heightmap[pixelId];
+                    glm::ivec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j));
 
                     // TODO configurable
                     glm::vec3 bottomColor = glm::vec3(0.0f, 0.50f, glm::linearRand(0.0f, 0.20f) + 0.80f);
@@ -101,14 +101,14 @@ float RoadEffect::MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* road
     // This logic causes a slight pause when a boundary is hit, which looks logical.
     bool hitEdgeBoundary = false;
     glm::ivec2 subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId / 10;
-    if (subTilePos.x < 0 || subTilePos.x >= subTileSize)
+    if (subTilePos.x < 0 || subTilePos.x >= TerrainTile::SubtileSize)
     {
         roadEffect->positions[i] -= (roadEffect->velocities[i] * elapsedSeconds);
         roadEffect->velocities[i].x *= -1.0f;
         hitEdgeBoundary = true;
     }
     
-    if (subTilePos.y < 0 || subTilePos.y >= subTileSize)
+    if (subTilePos.y < 0 || subTilePos.y >= TerrainTile::SubtileSize)
     {
         roadEffect->positions[i] -= (roadEffect->velocities[i] * elapsedSeconds);
         roadEffect->velocities[i].y *= -1.0f;
@@ -116,13 +116,14 @@ float RoadEffect::MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* road
     }
 
     subTilePos = glm::ivec2(roadEffect->positions[i].x, roadEffect->positions[i].y) - subtileId / 10;
-    subTilePos.x = std::max(std::min(subTilePos.x, subTileSize - 1), 0);
-    subTilePos.y = std::max(std::min(subTilePos.y, subTileSize - 1), 0);
+    subTilePos.x = std::max(std::min(subTilePos.x, TerrainTile::SubtileSize - 1), 0);
+    subTilePos.y = std::max(std::min(subTilePos.y, TerrainTile::SubtileSize - 1), 0);
 
     if (!hitEdgeBoundary)
     {
         // See if we went off a road. If so, correct.
-        if (roadEffect->tile->type[subTilePos.x + subTilePos.y * subTileSize] != TerrainTypes::ROADS)
+        int pixelId = roadEffect->tile->GetPixelId(subTilePos);
+        if (roadEffect->tile->type[pixelId] != TerrainTypes::ROADS)
         {
             glm::ivec2 offRoad = subTilePos;
             roadEffect->positions[i] -= (roadEffect->velocities[i] * elapsedSeconds);
@@ -163,8 +164,7 @@ float RoadEffect::MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* road
         }
     }
 
-    
-    return roadEffect->tile->heightmap[subTilePos.x + subTilePos.y * subTileSize];
+    return roadEffect->tile->heightmap[roadEffect->tile->GetPixelId(subTilePos)];
 }
 
 void RoadEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds)

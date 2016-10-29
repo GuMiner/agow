@@ -13,10 +13,9 @@ class SignEffect : public TerrainEffect
 {
     ModelManager* modelManager;
     BasicPhysics* physics;
-    int subTileSize; // In pixels
 
 public:
-    SignEffect(ModelManager* modelManager, BasicPhysics* physics, int subTileSize);
+    SignEffect(ModelManager* modelManager, BasicPhysics* physics);
     virtual bool LoadBasics(ShaderManager* shaderManager) override;
     virtual bool LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile) override;
     virtual void UnloadEffect(void* effectData) override;

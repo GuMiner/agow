@@ -22,8 +22,6 @@ struct RoadEffectData
 
 class RoadEffect : public TerrainEffect
 {
-    int subTileSize; // In pixels
-
     GLuint programId;
 
     GLuint projMatrixLocation;
@@ -33,7 +31,7 @@ class RoadEffect : public TerrainEffect
     float MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* roadEffect, int travellerId, float elapsedSeconds);
 
 public:
-    RoadEffect(int subTileSize);
+    RoadEffect();
 
     virtual bool LoadBasics(ShaderManager* shaderManager) override;
     virtual bool LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile) override;

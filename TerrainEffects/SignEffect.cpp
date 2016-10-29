@@ -4,8 +4,8 @@
 #include "Utils\Logger.h"
 #include "SignEffect.h"
 
-SignEffect::SignEffect(ModelManager* modelManager, BasicPhysics* physics, int subTileSize)
-    : modelManager(modelManager), physics(physics), subTileSize(subTileSize)
+SignEffect::SignEffect(ModelManager* modelManager, BasicPhysics* physics)
+    : modelManager(modelManager), physics(physics)
 {
 }
 
@@ -23,19 +23,20 @@ bool SignEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
     // Scan the image for the sign setting.
     // A sign is a grass-dirt corner. TODO figure out real size.
     // TODO handle signs stradling subtiles.****
-    for (int i = 1; i < subTileSize - 4; i++)
+    for (int i = 1; i < TerrainTile::SubtileSize - 4; i++)
     {
-        for (int j = 1; j < subTileSize - 4; j++)
+        for (int j = 1; j < TerrainTile::SubtileSize - 4; j++)
         {
-            if (tile->type[i + j * subTileSize] == TerrainTypes::DIRTLAND)
+            int pixelId = tile->GetPixelId(glm::ivec2(i, j));
+            if (tile->type[pixelId] == TerrainTypes::DIRTLAND)
             {
                 // See if the upper-left is grass in x and y.
-                if (tile->type[(i - 1) + j * subTileSize] == TerrainTypes::GRASSLAND && tile->type[i + (j - 1) * subTileSize] == TerrainTypes::GRASSLAND)
+                if (tile->type[(i - 1) + j * TerrainTile::SubtileSize] == TerrainTypes::GRASSLAND && tile->type[i + (j - 1) * TerrainTile::SubtileSize] == TerrainTypes::GRASSLAND)
                 {
                     // See if dirtland is in the next two followed by grassland.
-                    if (tile->type[(i + 1) + j * subTileSize] == TerrainTypes::DIRTLAND && tile->type[i + (j + 1) * subTileSize] == TerrainTypes::DIRTLAND)
+                    if (tile->type[(i + 1) + j * TerrainTile::SubtileSize] == TerrainTypes::DIRTLAND && tile->type[i + (j + 1) * TerrainTile::SubtileSize] == TerrainTypes::DIRTLAND)
                     {
-                        if (tile->type[(i + 2) + j * subTileSize] == TerrainTypes::DIRTLAND && tile->type[i + (j + 2) * subTileSize] == TerrainTypes::DIRTLAND)
+                        if (tile->type[(i + 2) + j * TerrainTile::SubtileSize] == TerrainTypes::DIRTLAND && tile->type[i + (j + 2) * TerrainTile::SubtileSize] == TerrainTypes::DIRTLAND)
                         {
                             // Valid sign! 
                             if (!hasSignEffect)
@@ -55,8 +56,8 @@ bool SignEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
                             model.color = glm::vec4(0.60f, 0.70f, 0.60f, 1.0f);
 
                             // TODO configurable masses.
-                            float height = tile->heightmap[i + j * subTileSize];
-                            glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)(i + 1), (float)(j + 1));
+                            float height = tile->heightmap[pixelId];
+                            glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i + 1, j + 1));
                             model.body = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
 
                             signEfect->signs.push_back(model);

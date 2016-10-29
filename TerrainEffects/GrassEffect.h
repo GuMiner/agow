@@ -22,7 +22,7 @@ class GrassEffect : public TerrainEffect
     GLuint mvMatrixLocation;
 
 public:
-    GrassEffect(int subTileSize);
+    GrassEffect();
     virtual bool LoadBasics(ShaderManager* shaderManager) override;
     virtual bool LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * tile) override;
     virtual void UnloadEffect(void* effectData) override;

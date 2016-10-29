@@ -6,19 +6,9 @@
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
 
-TerrainManager::TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, std::string terrainRootFolder, int tileSize)
-    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), tileSize(tileSize), terrainEffects(shaderManager, modelManager, basicPhysics, tileSize / TerrainManager::Subdivisions)
+TerrainManager::TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, std::string terrainRootFolder)
+    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), terrainEffects(shaderManager, modelManager, basicPhysics)
 {
-}
-
-int TerrainManager::GetTileSize() const
-{
-    return tileSize;
-}
-
-int TerrainManager::GetSubTileSize() const
-{
-    return GetTileSize() / TerrainManager::Subdivisions;
 }
 
 bool TerrainManager::LoadBasics()
@@ -102,7 +92,7 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
         tileName << rootFolder << "/" << start.y << "/" << start.x << ".png";
 
         int width, height;
-        if (!ImageUtils::GetRawImage(tileName.str().c_str(), &terrainTiles[start]->rawImage, &width, &height) || width != tileSize || height != tileSize)
+        if (!ImageUtils::GetRawImage(tileName.str().c_str(), &terrainTiles[start]->rawImage, &width, &height) || width != TerrainTile::TileSize || height != TerrainTile::TileSize)
         {
             Logger::Log("Failed to load tile [", start.x, ", ", start.y, "] because of bad image/width/height: [", width, ", ", height, ".");
             return false;
@@ -111,20 +101,20 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
 
     if (loadSubtiles && !terrainTiles[start]->loadedSubtiles)
     {
-        int subSize = GetSubTileSize() + 2;
-        for (int i = 0; i < TerrainManager::Subdivisions; i++)
+        int subSize = TerrainTile::SubtileSize + 2;
+        for (int i = 0; i < TerrainTile::Subdivisions; i++)
         {
-            for (int j = 0; j < TerrainManager::Subdivisions; j++)
+            for (int j = 0; j < TerrainTile::Subdivisions; j++)
             {
                 // Populate our main image
                 float* heightmap = new float[subSize * subSize];
                 unsigned char* types = new unsigned char[subSize * subSize];
-                for (int x = 0; x < GetSubTileSize(); x++)
+                for (int x = 0; x < TerrainTile::SubtileSize; x++)
                 {
-                    for (int y = 0; y < GetSubTileSize(); y++)
-                    {
+                    for (int y = 0; y < TerrainTile::SubtileSize; y++)
+                    {   
                         int largerTilePixelId = (x + 1) + (y + 1) * subSize;
-                        ReadTilePixel(start, glm::ivec2(x + i * GetSubTileSize(), y + j * GetSubTileSize()), &heightmap[largerTilePixelId], &types[largerTilePixelId]);
+                        ReadTilePixel(start, glm::ivec2(x + i * TerrainTile::SubtileSize, y + j * TerrainTile::SubtileSize), &heightmap[largerTilePixelId], &types[largerTilePixelId]);
                     }
                 }
 
@@ -136,9 +126,26 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
                     for (int y = 0; y < subSize; y++)
                     {
                         // Perform per-tile height modifications
-                        if (types[x + y * subSize] == TerrainTypes::ROADS)
+                        switch (types[x + y * subSize])
                         {
+                        case TerrainTypes::ROADS:
                             heightmap[x + y * subSize] -= (0.50f / 900.0f);
+                            break;
+                        case TerrainTypes::RIVER:
+                            heightmap[x + y * subSize] -= (1.0f / 900.0f);
+                            break;
+                        case TerrainTypes::CITY:
+                        case TerrainTypes::DIRTLAND:
+                        case TerrainTypes::GRASSLAND:
+                        case TerrainTypes::ROCKS:
+                        case TerrainTypes::SAND:
+                        case TerrainTypes::SNOW_PEAK:
+                        case TerrainTypes::TREES:
+                            break;
+                        default:
+                            // Lake isn't guaranteed to be the last item, 
+                            heightmap[x + y * subSize] -= (2.0f / 900.0f);
+                            break;
                         }
                     }
                 }
@@ -147,14 +154,14 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
                 GLuint heightmapTextureId = CreateTileTexture(GL_TEXTURE0, subSize, heightmap);
 
                 // After saving to OpenGL, scale accordingly for Bullet physics to properly deal with the terrain (heightmap only) and remove the extra layer (heightmap and type).
-                float* realHeightmap = new float[GetSubTileSize() * GetSubTileSize()];
-                unsigned char* realTypes = new unsigned char[GetSubTileSize() * GetSubTileSize()];
+                float* realHeightmap = new float[TerrainTile::SubtileSize * TerrainTile::SubtileSize];
+                unsigned char* realTypes = new unsigned char[TerrainTile::SubtileSize * TerrainTile::SubtileSize];
                 const float scale = 900.0f;
-                for (int x = 0; x < GetSubTileSize(); x++)
+                for (int x = 0; x < TerrainTile::SubtileSize; x++)
                 {
-                    for (int y = 0; y < GetSubTileSize(); y++)
+                    for (int y = 0; y < TerrainTile::SubtileSize; y++)
                     {
-                        int id = x + y * GetSubTileSize();
+                        int id = x + y * TerrainTile::SubtileSize;
                         int largerId = (x + 1) + (y + 1) * subSize;
                         realHeightmap[id] = scale * heightmap[largerId];
                         realTypes[id] = types[largerId];
@@ -162,7 +169,7 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
                 }
 
                 // Send types to OpenGL with *no* buffer space.
-                GLuint typeTextureId = CreateTileTexture(GL_TEXTURE1, GetSubTileSize(), realTypes);
+                GLuint typeTextureId = CreateTileTexture(GL_TEXTURE1, TerrainTile::SubtileSize, realTypes);
 
                 // We no longer need the data as it is now in the GPU.
                 delete[] heightmap;
@@ -170,7 +177,7 @@ bool TerrainManager::LoadTileToCache(glm::ivec2 start, bool loadSubtiles)
 
                 glm::ivec2 subTilePos = glm::ivec2(i, j);
                 terrainTiles[start]->subtiles[subTilePos] = new SubTile(heightmapTextureId, realHeightmap, typeTextureId, realTypes);
-                terrainEffects.LoadSubTileEffects(subTilePos + start * TerrainManager::Subdivisions, terrainTiles[start]->subtiles[subTilePos]);
+                terrainEffects.LoadSubTileEffects(subTilePos + start * TerrainTile::Subdivisions, terrainTiles[start]->subtiles[subTilePos]);
             }
         }
 
@@ -188,15 +195,15 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
         if (j != 0)
         {
             // Still within the same major tile.
-            return (GetSubTileSize() - 1) + (j - 1) * GetSubTileSize();
+            return (TerrainTile::SubtileSize - 1) + (j - 1) * TerrainTile::SubtileSize;
         }
         else if (start.y != min.y)
         {
             // Still within the same set of tiles.
-            return (GetSubTileSize() - 1) + (TerrainManager::Subdivisions - 1) * GetSubTileSize();
+            return (TerrainTile::SubtileSize - 1) + (TerrainTile::Subdivisions - 1) * TerrainTile::SubtileSize;
         }
         
-        return j * GetSubTileSize();
+        return j * TerrainTile::SubtileSize;
     };
 
     auto yMinusOneTile = [&]()
@@ -215,10 +222,10 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
 
     auto yPlusOne = [&]()
     {
-        if (j != TerrainManager::Subdivisions - 1)
+        if (j != TerrainTile::Subdivisions - 1)
         {
             // Still within the same major tile.
-            return (j + 1) * GetSubTileSize();
+            return (j + 1) * TerrainTile::SubtileSize;
         }
         else if (start.y != max.y)
         {
@@ -226,12 +233,12 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
             return 0;
         }
 
-        return j * GetSubTileSize();
+        return j * TerrainTile::SubtileSize;
     };
 
     auto yPlusOneTile = [&]()
     {
-        if (j != TerrainManager::Subdivisions - 1)
+        if (j != TerrainTile::Subdivisions - 1)
         {
             return start.y;
         }
@@ -248,15 +255,15 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
         if (i != 0)
         {
             // Still within the same major tile.
-            return (GetSubTileSize() - 1) + (i - 1) * GetSubTileSize();
+            return (TerrainTile::SubtileSize - 1) + (i - 1) * TerrainTile::SubtileSize;
         }
         else if (start.x != min.x)
         {
             // Still within the same set of tiles.
-            return (GetSubTileSize() - 1) + (TerrainManager::Subdivisions - 1) * GetSubTileSize();
+            return (TerrainTile::SubtileSize - 1) + (TerrainTile::Subdivisions - 1) * TerrainTile::SubtileSize;
         }
 
-        return i * GetSubTileSize();
+        return i * TerrainTile::SubtileSize;
     };
 
     auto xMinusOneTile = [&]()
@@ -275,10 +282,10 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
 
     auto xPlusOne = [&]()
     {
-        if (i != TerrainManager::Subdivisions - 1)
+        if (i != TerrainTile::Subdivisions - 1)
         {
             // Still within the same major tile.
-            return (i + 1) * GetSubTileSize();
+            return (i + 1) * TerrainTile::SubtileSize;
         }
         else if (start.x != max.x)
         {
@@ -286,12 +293,12 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
             return 0;
         }
 
-        return i * GetSubTileSize();
+        return i * TerrainTile::SubtileSize;
     };
 
     auto xPlusOneTile = [&]()
     {
-        if (i != TerrainManager::Subdivisions - 1)
+        if (i != TerrainTile::Subdivisions - 1)
         {
             return start.x;
         }
@@ -308,7 +315,7 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
     glm::ivec2 tile = glm::ivec2(start.x, yMinusOneTile());
     for (int x = 1; x < subSize - 1; x++)
     {
-        int xReal = (x - 1) + i * GetSubTileSize();
+        int xReal = (x - 1) + i * TerrainTile::SubtileSize;
         ReadTilePixel(tile, glm::ivec2(xReal, yReal), &heightmap[x], &types[x]);
     }
     
@@ -317,7 +324,7 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
     tile = glm::ivec2(start.x, yPlusOneTile());
     for (int x = 1; x < subSize - 1; x++)
     {
-        int xReal = (x - 1) + i * GetSubTileSize();
+        int xReal = (x - 1) + i * TerrainTile::SubtileSize;
         ReadTilePixel(tile, glm::ivec2(xReal, yReal), &heightmap[x + (subSize - 1) * subSize], &types[x + (subSize - 1) * subSize]);
     }
 
@@ -326,7 +333,7 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
     tile = glm::ivec2(xMinusOneTile(), start.y);
     for (int y = 1; y < subSize - 1; y++)
     {
-        int yReal = (y - 1) + j * GetSubTileSize();
+        int yReal = (y - 1) + j * TerrainTile::SubtileSize;
         ReadTilePixel(tile, glm::ivec2(xReal, yReal), &heightmap[y * subSize], &types[y * subSize]);
     }
 
@@ -335,7 +342,7 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
     tile = glm::ivec2(xPlusOneTile(), start.y);
     for (int y = 1; y < subSize - 1; y++)
     {
-        int yReal = (y - 1) + j * GetSubTileSize();
+        int yReal = (y - 1) + j * TerrainTile::SubtileSize;
         ReadTilePixel(tile, glm::ivec2(xReal, yReal), &heightmap[(subSize - 1) + y * subSize], &types[(subSize - 1) + y * subSize]);
     }
 
@@ -356,11 +363,11 @@ void TerrainManager::LoadHeightmapEdges(const glm::ivec2& start, int i, int j, i
 void TerrainManager::ReadTilePixel(const glm::ivec2& tile, const glm::ivec2& innerTilePos, float* heightmap, unsigned char* types)
 {
     *heightmap =
-        (float)((unsigned short)terrainTiles[tile]->rawImage[(innerTilePos.x + innerTilePos.y * tileSize) * 4] +
-            (((unsigned short)terrainTiles[tile]->rawImage[(innerTilePos.x + innerTilePos.y * tileSize) * 4 + 1]) << 8))
+        (float)((unsigned short)terrainTiles[tile]->rawImage[(innerTilePos.x + innerTilePos.y * TerrainTile::TileSize) * 4] +
+            (((unsigned short)terrainTiles[tile]->rawImage[(innerTilePos.x + innerTilePos.y * TerrainTile::TileSize) * 4 + 1]) << 8))
         / (float)std::numeric_limits<unsigned short>::max();
 
-    *types = terrainTiles[tile]->rawImage[(innerTilePos.x + innerTilePos.y * tileSize) * 4 + 2];
+    *types = terrainTiles[tile]->rawImage[(innerTilePos.x + innerTilePos.y * TerrainTile::TileSize) * 4 + 2];
 }
 
 bool TerrainManager::LoadTerrainTile(glm::ivec2 start, TerrainTile** tile)
@@ -401,7 +408,7 @@ void TerrainManager::Simulate(const glm::ivec2 start, const glm::ivec2 subPos, f
         return;
     }
 
-    terrainEffects.Simulate(subPos + start * TerrainManager::Subdivisions, elapsedSeconds);
+    terrainEffects.Simulate(subPos + start * TerrainTile::Subdivisions, elapsedSeconds);
 }
 
 // TODO go everywhere else and cleanup projection / perspective / model / mv / view to all be correct.
@@ -435,10 +442,10 @@ void TerrainManager::RenderTile(const glm::ivec2 start, const glm::ivec2 subPos,
     glUniform1f(gameTimeLocation, lastGameTime);
 
     glPatchParameteri(GL_PATCH_VERTICES, 4);
-    glDrawArraysInstanced(GL_PATCHES, 0, 4, GetSubTileSize() * GetSubTileSize());
+    glDrawArraysInstanced(GL_PATCHES, 0, 4, TerrainTile::SubtileSize * TerrainTile::SubtileSize);
 
     // Render tile SFX.
-    terrainEffects.RenderSubTileEffects(subPos + start * TerrainManager::Subdivisions, perspectiveMatrix, viewMatrix, modelMatrix);
+    terrainEffects.RenderSubTileEffects(subPos + start * TerrainTile::Subdivisions, perspectiveMatrix, viewMatrix, modelMatrix);
 }
 
 void TerrainManager::CleanupTerrainTile(glm::ivec2 start, bool log)
@@ -467,7 +474,7 @@ void TerrainManager::UnloadTerrainTile(glm::ivec2 start)
 {
     for (std::pair<const glm::ivec2, SubTile*> subTile : terrainTiles[start]->subtiles)
     {
-        terrainEffects.UnloadSubTileEffects(start * TerrainManager::Subdivisions + subTile.first);
+        terrainEffects.UnloadSubTileEffects(start * TerrainTile::Subdivisions + subTile.first);
     }
 
     CleanupTerrainTile(start, true);

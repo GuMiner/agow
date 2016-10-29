@@ -30,6 +30,28 @@ namespace TerrainTypes
     const int LAKE = 225;
 }
 
+// Forward declare for use in TerrainTile.
+struct SubTile;
+
+// Holds the graphics and physics raw information about an in-game tile.
+struct TerrainTile
+{
+    static const int TileSize = 1000;
+    static const int SubtileSize = 100;
+    static const int Subdivisions = TileSize / SubtileSize;
+
+    unsigned char* rawImage;
+    bool loadedSubtiles;
+
+    std::map<glm::ivec2, SubTile*, iVec2Comparer> subtiles;
+
+    // Returns the real position of the pixel (lower X, lower Y)
+    static glm::vec2 GetRealPosition(glm::ivec2 subtileId, glm::ivec2 subtilePixel)
+    {
+        return glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)SubtileSize + glm::vec2((float)subtilePixel.x, (float)subtilePixel.y);
+    }
+};
+
 struct SubTile
 {
     GLuint heightmapTextureId;
@@ -42,13 +64,9 @@ struct SubTile
         : heightmapTextureId(heightmapTextureId), heightmap(heightmap), typeTextureId(typeTextureId), type(type)
     {
     }
-};
 
-// Holds the graphics and physics raw information about an in-game tile.
-struct TerrainTile
-{
-    unsigned char* rawImage;
-    bool loadedSubtiles;
-
-    std::map<glm::ivec2, SubTile*, iVec2Comparer> subtiles;
+    int GetPixelId(const glm::ivec2& pos)
+    {
+        return pos.x + pos.y * TerrainTile::SubtileSize;
+    }
 };

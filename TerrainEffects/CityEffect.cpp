@@ -7,8 +7,8 @@
 #include "Utils\Logger.h"
 #include "CityEffect.h"
 
-CityEffect::CityEffect(ModelManager* modelManager, BasicPhysics* physics, const std::string& cacheFolder, int subTileSize)
-    : modelManager(modelManager), physics(physics), subTileSize(subTileSize) // TODO use the cache to avoid regeneraitng buildings.
+CityEffect::CityEffect(ModelManager* modelManager, BasicPhysics* physics, const std::string& cacheFolder)
+    : modelManager(modelManager), physics(physics) // TODO use the cache to avoid regenerating buildings.
 {
 }
 
@@ -35,14 +35,15 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
     int minRegionSize = 11;
 
     // Scan the image for city pixels, forming valid square regions to put buildings within.
-    for (int i = 0; i < subTileSize; i++)
+    for (int i = 0; i < TerrainTile::SubtileSize; i++)
     {
-        for (int j = 0; j < subTileSize; j++)
+        for (int j = 0; j < TerrainTile::SubtileSize; j++)
         {
-            if (tile->type[i + j * subTileSize] == TerrainTypes::CITY && !checkedTiles[i + j * subTileSize])
+            int pixelId = tile->GetPixelId(glm::ivec2(i, j));
+            if (tile->type[pixelId] == TerrainTypes::CITY && !checkedTiles[pixelId])
             {
                 // This is a new square region. Add it to the regions found.
-                checkedTiles[i + j * subTileSize] = true;
+                checkedTiles[pixelId] = true;
                 int regionSize = 1;
 
                 bool endOfRegion = false;
@@ -52,7 +53,7 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                     // Check horizontal. Also go one additional pixel to get the corner pixel.
                     for (int m = i; m < i + regionSize; m++)
                     {
-                        int posId = m + (j + regionSize) * subTileSize;
+                        int posId = tile->GetPixelId(glm::ivec2(m, (j + regionSize)));
                         if (tile->type[posId] != TerrainTypes::CITY || checkedTiles[posId])
                         {
                             endOfRegion = true;
@@ -65,7 +66,7 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                         // Check vertical.
                         for (int m = j; m < j + regionSize - 1; m++)
                         {
-                            int posId = (i + regionSize) + m * subTileSize;
+                            int posId = tile->GetPixelId(glm::ivec2((i + regionSize), m));
                             if (tile->type[posId] != TerrainTypes::CITY || checkedTiles[posId])
                             {
                                 endOfRegion = true;
@@ -79,12 +80,12 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                         // We now can add both areas we just scanned onto the checked tiles list.
                         for (int m = i; m < i + regionSize; m++)
                         {
-                            checkedTiles[m + (j + regionSize) * subTileSize] = true;
+                            checkedTiles[tile->GetPixelId(glm::ivec2(m, (j + regionSize)))] = true;
                         }
 
                         for (int m = j; m < j + regionSize - 1; m++)
                         {
-                            checkedTiles[(i + regionSize) + m * subTileSize] = true;
+                            checkedTiles[tile->GetPixelId(glm::ivec2((i + regionSize), m))] = true;
                         }
 
                         // Our region size includes the existing pixel, but in our calculations above it included an additional horizontal and vertical
@@ -134,7 +135,7 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                 // Get a building.
                 float separationRadius, buildingHeight;
                 float height = tile->heightmap[buildingXPos + buildingYPos * subTileSize];// -0.50f; // Ground inset, TODO configurable.
-                glm::vec2 realPos = glm::vec2((float)subtileId.x, (float)subtileId.y) * (float)(PhysicsConfig::TerrainSize / TerrainManager::Subdivisions) + glm::vec2((float)xPos, (float)yPos);
+                glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(xPos, yPos));
                 glm::vec3 offset((float)realPos.x, (float)realPos.y, height);
                 Building building;
                 building.segments = buildingGenerator.GetRandomLowDensityBuilding(offset, &separationRadius, &buildingHeight);

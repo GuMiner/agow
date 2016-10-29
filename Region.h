@@ -10,7 +10,6 @@
 class Region
 {
     glm::ivec2 pos;
-    int subdivisions;
 
     TerrainTile* regionTile;
     std::map<glm::ivec2, btRigidBody*, iVec2Comparer> loadedHeightmaps;
@@ -18,7 +17,7 @@ class Region
     btRigidBody* CreateHeightmap(glm::ivec2 tilePos, SubTile *subTile, btDynamicsWorld* dynamicsWorld);
      
 public:
-    Region(glm::ivec2 pos,  TerrainManager* terrainManager, int subdivisions);
+    Region(glm::ivec2 pos,  TerrainManager* terrainManager);
     glm::ivec2 GetPos() const;
 
     void EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::vector<glm::ivec2>* tilesToLoadHeightmapsFor);
