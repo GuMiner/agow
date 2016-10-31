@@ -13,8 +13,8 @@
 #include "Utils\ImageUtils.h"
 
 
-TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics)
-    : shaderManager(shaderManager), modelManager(modelManager), physics(basicPhysics)
+TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, Physics* Physics)
+    : shaderManager(shaderManager), modelManager(modelManager), physics(Physics)
 {
     effects.push_back((TerrainEffect*)new GrassEffect());
     effects.push_back((TerrainEffect*)new RockEffect(modelManager, physics));
@@ -23,7 +23,7 @@ TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelMa
     // 
     // // TODO configurable
     effects.push_back((TerrainEffect*)new TreeEffect("cache/trees"));
-    // effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/buildings"));
+    effects.push_back((TerrainEffect*)new CityEffect(modelManager, physics, "cache/buildings"));
 }
 
 bool TerrainEffectManager::LoadBasics()
@@ -86,6 +86,14 @@ void TerrainEffectManager::RenderSubTileEffects(const glm::ivec2 start, const gl
     for (auto iter = subtileEffectData[start].begin(); iter != subtileEffectData[start].end(); iter++)
     {
         (*iter)->effect->Render((*iter)->effectData, perspectiveMatrix, viewMatrix, modelMatrix);
+    }
+}
+
+void TerrainEffectManager::LogEffectInformation()
+{
+    for (auto iter = effects.begin(); iter != effects.end(); iter++)
+    {
+        (*iter)->LogStats();
     }
 }
 

@@ -1,6 +1,6 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include "Utils\Logger.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "ModelRenderStore.h"
 
 // TODO these should be calculated and elsewhere.
@@ -26,7 +26,7 @@ void ModelRenderStore::AddModelToStore(Model* model)
         return;
     }
 
-    glm::mat4 mvMatrix = glm::scale(BasicPhysics::GetBodyMatrix(model->body), model->scaleFactor);
+    glm::mat4 mvMatrix = glm::scale(Physics::GetBodyMatrix(model->body), model->scaleFactor);
     matrixStore.push_back(mvMatrix[0]);
     matrixStore.push_back(mvMatrix[1]);
     matrixStore.push_back(mvMatrix[2]);
@@ -44,7 +44,7 @@ void ModelRenderStore::InsertInModelStore(unsigned int location, Model* model)
     }
     else
     {
-        glm::mat4 mvMatrix = glm::scale(BasicPhysics::GetBodyMatrix(model->body), model->scaleFactor);
+        glm::mat4 mvMatrix = glm::scale(Physics::GetBodyMatrix(model->body), model->scaleFactor);
         matrixStore[location * 4] = mvMatrix[0];
         matrixStore[location * 4 + 1] = mvMatrix[1];
         matrixStore[location * 4 + 2] = mvMatrix[2];

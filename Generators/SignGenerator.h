@@ -3,14 +3,14 @@
 #include <vector>
 #include <glm\vec3.hpp>
 #include "Managers\ModelManager.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 
 struct SignInternal
 {
-    BasicPhysics::CShape shape;
+    Physics::CShape shape;
     unsigned int modelId;
 
-    SignInternal(BasicPhysics::CShape shape, unsigned int modelId)
+    SignInternal(Physics::CShape shape, unsigned int modelId)
         : shape(shape), modelId(modelId)
     {
     }
@@ -25,8 +25,8 @@ public:
     static bool LoadModels(ModelManager* modelManager);
 
     // Returns the model points so that physics can properly work on these models.
-    std::map<BasicPhysics::CShape, const std::vector<glm::vec3>*> GetModelPoints(ModelManager* modelManager);
+    std::map<Physics::CShape, const std::vector<glm::vec3>*> GetModelPoints(ModelManager* modelManager);
 
-    void GetRandomSignModel(unsigned int* modelId, BasicPhysics::CShape* shape) const;
+    void GetRandomSignModel(unsigned int* modelId, Physics::CShape* shape) const;
 };
 

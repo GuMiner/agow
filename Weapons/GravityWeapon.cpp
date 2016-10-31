@@ -2,7 +2,7 @@
 #include "WeaponBase.h"
 #include "GravityWeapon.h"
 
-GravityWeapon::GravityWeapon(BasicPhysics* physics)
+GravityWeapon::GravityWeapon(Physics* physics)
     : WeaponBase(physics, "Asteroid Redirector", 1.0f, false, 60.0f, 0.0f) // TODO configurable
 {
     storedAmmo = 1.0f;

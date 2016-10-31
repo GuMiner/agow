@@ -4,6 +4,8 @@
 #include "Utils\Logger.h"
 #include "TreeEffect.h"
 
+TreeStats TreeEffect::stats = TreeStats();
+
 TreeEffect::TreeEffect(const std::string& cacheFolder)
     : treeCache(cacheFolder, "trees")
 {
@@ -171,6 +173,7 @@ void TreeEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float el
 
 void TreeEffect::Render(void* effectData, const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
+    sf::Clock clock;
     TreeEffectData* treeEffect = (TreeEffectData*)effectData;
 
     // Render trunks.
@@ -192,4 +195,15 @@ void TreeEffect::Render(void* effectData, const glm::mat4& projectionMatrix, con
     glUniformMatrix4fv(leafProgram.mvMatrixLocation, 1, GL_FALSE, &(viewMatrix * modelMatrix)[0][0]);
 
     glDrawArrays(GL_POINTS, 0, treeEffect->treeLeaves.vertices.positions.size());
+
+    stats.usRenderTime += (long)clock.getElapsedTime().asMicroseconds();
+    stats.trunksRendered += treeEffect->treeTrunks.vertices.positions.size() / 2;
+    stats.leavesRendered += treeEffect->treeLeaves.vertices.positions.size();
+    stats.tilesRendered++;
+}
+
+void TreeEffect::LogStats()
+{
+    Logger::Log("Tree Rendering: ", stats.usRenderTime, " us, ", stats.trunksRendered, " trunks, ", stats.leavesRendered, " leaves, ", stats.tilesRendered, " tiles.");
+    stats.Reset();
 }

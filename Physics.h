@@ -1,4 +1,5 @@
 #pragma once
+#include <future>
 #include <map>
 #include <vector>
 #include <Bullet\btBulletDynamicsCommon.h>
@@ -7,8 +8,12 @@
 
 // Defines the basics of physics (ie, gravity) the rest of the game uses.
 // Also holds generic framework code.
-class BasicPhysics
+class Physics
 {
+    float accumulatedTimestep;
+    bool simulating;
+    std::future<void> simulationThread;
+
     // Bullet Physics
     btCollisionConfiguration *collisionConfiguration;
     btCollisionDispatcher *collisionDispatcher;
@@ -41,10 +46,12 @@ public:
     std::map<CShape, btCollisionShape*> CollisionShapes;
     btDiscreteDynamicsWorld *DynamicsWorld;
 
-    BasicPhysics();
+    Physics();
     bool LoadPhysics(btIDebugDraw* debugDrawer);
     void AddCollisionModels(std::map<CShape, const std::vector<glm::vec3>*> shapePoints);
     void Step(float timestep);
+    void PerformPostStepActions();
+
     void UnloadPhysics();
 
     // Simplifies returning a physics shape from preset settings. Ensure you call delete if you call get!

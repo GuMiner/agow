@@ -4,13 +4,14 @@
 #include "Math\PhysicsOps.h"
 #include "Utils\Logger.h"
 #include "Utils\TypedCallback.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 
-BasicPhysics::BasicPhysics()
+Physics::Physics()
+    : accumulatedTimestep(0.0f), simulating(false)
 {
 }
 
-void BasicPhysics::LoadBasicCollisionShapes()
+void Physics::LoadBasicCollisionShapes()
 {
     // TODO configurable
     float height = 0.75;
@@ -53,7 +54,7 @@ void BasicPhysics::LoadBasicCollisionShapes()
     delete[] playerPoints;
 }
 
-bool BasicPhysics::LoadPhysics(btIDebugDraw* debugDrawer)
+bool Physics::LoadPhysics(btIDebugDraw* debugDrawer)
 {
     collisionConfiguration = new btDefaultCollisionConfiguration();
     collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
@@ -76,7 +77,7 @@ bool BasicPhysics::LoadPhysics(btIDebugDraw* debugDrawer)
 }
 
 // Adds collsion models to the list of known collision shapes.
-void BasicPhysics::AddCollisionModels(std::map<CShape, const std::vector<glm::vec3>*> shapePoints)
+void Physics::AddCollisionModels(std::map<CShape, const std::vector<glm::vec3>*> shapePoints)
 {
     for (std::pair<const CShape, const std::vector<glm::vec3>*> shapePointPair : shapePoints)
     {
@@ -84,11 +85,28 @@ void BasicPhysics::AddCollisionModels(std::map<CShape, const std::vector<glm::ve
     }
 }
 
-void BasicPhysics::Step(float timestep)
+void Physics::Step(float timestep)
 {
-    // Run our simulation!
-    DynamicsWorld->stepSimulation(timestep);
+    if (simulating)
+    {
+        accumulatedTimestep += timestep;
+        if (simulationThread.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+        {
+            simulating = false;
+            PerformPostStepActions();
+        }
+    }
+    
+    if (!simulating)
+    {
+        // Run our simulation!
+        DynamicsWorld->stepSimulation(timestep);
+        PerformPostStepActions();
+    }
+}
 
+void Physics::PerformPostStepActions()
+{
     // Check for interesting collisions.
     const int manifoldCount = collisionDispatcher->getNumManifolds();
     for (int i = 0; i < manifoldCount; i++)
@@ -132,7 +150,7 @@ void BasicPhysics::Step(float timestep)
     }
 }
 
-void BasicPhysics::UnloadPhysics()
+void Physics::UnloadPhysics()
 {
     // Delete the collision shapes.
     for (auto iter = CollisionShapes.begin(); iter != CollisionShapes.end(); iter++)
@@ -149,7 +167,7 @@ void BasicPhysics::UnloadPhysics()
     delete collisionConfiguration;
 }
 
-btRigidBody* BasicPhysics::GetStaticBody(const CShape shape, const btVector3& origin)
+btRigidBody* Physics::GetStaticBody(const CShape shape, const btVector3& origin)
 {
     btTransform pos;
     pos.setIdentity();
@@ -162,7 +180,7 @@ btRigidBody* BasicPhysics::GetStaticBody(const CShape shape, const btVector3& or
     return body;
 }
 
-btRigidBody* BasicPhysics::GetStaticBody(btCollisionShape* collisionShape, const btVector3& origin)
+btRigidBody* Physics::GetStaticBody(btCollisionShape* collisionShape, const btVector3& origin)
 {
     btTransform pos;
     pos.setIdentity();
@@ -175,7 +193,7 @@ btRigidBody* BasicPhysics::GetStaticBody(btCollisionShape* collisionShape, const
     return body;
 }
 
-btRigidBody* BasicPhysics::GetDynamicBody(const CShape shape, const btVector3& origin, const float mass)
+btRigidBody* Physics::GetDynamicBody(const CShape shape, const btVector3& origin, const float mass)
 {
     btTransform pos;
     pos.setIdentity();
@@ -191,7 +209,7 @@ btRigidBody* BasicPhysics::GetDynamicBody(const CShape shape, const btVector3& o
     return newBody;
 }
 
-btRigidBody* BasicPhysics::GetDynamicBody(btCollisionShape* collisionShape, const btVector3& origin, const float mass)
+btRigidBody* Physics::GetDynamicBody(btCollisionShape* collisionShape, const btVector3& origin, const float mass)
 {
     btTransform pos;
     pos.setIdentity();
@@ -207,21 +225,21 @@ btRigidBody* BasicPhysics::GetDynamicBody(btCollisionShape* collisionShape, cons
     return newBody;
 }
 
-btRigidBody* BasicPhysics::GetGhostObject(btCollisionShape* collisionShape, const btVector3& origin)
+btRigidBody* Physics::GetGhostObject(btCollisionShape* collisionShape, const btVector3& origin)
 {
     btRigidBody* rigidBody = GetDynamicBody(collisionShape, origin, 1.0f);
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
     return rigidBody;
 }
 
-btRigidBody* BasicPhysics::GetGhostObject(const CShape shape, const btVector3& origin)
+btRigidBody* Physics::GetGhostObject(const CShape shape, const btVector3& origin)
 {
     btRigidBody* rigidBody = GetDynamicBody(shape, origin, 1.0f);
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
     return rigidBody;
 }
 
-glm::vec3 BasicPhysics::GetBodyPosition(const btRigidBody* body)
+glm::vec3 Physics::GetBodyPosition(const btRigidBody* body)
 {
     btTransform worldTransform;
     body->getMotionState()->getWorldTransform(worldTransform);
@@ -230,7 +248,7 @@ glm::vec3 BasicPhysics::GetBodyPosition(const btRigidBody* body)
     return glm::vec3(pos.x(), pos.y(), pos.z());
 }
 
-void BasicPhysics::Warp(btRigidBody* body, glm::vec3 position, glm::vec3 velocity)
+void Physics::Warp(btRigidBody* body, glm::vec3 position, glm::vec3 velocity)
 {
     btTransform worldTransform;
     body->getMotionState()->getWorldTransform(worldTransform);
@@ -243,7 +261,7 @@ void BasicPhysics::Warp(btRigidBody* body, glm::vec3 position, glm::vec3 velocit
     body->getMotionState()->setWorldTransform(worldTransform);
 }
 
-glm::mat4 BasicPhysics::GetBodyMatrix(const btRigidBody* body)
+glm::mat4 Physics::GetBodyMatrix(const btRigidBody* body)
 {
     glm::mat4 result;
     body->getWorldTransform().getOpenGLMatrix((btScalar*)&result);
@@ -253,7 +271,7 @@ glm::mat4 BasicPhysics::GetBodyMatrix(const btRigidBody* body)
     // return MatrixOps::Translate(VecOps::Convert(worldTransform.getOrigin())) * rotation.asMatrix();
 }
 
-glm::quat BasicPhysics::GetBodyRotation(const btRigidBody* body)
+glm::quat Physics::GetBodyRotation(const btRigidBody* body)
 {
     btTransform worldTransform;
     body->getMotionState()->getWorldTransform(worldTransform);
@@ -267,12 +285,12 @@ glm::quat BasicPhysics::GetBodyRotation(const btRigidBody* body)
     return quat;
 }
 
-void BasicPhysics::DeleteGhostObject(btRigidBody* ghostObject) const
+void Physics::DeleteGhostObject(btRigidBody* ghostObject) const
 {
     DeleteBody(ghostObject, false);
 }
 
-void BasicPhysics::DeleteBody(btRigidBody* body, bool eraseCollisionShape) const
+void Physics::DeleteBody(btRigidBody* body, bool eraseCollisionShape) const
 {
     if (eraseCollisionShape)
     {

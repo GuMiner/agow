@@ -12,6 +12,6 @@ protected:
     virtual void FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection) override;
 
 public:
-    SunbeamWeapon::SunbeamWeapon(BasicPhysics* physics);
+    SunbeamWeapon::SunbeamWeapon(Physics* physics);
     void Render(const glm::mat4& projectionMatrix) override;
 };

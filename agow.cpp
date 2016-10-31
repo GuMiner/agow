@@ -51,11 +51,11 @@ Constants::Status agow::LoadPhysics()
     SignGenerator signGenerator;
     physics.AddCollisionModels(signGenerator.GetModelPoints(&modelManager));
 
-    npcManager.LoadNpcPhysics(physics, &regionManager);
+    npcManager.LoadNpcPhysics(&physics, &regionManager);
     
     glm::vec2 spawnPoint = Map::GetPoint(Map::PLAYER);
     float spawnHeight = 2.0f + regionManager.GetPointHeight(physics.DynamicsWorld, spawnPoint);
-    player.LoadPlayerPhysics(physics,glm::vec3(spawnPoint.x, spawnPoint.y, spawnHeight), 70);
+    player.LoadPlayerPhysics(&physics, glm::vec3(spawnPoint.x, spawnPoint.y, spawnHeight), 70);
 
     testCar.offset.x = (spawnPoint.x + 5.0f);
     testCar.offset.y = (spawnPoint.y + 5.0f);
@@ -69,8 +69,8 @@ void agow::UnloadPhysics()
 {
     // Delete our test data.
     regionManager.CleanupPhysics(physics.DynamicsWorld);
-    npcManager.UnloadNpcPhysics(physics);
-    player.UnloadPlayerPhysics(physics);
+    npcManager.UnloadNpcPhysics(&physics);
+    player.UnloadPlayerPhysics(&physics);
     physics.UnloadPhysics();
 }
 

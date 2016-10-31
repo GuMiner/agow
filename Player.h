@@ -14,7 +14,7 @@
 #include "Weapons\RockWeapon.h"
 #include "Weapons\SunbeamWeapon.h"
 #include "Weapons\WeaponBase.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "Camera.h"
 
 class Player : public ICallback<UserPhysics::ObjectType>
@@ -53,9 +53,9 @@ class Player : public ICallback<UserPhysics::ObjectType>
     std::vector<std::string> inventory;
 
 public:
-    Player(ModelManager* modelManager, BasicPhysics* physics);
+    Player(ModelManager* modelManager, Physics* physics);
     bool LoadPlayerModel(ModelManager* modelManager);
-    void LoadPlayerPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass);
+    void LoadPlayerPhysics(Physics* physics, glm::vec3 startingPosition, float mass);
     
     void Update(float frameTime, int terrainTypeOn);
     void Render(ModelManager* modelManager, const glm::mat4& projectionMatrix);
@@ -69,7 +69,7 @@ public:
 
     void Warp(RegionManager* regionManager, btDynamicsWorld* world, const glm::vec2 mapPos);      
 
-    void UnloadPlayerPhysics(BasicPhysics physics);
+    void UnloadPlayerPhysics(Physics* physics);
 
     // Used for collision callbacks.
     virtual void Callback(UserPhysics::ObjectType callingObject, void* callbackSpecificData) override;

@@ -33,7 +33,7 @@ protected:
     virtual void FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection) override;
 
 public:
-    RockWeapon::RockWeapon(ModelManager* modelManager, BasicPhysics* physics, glm::vec2 speedLimits);
+    RockWeapon::RockWeapon(ModelManager* modelManager, Physics* physics, glm::vec2 speedLimits);
     void Render(const glm::mat4& projectionMatrix) override;
 
     virtual void Callback(UserPhysics::ObjectType callingObject, void* callbackSpecificData) override;

@@ -2,6 +2,8 @@
 #include "Utils\Logger.h"
 #include "GrassEffect.h"
 
+GrassStats GrassEffect::stats = GrassStats();
+
 GrassEffect::GrassEffect()
 {
 }
@@ -114,6 +116,7 @@ void GrassEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float e
 
 void GrassEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
+    sf::Clock clock;
     GrassEffectData* grassEffect = (GrassEffectData*)effectData;
 
     glLineWidth(3.0f);
@@ -126,4 +129,14 @@ void GrassEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, c
 
     glDrawArrays(GL_LINES, 0, grassEffect->grassStalks.positions.size());
     glLineWidth(1.0f);
+
+    stats.usRenderTime += clock.getElapsedTime().asMicroseconds();
+    stats.stalksRendered += grassEffect->grassStalks.positions.size();
+    stats.tilesRendered++;
+}
+
+void GrassEffect::LogStats()
+{
+    Logger::Log("Grass Rendering: ", stats.usRenderTime, " us, ", stats.stalksRendered, " stalks, ", stats.tilesRendered, " tiles.");
+    stats.Reset();
 }

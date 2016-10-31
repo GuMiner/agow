@@ -8,7 +8,7 @@
 #include "Map.h"
 #include "Player.h"
 
-Player::Player(ModelManager* modelManager, BasicPhysics* physics)
+Player::Player(ModelManager* modelManager, Physics* physics)
     : gravityWeapon(physics), pressureWeapon(physics, glm::vec2(1.0f, 10.0f)), rockWeapon(modelManager, physics, glm::vec2(10.0f, 500.0f)), sunbeamWeapon(physics), // TODO configurable
       lastMousePos(glm::ivec2(-1, -1)), camera(-80, glm::vec2(-30, 30), glm::vec2(-14, 14)), isOnGround(true), motionType(ON_FOOT), // TODO configurable camera.
       enemyKos(0), allyKos(0), civilianKos(0), model()
@@ -22,9 +22,9 @@ bool Player::LoadPlayerModel(ModelManager* modelManager)
     return model.modelId != 0;
 }
 
-void Player::LoadPlayerPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass)
+void Player::LoadPlayerPhysics(Physics* physics, glm::vec3 startingPosition, float mass)
 {
-    model.body = physics.GetDynamicBody(BasicPhysics::CShape::PLAYER, PhysicsOps::Convert(startingPosition), mass);
+    model.body = physics->GetDynamicBody(Physics::CShape::PLAYER, PhysicsOps::Convert(startingPosition), mass);
     model.body->forceActivationState(DISABLE_DEACTIVATION);
     
     // Rotate to face the forwards direction.
@@ -32,17 +32,17 @@ void Player::LoadPlayerPhysics(BasicPhysics physics, glm::vec3 startingPosition,
     model.body->setAngularFactor(0.0f);
     model.body->setFriction(2.0f); // TODO configurable.
     model.body->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::PLAYER, this));
-    physics.DynamicsWorld->addRigidBody(model.body);
+    physics->DynamicsWorld->addRigidBody(model.body);
 
     camera.Initialize(model.body);
 }
 
-void Player::UnloadPlayerPhysics(BasicPhysics physics)
+void Player::UnloadPlayerPhysics(Physics* physics)
 {
     // TODO cleanup the weapons.
 
-    physics.DynamicsWorld->removeRigidBody(model.body);
-    physics.DeleteBody(model.body, false);
+    physics->DynamicsWorld->removeRigidBody(model.body);
+    physics->DeleteBody(model.body, false);
 }
 
 void Player::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpecificData)
@@ -55,18 +55,18 @@ void Player::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpe
 
 const glm::vec2 Player::GetTerrainPosition() const
 {
-    glm::vec3 bodyPos = BasicPhysics::GetBodyPosition(model.body);
+    glm::vec3 bodyPos = Physics::GetBodyPosition(model.body);
     return glm::vec2(bodyPos.x, bodyPos.y);
 }
 
 const glm::vec3 Player::GetPosition() const
 {
-    return BasicPhysics::GetBodyPosition(model.body);
+    return Physics::GetBodyPosition(model.body);
 }
 
 const glm::quat Player::GetOrientation() const
 {
-    return BasicPhysics::GetBodyRotation(model.body) * glm::rotate(glm::quat(), glm::radians(-90.0f), glm::vec3(1, 0, 0));
+    return Physics::GetBodyRotation(model.body) * glm::rotate(glm::quat(), glm::radians(-90.0f), glm::vec3(1, 0, 0));
 }
 
 const glm::quat Player::GetViewOrientation() const

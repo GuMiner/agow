@@ -46,7 +46,7 @@ protected:
     virtual void FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection) override;
 
 public:
-    PlasmaWeapon::PlasmaWeapon(BasicPhysics* physics);
+    PlasmaWeapon::PlasmaWeapon(Physics* physics);
     static bool LoadGraphics(ShaderManager* shaderManager);
     virtual void Update(float elapsedTime) override;
     void Render(const glm::mat4& projectionMatrix) override;

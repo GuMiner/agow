@@ -4,7 +4,7 @@
 #include "WeaponBase.h"
 #include "RockWeapon.h"
 
-RockWeapon::RockWeapon(ModelManager* modelManager, BasicPhysics* physics, glm::vec2 speedLimits)
+RockWeapon::RockWeapon(ModelManager* modelManager, Physics* physics, glm::vec2 speedLimits)
     : WeaponBase(physics, "Rock Ejector", 1000.0f, false, 0.2f, 0.0f),
       speedLimits(speedLimits), sizeSetting(SizeSetting::BOULDER), modelManager(modelManager) // TODO configurable
 {
@@ -33,7 +33,7 @@ void RockWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
 {
     // TODO add SFX and interact with everything else. Also manage projectiles list.
     Model* model = new Model();
-    BasicPhysics::CShape shape;
+    Physics::CShape shape;
 
     RockGenerator rockGenerator;
     rockGenerator.GetRandomRockModel(&model->modelId, &shape);

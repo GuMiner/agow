@@ -4,7 +4,7 @@
 #include "Utils\Logger.h"
 #include "SignEffect.h"
 
-SignEffect::SignEffect(ModelManager* modelManager, BasicPhysics* physics)
+SignEffect::SignEffect(ModelManager* modelManager, Physics* physics)
     : modelManager(modelManager), physics(physics)
 {
 }
@@ -47,7 +47,7 @@ bool SignEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
 
                             // Add a barely-movable sign shape.
                             Model model = Model();
-                            BasicPhysics::CShape shape;
+                            Physics::CShape shape;
 
                             SignGenerator signGenerator;
                             signGenerator.GetRandomSignModel(&model.modelId, &shape);
@@ -103,4 +103,9 @@ void SignEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, co
     {
         modelManager->RenderModel(projectionMatrix, &model);
     }
+}
+
+void SignEffect::LogStats()
+{
+    // Minimal impact, nothing special here.
 }

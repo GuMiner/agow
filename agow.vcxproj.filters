@@ -55,7 +55,6 @@
     <ClCompile Include="Utils\ImageUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="BasicPhysics.cpp" />
     <ClCompile Include="Region.cpp" />
     <ClCompile Include="Managers\RegionManager.cpp">
       <Filter>Managers</Filter>
@@ -184,6 +183,7 @@
     <ClCompile Include="Managers\VehicleManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
+    <ClCompile Include="Physics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -250,7 +250,6 @@
     <ClInclude Include="Utils\ImageUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="BasicPhysics.h" />
     <ClInclude Include="Region.h" />
     <ClInclude Include="Managers\RegionManager.h">
       <Filter>Managers</Filter>
@@ -394,6 +393,7 @@
     <ClInclude Include="Managers\VehicleManager.h">
       <Filter>Managers</Filter>
     </ClInclude>
+    <ClInclude Include="Physics.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="AI">

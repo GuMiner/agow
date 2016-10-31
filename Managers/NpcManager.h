@@ -6,7 +6,7 @@
 #include "Managers\FontManager.h"
 #include "Managers\ModelManager.h"
 #include "Managers\RegionManager.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "Events.h"
 #include "Player.h"
 #include "NPC\Npc.h"
@@ -55,15 +55,15 @@ private:
 public:
     static const int PLAYER_ID = -1;
 
-    NpcManager(Player* player, BasicPhysics* physics);
-    void LoadNpcPhysics(BasicPhysics physics, RegionManager* regionManager);
+    NpcManager(Player* player, Physics* physics);
+    void LoadNpcPhysics(Physics* physics, RegionManager* regionManager);
     void LoadGraphics(FontManager* fontManager);
     
     void Converse(Events* events, DialogPane* dialogPane);
     void Update(float gameTime, float frameTime);
     void Render(FontManager* fontManager, ModelManager* modelManager, glm::mat4 projectionMatrix);
     
-    void UnloadNpcPhysics(BasicPhysics physics);
+    void UnloadNpcPhysics(Physics* physics);
     
     // NpcType == type of item performing the query.
     bool IsTargettedEnemy(NpcType npcType, unsigned int* npcId);

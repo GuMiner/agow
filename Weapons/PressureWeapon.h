@@ -16,7 +16,7 @@ protected:
     virtual void FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection) override;
 
 public:
-    PressureWeapon::PressureWeapon(BasicPhysics* physics, glm::vec2 scaleLimits);
+    PressureWeapon::PressureWeapon(Physics* physics, glm::vec2 scaleLimits);
     void Render(const glm::mat4& projectionMatrix) override;
 };
 

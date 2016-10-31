@@ -6,9 +6,14 @@
 #include "Utils\Logger.h"
 #include "Utils\ImageUtils.h"
 
-TerrainManager::TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics, std::string terrainRootFolder)
-    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), terrainEffects(shaderManager, modelManager, basicPhysics), terrainRenderProgram(0)
+TerrainManager::TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, Physics* Physics, std::string terrainRootFolder)
+    : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), terrainEffects(shaderManager, modelManager, Physics), terrainRenderProgram(0)
 {
+}
+
+TerrainEffectManager& TerrainManager::GetEffectManager()
+{
+    return terrainEffects;
 }
 
 bool TerrainManager::LoadBasics()

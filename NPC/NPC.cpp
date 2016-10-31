@@ -7,18 +7,18 @@
 
 std::map<NPC::Shape, unsigned int> NPC::models;
 
-BasicPhysics::CShape NPC::GetPhysicalShape(Shape shape)
+Physics::CShape NPC::GetPhysicalShape(Shape shape)
 {
     switch (shape)
     {
     case Shape::CAPSULE:
-        return BasicPhysics::CShape::NPC_CAPSULE;
+        return Physics::CShape::NPC_CAPSULE;
     case Shape::DIAMOND:
-        return BasicPhysics::CShape::NPC_DIAMOND;
+        return Physics::CShape::NPC_DIAMOND;
     case Shape::CUBOID:
-        return BasicPhysics::CShape::NPC_CUBOID;
+        return Physics::CShape::NPC_CUBOID;
     default:
-        return BasicPhysics::CShape::NPC_CAPSULE;
+        return Physics::CShape::NPC_CAPSULE;
     }
 }
 
@@ -72,20 +72,20 @@ void NPC::LoadGraphics(FontManager* fontManager)
     fontManager->UpdateSentence(interactionString.sentenceId, "Converse [C]", 22, interactionString.color);
 }
 
-void NPC::LoadNpcPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass)
+void NPC::LoadNpcPhysics(Physics* physics, glm::vec3 startingPosition, float mass)
 {
-    BasicPhysics::CShape physicalShape = GetPhysicalShape(shape);
+    Physics::CShape physicalShape = GetPhysicalShape(shape);
     model.modelId = models[shape];
-    model.body = physics.GetDynamicBody(physicalShape, PhysicsOps::Convert(startingPosition), mass);
+    model.body = physics->GetDynamicBody(physicalShape, PhysicsOps::Convert(startingPosition), mass);
 
     // NPCs can't rotate from physical interactions.
     model.body->setAngularFactor(0.0f);
     
-    physics.DynamicsWorld->addRigidBody(model.body);
+    physics->DynamicsWorld->addRigidBody(model.body);
 
-    nearFieldBubble = physics.GetGhostObject(BasicPhysics::CShape::NPC_NEARFIELD_BUBBLE, PhysicsOps::Convert(startingPosition));
+    nearFieldBubble = physics->GetGhostObject(Physics::CShape::NPC_NEARFIELD_BUBBLE, PhysicsOps::Convert(startingPosition));
     nearFieldBubble->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::NPC_CLOSEUP, this));
-    physics.DynamicsWorld->addRigidBody(nearFieldBubble);
+    physics->DynamicsWorld->addRigidBody(nearFieldBubble);
 }
 
 bool NPC::Converse(DialogPane* dialogPane)
@@ -108,7 +108,7 @@ std::string NPC::GetName() const
 
 glm::vec3 NPC::GetPosition() const
 {
-    return BasicPhysics::GetBodyPosition(model.body);
+    return Physics::GetBodyPosition(model.body);
 }
 
 std::string NPC::GetDescription() const
@@ -130,7 +130,7 @@ void NPC::Update(float gameTime, float elapsedTime)
 {
     nameString.posRotMatrix =
         glm::translate(glm::mat4(), glm::vec3(-0.60f, -0.60f, 0.55f)) *
-        BasicPhysics::GetBodyMatrix(model.body) *
+        Physics::GetBodyMatrix(model.body) *
         glm::scale(glm::mat4(), glm::vec3(0.20f)) *
         glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     interactionString.posRotMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -0.20f)) * nameString.posRotMatrix;
@@ -167,11 +167,11 @@ void NPC::Render(FontManager* fontManager, ModelManager* modelManager, const glm
     }
 }
 
-void NPC::UnloadNpcPhysics(BasicPhysics physics)
+void NPC::UnloadNpcPhysics(Physics* physics)
 {
     delete nearFieldBubble->getUserPointer();
-    physics.DynamicsWorld->removeRigidBody(model.body);
-    physics.DeleteBody(model.body, false);
+    physics->DynamicsWorld->removeRigidBody(model.body);
+    physics->DeleteBody(model.body, false);
 }
 
 NPC::~NPC()

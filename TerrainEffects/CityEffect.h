@@ -4,7 +4,7 @@
 #include "Data\UserPhysics.h"
 #include "Managers\ModelManager.h"
 #include "Utils\TypedCallback.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "TerrainEffect.h"
 
 struct Building
@@ -26,13 +26,36 @@ struct BuildingCollisionCallbackData
     int buildingId;
 };
 
+struct CityStats
+{
+    long segmentsRendered;
+
+    long tilesRendered;
+    long usRenderTime;
+
+    CityStats()
+    {
+        Reset();
+    }
+
+    void Reset()
+    {
+        segmentsRendered = 0;
+        tilesRendered = 0;
+
+        usRenderTime = 0;
+    }
+};
+
 class CityEffect : public TerrainEffect, ICallback<UserPhysics::ObjectType>
 {
     ModelManager* modelManager;
-    BasicPhysics* physics;
+    Physics* physics;
+
+    static CityStats stats;
 
 public:
-    CityEffect(ModelManager* modelManager, BasicPhysics* physics, const std::string& cacheFolder);
+    CityEffect(ModelManager* modelManager, Physics* physics, const std::string& cacheFolder);
     virtual bool LoadBasics(ShaderManager* shaderManager) override;
     virtual bool LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * tile) override;
     virtual void UnloadEffect(void* effectData) override;
@@ -41,4 +64,5 @@ public:
 
     // Handles building collisions.
     virtual void Callback(UserPhysics::ObjectType callingObject, void* callbackSpecificData) override;
+    virtual void LogStats() override;
 };

@@ -60,7 +60,7 @@ unsigned int ModelManager::GetCurrentModelCount() const
 
 void ModelManager::RenderModelImmediate(const glm::mat4& projectionMatrix, Model* model)
 {
-    glm::mat4 mvMatrix = glm::scale(BasicPhysics::GetBodyMatrix(model->body), model->scaleFactor);
+    glm::mat4 mvMatrix = glm::scale(Physics::GetBodyMatrix(model->body), model->scaleFactor);
 
     glUseProgram(directModelRenderProgram);
     glBindVertexArray(vao);
@@ -88,7 +88,7 @@ void ModelManager::RenderModel(const glm::mat4& projectionMatrix, Model* model)
     {
         // Known model. Only update if we detect it as dynamic.
         int activationState = model->analysisBody == nullptr ? model->body->getActivationState() : model->analysisBody->getActivationState();
-        if (activationState == ACTIVE_TAG || activationState == DISABLE_DEACTIVATION || activationState == WANTS_DEACTIVATION)
+        if (activationState == ACTIVE_TAG || activationState == DISABLE_DEACTIVATION) // WANTS_DEACTIVATION means it basically is wiggling.
         {
             UpdateModelInRenderStore(model);
         }

@@ -7,7 +7,7 @@
 #include "Data\UserPhysics.h"
 #include "Managers\ModelManager.h"
 #include "Utils\TypedCallback.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "DialogPane.h"
 
 class NPC : public ICallback<UserPhysics::ObjectType>
@@ -45,7 +45,7 @@ protected:
     Model model;
 
     bool CanKill() const;
-    static BasicPhysics::CShape GetPhysicalShape(Shape shape);
+    static Physics::CShape GetPhysicalShape(Shape shape);
 
 public:
     static bool LoadNpcModels(ModelManager* modelManager);
@@ -53,7 +53,7 @@ public:
     NPC(std::string name, std::string description, Shape shape, glm::vec4 color, int startingHealth);
     
     void LoadGraphics(FontManager* fontManager);
-    void LoadNpcPhysics(BasicPhysics physics, glm::vec3 startingPosition, float mass);
+    void LoadNpcPhysics(Physics* physics, glm::vec3 startingPosition, float mass);
     
     bool Converse(DialogPane* dialogPane);
     std::string GetName() const;
@@ -64,7 +64,7 @@ public:
     virtual void Update(float gameTime, float elapsedTime);
     virtual void Render(FontManager* fontManager, ModelManager* modelManager, const glm::mat4& projectionMatrix);
 
-    void UnloadNpcPhysics(BasicPhysics physics);
+    void UnloadNpcPhysics(Physics* physics);
     virtual ~NPC();
 
     // Used for NPC collision callbacks.

@@ -8,7 +8,9 @@
 #include "Utils\Logger.h"
 #include "CityEffect.h"
 
-CityEffect::CityEffect(ModelManager* modelManager, BasicPhysics* physics, const std::string& cacheFolder)
+CityStats CityEffect::stats = CityStats();
+
+CityEffect::CityEffect(ModelManager* modelManager, Physics* physics, const std::string& cacheFolder)
     : modelManager(modelManager), physics(physics) // TODO use the cache to avoid regenerating buildings.
 {
 }
@@ -221,15 +223,26 @@ void CityEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float el
 
 void CityEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
+    sf::Clock clock;
     glm::mat4 projectionMatrix = perspectiveMatrix * viewMatrix;
     CityEffectData* cityEffect = (CityEffectData*)effectData;
     for (Building& building : cityEffect->buildings)
     {
+        stats.segmentsRendered += building.segments.size();
         for (Model& model : building.segments)
         {
             modelManager->RenderModel(projectionMatrix, &model);
         }
     }
+    
+    stats.usRenderTime += (long)clock.getElapsedTime().asMicroseconds();
+    stats.tilesRendered++;
+}
+
+void CityEffect::LogStats()
+{
+    Logger::Log("City Rendering: ", stats.usRenderTime, " us, ", stats.segmentsRendered, " segments, ", stats.tilesRendered, " tiles.");
+    stats.Reset();
 }
 
 void CityEffect::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpecificData)

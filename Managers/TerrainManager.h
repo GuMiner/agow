@@ -7,7 +7,7 @@
 #include "Managers\ShaderManager.h"
 #include "Managers\TerrainEffectManager.h"
 #include <glm\vec3.hpp>
-#include "BasicPhysics.h"
+#include "Physics.h"
 
 // Defines loading and displaying a single unit of terrain.
 class TerrainManager
@@ -41,7 +41,9 @@ class TerrainManager
     void CleanupTerrainTile(glm::ivec2 start, bool log);
 
 public:
-    TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder);
+    TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, Physics* physics, std::string terrainRootFolder);
+
+    TerrainEffectManager& GetEffectManager();
 
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();

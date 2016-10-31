@@ -3,6 +3,8 @@
 #include "Utils\Logger.h"
 #include "RoadEffect.h"
 
+RoadStats RoadEffect::stats = RoadStats();
+
 RoadEffect::RoadEffect()
 {
 }
@@ -189,6 +191,8 @@ void RoadEffect::Simulate(const glm::ivec2 subtileId, void* effectData, float el
 
 void RoadEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix)
 {
+    sf::Clock clock;
+
     // TODO configurable
     glLineWidth(3.0f);
     RoadEffectData* roadEffect = (RoadEffectData*)effectData;
@@ -200,4 +204,14 @@ void RoadEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, co
 
     glDrawArrays(GL_LINES, 0, roadEffect->travellers.positions.size());
     glLineWidth(1.0f);
+
+    stats.usRenderTime += clock.getElapsedTime().asMicroseconds();
+    stats.travellersRendered += roadEffect->positions.size();
+    stats.tilesRendered++;
+}
+
+void RoadEffect::LogStats()
+{
+    Logger::Log("Road Rendering: ", stats.usRenderTime, " us, ", stats.travellersRendered, " travellers, ", stats.tilesRendered, " tiles.");
+    stats.Reset();
 }

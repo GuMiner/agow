@@ -6,7 +6,7 @@
 #include "Map.h"
 #include "NpcManager.h"
 
-NpcManager::NpcManager(Player* player, BasicPhysics* physics)
+NpcManager::NpcManager(Player* player, Physics* physics)
     : player(player)
 {
     for (unsigned int i = 0; i < (unsigned int)NpcType::COUNT; i++)
@@ -29,7 +29,7 @@ NpcManager::NpcManager(Player* player, BasicPhysics* physics)
     npcs[NpcType::ALLY].push_back(new AllyNPC());
 }
 
-void NpcManager::LoadNpcPhysics(BasicPhysics physics, RegionManager* regionManager)
+void NpcManager::LoadNpcPhysics(Physics* physics, RegionManager* regionManager)
 {
     // TODO configurable.
     glm::vec2 gearSciPos = Map::GetPoint(Map::POI::GEAR_SCIENTIST);
@@ -38,20 +38,20 @@ void NpcManager::LoadNpcPhysics(BasicPhysics physics, RegionManager* regionManag
     glm::vec2 sergeantMilPos = Map::GetPoint(Map::POI::SERGEANT_MILITARY);
     
     npcs[NpcType::KEY][KeyNpcs::GEAR]->LoadNpcPhysics(physics,
-        glm::vec3(gearSciPos.x, gearSciPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, gearSciPos)), 100);
+        glm::vec3(gearSciPos.x, gearSciPos.y, 2 + regionManager->GetPointHeight(physics->DynamicsWorld, gearSciPos)), 100);
     npcs[NpcType::KEY][KeyNpcs::INTEL]->LoadNpcPhysics(physics,
-        glm::vec3(intelSciPos.x, intelSciPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, intelSciPos)), 90);
+        glm::vec3(intelSciPos.x, intelSciPos.y, 2 + regionManager->GetPointHeight(physics->DynamicsWorld, intelSciPos)), 90);
     npcs[NpcType::KEY][KeyNpcs::GENERAL]->LoadNpcPhysics(physics,
-        glm::vec3(generalMilPos.x, generalMilPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, generalMilPos)), 80);
+        glm::vec3(generalMilPos.x, generalMilPos.y, 2 + regionManager->GetPointHeight(physics->DynamicsWorld, generalMilPos)), 80);
     npcs[NpcType::KEY][KeyNpcs::SERGEANT]->LoadNpcPhysics(physics,
-        glm::vec3(sergeantMilPos.x, sergeantMilPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, sergeantMilPos)), 65);
+        glm::vec3(sergeantMilPos.x, sergeantMilPos.y, 2 + regionManager->GetPointHeight(physics->DynamicsWorld, sergeantMilPos)), 65);
 
     // TODO test code remove
     glm::vec2 enemyPos = generalMilPos + glm::vec2(3.0f, 3.0f);
-    npcs[NpcType::ENEMY][0]->LoadNpcPhysics(physics, glm::vec3(enemyPos.x, enemyPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, enemyPos)), 200.0f);
+    npcs[NpcType::ENEMY][0]->LoadNpcPhysics(physics, glm::vec3(enemyPos.x, enemyPos.y, 2 + regionManager->GetPointHeight(physics->DynamicsWorld, enemyPos)), 200.0f);
 
     glm::vec2 allyPos = generalMilPos - glm::vec2(8.0f, 8.0f);
-    npcs[NpcType::ALLY][0]->LoadNpcPhysics(physics, glm::vec3(allyPos.x, allyPos.y, 2 + regionManager->GetPointHeight(physics.DynamicsWorld, allyPos)), 70.0f);
+    npcs[NpcType::ALLY][0]->LoadNpcPhysics(physics, glm::vec3(allyPos.x, allyPos.y, 2 + regionManager->GetPointHeight(physics->DynamicsWorld, allyPos)), 70.0f);
 }
 
 void NpcManager::LoadGraphics(FontManager* fontManager)
@@ -108,7 +108,7 @@ void NpcManager::Render(FontManager* fontManager, ModelManager* modelManager, gl
     }
 }
 
-void NpcManager::UnloadNpcPhysics(BasicPhysics physics)
+void NpcManager::UnloadNpcPhysics(Physics* physics)
 {
     for (auto iter = npcs.begin(); iter != npcs.end(); iter++)
     {

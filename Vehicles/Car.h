@@ -1,7 +1,7 @@
 #pragma once
 #include <glm\vec3.hpp>
 #include <Bullet\btBulletDynamicsCommon.h>
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "Vehicle.h"
 
 struct IndividualCar
@@ -24,7 +24,7 @@ class Car : public Vehicle
     IndividualCar car;
 
 public:
-    void SetupPhysics(BasicPhysics* physics);
+    void SetupPhysics(Physics* physics);
 
     static bool LoadModels(ModelManager* modelManager);
 

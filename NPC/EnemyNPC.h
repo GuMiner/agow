@@ -17,7 +17,7 @@ class EnemyNPC : public NPC
     glm::vec3 target;
     unsigned int npcId;
 public:
-    EnemyNPC(NpcManager* manager, BasicPhysics* physics);
+    EnemyNPC(NpcManager* manager, Physics* physics);
 
     bool IsTimerExpired() const;
     void TickTimer(float elapsedTime);

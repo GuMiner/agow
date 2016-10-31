@@ -12,7 +12,7 @@
 #include "ShaderManager.h"
 #include "Data\Model.h"
 #include "Utils\Logger.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "ModelRenderStore.h"
 
 // TODO these should be calculated and elsewhere.

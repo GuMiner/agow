@@ -19,7 +19,7 @@
 #include "Utils\Constants.h"
 #include "Vehicles\Car.h"
 
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "DialogPane.h"
 #include "Events.h"
 #include "Input.h"
@@ -45,7 +45,7 @@ class agow
     ShaderManager shaderManager;
 
     // Game data
-    BasicPhysics physics;
+    Physics physics;
     PhysicsDebugDrawer debugDrawer;
     DialogPane dialogPane;
     Player player;

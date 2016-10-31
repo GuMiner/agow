@@ -8,7 +8,7 @@
 #include "Managers\TerrainManager.h"
 #include <glm\vec3.hpp>
 #include <glm\vec2.hpp>
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "Region.h"
 
 class RegionManager
@@ -28,7 +28,7 @@ class RegionManager
     void ComputeVisibleTiles(const glm::ivec2& centerTile, const glm::vec2& playerOrientation, std::vector<glm::ivec2>* visibleTiles) const;
 
 public:
-    RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance);
+    RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, Physics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance);
     bool InitializeGraphics();
     
     TerrainManager& GetTerrainManager();

@@ -5,7 +5,7 @@
 #include "Utils\Logger.h"
 #include "RockEffect.h"
 
-RockEffect::RockEffect(ModelManager* modelManager, BasicPhysics* physics)
+RockEffect::RockEffect(ModelManager* modelManager, Physics* physics)
     : modelManager(modelManager), physics(physics)
 {
 }
@@ -42,7 +42,7 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
 
                     // Add a non-movable rock substrate.
                     Model model = Model();
-                    BasicPhysics::CShape shape;
+                    Physics::CShape shape;
 
                     RockGenerator rockGenerator;
                     rockGenerator.GetRandomRockModel(&model.modelId, &shape);
@@ -65,7 +65,7 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                 {
                     // Add a movable rock layer above the substrate
                     Model model = Model();
-                    BasicPhysics::CShape shape;
+                    Physics::CShape shape;
 
                     RockGenerator rockGenerator;
                     rockGenerator.GetRandomRockModel(&model.modelId, &shape);
@@ -122,4 +122,9 @@ void RockEffect::Render(void* effectData, const glm::mat4& perspectiveMatrix, co
     {
         modelManager->RenderModel(projectionMatrix, &model);
     }
+}
+
+void RockEffect::LogStats()
+{
+    // Light performance penalty with most of the rocks in the DEACTIVATED state.
 }

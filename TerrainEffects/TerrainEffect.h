@@ -18,4 +18,7 @@ public:
     
     // Renders an effect.
     virtual void Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix) = 0;
+    
+    // Logs effect statistics. 
+    virtual void LogStats() = 0;
 };

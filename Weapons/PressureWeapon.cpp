@@ -2,7 +2,7 @@
 #include "WeaponBase.h"
 #include "PressureWeapon.h"
 
-PressureWeapon::PressureWeapon(BasicPhysics* physics, glm::vec2 scaleLimits)
+PressureWeapon::PressureWeapon(Physics* physics, glm::vec2 scaleLimits)
     : WeaponBase(physics, "Air Force", 100.0f, false, 1.0f, 0.0f), scaleLimits(scaleLimits) // TODO configurable
 {
     storedAmmo = 0.0f;

@@ -20,12 +20,35 @@ struct RoadEffectData
     }
 };
 
+struct RoadStats
+{
+    long travellersRendered;
+
+    long tilesRendered;
+    long usRenderTime;
+
+    RoadStats()
+    {
+        Reset();
+    }
+
+    void Reset()
+    {
+        travellersRendered = 0;
+        tilesRendered = 0;
+
+        usRenderTime = 0;
+    }
+};
+
 class RoadEffect : public TerrainEffect
 {
     GLuint programId;
 
     GLuint projMatrixLocation;
     GLuint mvMatrixLocation;
+
+    static RoadStats stats;
 
     // Moves the specified traveller, returning the height of the ground the traveller is now above.
     float MoveTraveller(const glm::ivec2 subtileId, RoadEffectData* roadEffect, int travellerId, float elapsedSeconds);
@@ -38,4 +61,5 @@ public:
     virtual void UnloadEffect(void* effectData) override;
     virtual void Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds) override;
     virtual void Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix) override;
+    virtual void LogStats() override;
 };

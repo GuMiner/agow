@@ -1,7 +1,7 @@
 #pragma once
 #include "Data\Model.h"
 #include "Managers\ModelManager.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "TerrainEffect.h"
 
 struct RockEffectData
@@ -12,13 +12,14 @@ struct RockEffectData
 class RockEffect : public TerrainEffect
 {
     ModelManager* modelManager;
-    BasicPhysics* physics;
+    Physics* physics;
 
 public:
-    RockEffect(ModelManager* modelManager, BasicPhysics* physics);
+    RockEffect(ModelManager* modelManager, Physics* physics);
     virtual bool LoadBasics(ShaderManager* shaderManager) override;
     virtual bool LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile) override;
     virtual void UnloadEffect(void* effectData) override;
     virtual void Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds) override;
     virtual void Render(void* effectData, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix) override;
+    virtual void LogStats() override;
 };

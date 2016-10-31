@@ -10,7 +10,7 @@
 #include <glm\vec3.hpp>
 #include "TerrainEffects\TerrainEffect.h"
 #include "Utils\Vertex.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 
 struct TerrainEffectData
 {
@@ -28,7 +28,7 @@ class TerrainEffectManager
 {
     ShaderManager* shaderManager;
     ModelManager* modelManager;
-    BasicPhysics* physics;
+    Physics* physics;
 
     std::vector<TerrainEffect*> effects;
     std::map<glm::ivec2, std::vector<TerrainEffectData*>, iVec2Comparer> subtileEffectData;
@@ -36,7 +36,7 @@ class TerrainEffectManager
     void CleanupSubTileEffects(glm::ivec2 start, bool log);
 
 public:
-    TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* basicPhysics);
+    TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, Physics* Physics);
 
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();
@@ -49,6 +49,8 @@ public:
 
     // Renders a tile's effects *The tile must have been loaded ahead-of-time.*
     void RenderSubTileEffects(const glm::ivec2 start, const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix);
+
+    void LogEffectInformation();
 
     void UnloadSubTileEffects(glm::ivec2 start);
     virtual ~TerrainEffectManager();

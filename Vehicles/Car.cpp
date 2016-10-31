@@ -33,7 +33,7 @@ bool Car::LoadVehicleComponents(ModelManager* modelManager)
     return false;
 }
 
-void Car::SetupPhysics(BasicPhysics* physics)
+void Car::SetupPhysics(Physics* physics)
 {
     // TODO the factory should take in the location the car should spawn, along with its orientation.
     // TODO these should be constants elsewhere.

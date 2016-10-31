@@ -7,8 +7,8 @@
 DecisionTree<BuildingDecisionData> BuildingGenerator::lowDensityBuildingBuilder(BuildingGenerator::DeserializeBuildingRule);
 DecisionTree<BuildingDecisionData> BuildingGenerator::highDensityBuildingBuilder(BuildingGenerator::DeserializeBuildingRule);
 
-BuildingGenerator::BuildingGenerator(ModelManager* modelManager, BasicPhysics* basicPhysics)
-    : modelManager(modelManager), basicPhysics(basicPhysics)
+BuildingGenerator::BuildingGenerator(ModelManager* modelManager, Physics* physics)
+    : modelManager(modelManager), physics(physics)
 {
 }
 
@@ -165,12 +165,12 @@ std::vector<Model> BuildingGenerator::GetRandomBuilding(DecisionTree<BuildingDec
             if (i == 0)
             {
                 // The building base is static.
-                model.body = basicPhysics->GetStaticBody(collisionShape, buildingSegmentOrigin);
+                model.body = physics->GetStaticBody(collisionShape, buildingSegmentOrigin);
             }
             else
             {
                 // TODO configurable mass.
-                model.body = basicPhysics->GetDynamicBody(collisionShape, buildingSegmentOrigin, 400);
+                model.body = physics->GetDynamicBody(collisionShape, buildingSegmentOrigin, 400);
             }
 
             // Consumers must setup the analysis body themselves

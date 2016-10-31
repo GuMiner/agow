@@ -2,7 +2,7 @@
 #include "Utils\Logger.h"
 #include "WeaponBase.h"
 
-WeaponBase::WeaponBase(BasicPhysics* physics, std::string name, float ammoLimit, bool continualFire, float fireRateInSeconds, float cooldownInSeconds)
+WeaponBase::WeaponBase(Physics* physics, std::string name, float ammoLimit, bool continualFire, float fireRateInSeconds, float cooldownInSeconds)
     : physics(physics), name(name), storedAmmo(0), coolingTime(0.0f), firingTime(0.0f), fireAttempt(false),
       ammoLimit(ammoLimit), continualFire(continualFire), fireRateInSeconds(fireRateInSeconds), cooldownInSeconds(cooldownInSeconds)
 {

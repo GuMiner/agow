@@ -1,7 +1,7 @@
 #include "Utils\Logger.h"
 #include "RegionManager.h"
 
-RegionManager::RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, BasicPhysics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance)
+RegionManager::RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, Physics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance)
     : terrainManager(min, max, shaderManager, modelManager, physics, terrainRootFolder),
       loadedRegions(), visibleTiles(), tileViewDistance(tileViewDistance)
 {
@@ -158,6 +158,10 @@ void RegionManager::RenderRegions(const glm::mat4& perspectiveMatrix, const glm:
         glm::ivec2 region = visibleTile / TerrainTile::Subdivisions;
         loadedRegions[region]->RenderRegion(visibleTile, playerPosition, playerDirection, &terrainManager, perspectiveMatrix, viewMatrix);
     }
+
+    // Emits per-frame performance data, as effects are the most heavy graphical effects in this game.
+    // terrainManager.GetEffectManager().LogEffectInformation();
+    // FYI, turns out that bullet physics really needs to be on a separate thread.
 }
 
 void RegionManager::CleanupPhysics(btDynamicsWorld* dynamicsWorld)

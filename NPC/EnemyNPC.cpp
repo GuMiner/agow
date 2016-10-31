@@ -4,10 +4,10 @@
 #include "Generators\NameGenerator.h"
 #include "Generators\ColorGenerator.h"
 #include "Math\PhysicsOps.h"
-#include "BasicPhysics.h"
+#include "Physics.h"
 #include "EnemyNPC.h"
 
-EnemyNPC::EnemyNPC(NpcManager* manager, BasicPhysics* physics)
+EnemyNPC::EnemyNPC(NpcManager* manager, Physics* physics)
     : NPC(NameGenerator::GetRandomName(), "",
         (NPC::Shape)glm::linearRand(0, (int)NPC::Shape::COUNT - 1),
         ColorGenerator::GetEnemyColor(), 5), // TODO configurable

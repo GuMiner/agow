@@ -2,11 +2,11 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <glm\vec3.hpp>
 #include "AI\DecisionTree.h"
 #include "Data\Model.h"
 #include "Managers\ModelManager.h"
-#include <glm\vec3.hpp>
-#include "BasicPhysics.h"
+#include "Physics.h"
 
 struct BuildingDecisionData
 {
@@ -29,12 +29,12 @@ class BuildingGenerator
     static DecisionTree<BuildingDecisionData>::Choice RandomWalkEvaluator(BuildingDecisionData decisionData, bool isValidSegment, bool yesNodeNull, bool noNodeNull);
 
     ModelManager* modelManager;
-    BasicPhysics* basicPhysics;
+    Physics* physics;
     void GetScaledModelPoints(std::vector<glm::vec3>& points, glm::vec3 scaleFactor, unsigned int modelId);
 
     std::vector<Model> GetRandomBuilding(DecisionTree<BuildingDecisionData>& builder, const glm::vec3& offset, float* buildingFootprintSize, float* height);
 public:
-    BuildingGenerator(ModelManager* modelManager, BasicPhysics* basicPhysics);
+    BuildingGenerator(ModelManager* modelManager, Physics* physics);
     static bool LoadBuildingModels(ModelManager* modelManager);
     static bool LoadBuilder(std::string lowDensityFile, std::string highDensityFile);
 

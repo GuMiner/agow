@@ -2,7 +2,7 @@
 #include "WeaponBase.h"
 #include "SunbeamWeapon.h"
 
-SunbeamWeapon::SunbeamWeapon(BasicPhysics* physics)
+SunbeamWeapon::SunbeamWeapon(Physics* physics)
     : WeaponBase(physics, "Solar Concentrator", 1.0f, true, 3.0f, 5.0f) // TODO configurable
 {
     storedAmmo = 1.0f;

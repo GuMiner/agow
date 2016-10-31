@@ -4,12 +4,12 @@
 #include <glm\vec3.hpp>
 #include <glm\mat4x4.hpp>
 #include <glm\gtc\quaternion.hpp>
-#include "BasicPhysics.h"
+#include "Physics.h"
 
 class WeaponBase
 {
 protected:
-    BasicPhysics* physics;
+    Physics* physics;
     std::string name;
     
     float storedAmmo;
@@ -31,7 +31,7 @@ protected:
     std::deque<void*> projectiles;
 
 public:
-    WeaponBase(BasicPhysics* physics, std::string name, float ammoLimit, bool continualFire, float fireRateInSeconds, float cooldownInSeconds);
+    WeaponBase(Physics* physics, std::string name, float ammoLimit, bool continualFire, float fireRateInSeconds, float cooldownInSeconds);
     virtual void Update(float elapsedTime);
     
     // Reloads, returning the amount of ammo not loaded.
