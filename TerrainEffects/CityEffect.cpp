@@ -173,6 +173,9 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                 }
 
                 cityEffect->buildings.push_back(building);
+
+                // TODO remove.
+                Callback(UserPhysics::ObjectType::BUILDING_COVER, collisionData);
                 if (cityEffect->buildings.size() == 50)
                 {
                     // Too many buildings!
@@ -254,7 +257,7 @@ void CityEffect::Callback(UserPhysics::ObjectType collidingObject, void* callbac
     auto& segments = callbackData->effect->buildings[callbackData->buildingId].segments;
 
     physics->RemoveBody(segments[0].analysisBody);
-    physics->DeleteBody(segments[0].analysisBody, true);
+    // physics->DeleteBody(segments[0].analysisBody, true);
 
     for (unsigned int i = 0; i < segments.size(); i++)
     {

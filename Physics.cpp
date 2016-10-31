@@ -82,19 +82,19 @@ void Physics::PerformQueuedActions()
             {
                 delete ((btRigidBody*)queuedCommands[i].item)->getUserPointer();
             }
-
+            
             delete ((btRigidBody*)queuedCommands[i].item)->getMotionState();
             delete queuedCommands[i].item;
             removedBodies.insert(queuedCommands[i].item);
             break;
         case PhysicsCommand::DeleteBodyAndCollisionShapes:
             delete ((btRigidBody*)queuedCommands[i].item)->getCollisionShape();
-
+            
             if (((btRigidBody*)queuedCommands[i].item)->getUserPointer() != nullptr)
             {
                 delete ((btRigidBody*)queuedCommands[i].item)->getUserPointer();
             }
-
+            
             delete ((btRigidBody*)queuedCommands[i].item)->getMotionState();
             delete queuedCommands[i].item;
             removedBodies.insert(queuedCommands[i].item);
@@ -131,7 +131,7 @@ void Physics::PerformPostStepActions()
 
         void* userObj1 = objOne->getUserPointer();
         void* userObj2 = objTwo->getUserPointer();
-        if (userObj1 != nullptr && userObj2 != nullptr)
+        if (false) // TODO fix userObj1 != nullptr && userObj2 != nullptr)
         {
             // These objects could collide, so verify this is a real collision.
             bool doesCollide = false;
