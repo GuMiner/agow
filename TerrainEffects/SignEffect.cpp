@@ -1,5 +1,6 @@
 #include "Config\PhysicsConfig.h"
 #include "Generators\SignGenerator.h"
+#include "Generators\PhysicsGenerator.h"
 #include "Managers\TerrainManager.h"
 #include "Utils\Logger.h"
 #include "SignEffect.h"
@@ -47,7 +48,7 @@ bool SignEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
 
                             // Add a barely-movable sign shape.
                             Model model = Model();
-                            Physics::CShape shape;
+                            PhysicsGenerator::CShape shape;
 
                             SignGenerator signGenerator;
                             signGenerator.GetRandomSignModel(&model.modelId, &shape);
@@ -58,10 +59,10 @@ bool SignEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile * t
                             // TODO configurable masses.
                             float height = tile->heightmap[pixelId];
                             glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i + 1, j + 1));
-                            model.body = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
+                            model.body = PhysicsGenerator::GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
 
                             signEfect->signs.push_back(model);
-                            physics->DynamicsWorld->addRigidBody(model.body);
+                            physics->AddBody(model.body);
                         }
                     }
                 }
@@ -84,7 +85,7 @@ void SignEffect::UnloadEffect(void * effectData)
     for (const Model& model : rockEffect->signs)
     {
         // TODO -- we should not regenerate signs, they should go in a persistent store.
-        physics->DynamicsWorld->removeRigidBody(model.body);
+        physics->RemoveBody(model.body);
     }
 
     delete rockEffect;

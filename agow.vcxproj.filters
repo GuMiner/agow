@@ -184,6 +184,9 @@
       <Filter>Managers</Filter>
     </ClCompile>
     <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="Generators\PhysicsGenerator.cpp">
+      <Filter>Generators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="agow.h" />
@@ -394,6 +397,9 @@
       <Filter>Managers</Filter>
     </ClInclude>
     <ClInclude Include="Physics.h" />
+    <ClInclude Include="Generators\PhysicsGenerator.h">
+      <Filter>Generators</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="AI">

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "Math\PhysicsOps.h"
+#include "Generators\PhysicsGenerator.h"
 #include "Generators\RockGenerator.h"
 #include "WeaponBase.h"
 #include "PlasmaWeapon.h"
@@ -787,7 +788,7 @@ bool PlasmaWeapon::LoadGraphics(ShaderManager* shaderManager)
 void PlasmaWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
 {
     PlasmaProjectileData* projectile = new PlasmaProjectileData();
-    projectile->body = physics->GetDynamicBody(Physics::CShape::WEAPON_PLASMA, PhysicsOps::Convert(fireOrigin), 1.0f);
+    projectile->body = PhysicsGenerator::GetDynamicBody(PhysicsGenerator::CShape::WEAPON_PLASMA, PhysicsOps::Convert(fireOrigin), 1.0f);
     projectile->flightTime = 0.0f;
 
     glm::vec3 vel = 10.0f * fireDirection;
@@ -801,12 +802,12 @@ void PlasmaWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
     {
         PlasmaProjectileData* projectileToRemove = (PlasmaProjectileData*)projectiles.front();
 
-        physics->DynamicsWorld->removeRigidBody(projectileToRemove->body);
+        physics->RemoveBody(projectileToRemove->body);
         physics->DeleteBody(projectileToRemove->body, false);
         projectiles.pop_front();
     }
 
-    physics->DynamicsWorld->addRigidBody(projectile->body);
+    physics->AddBody(projectile->body);
     projectiles.push_back(projectile);
 }
 
@@ -829,7 +830,7 @@ void PlasmaWeapon::Render(const glm::mat4& projectionMatrix)
         glUseProgram(program.programId);
         glBindVertexArray(program.vao);
 
-        glm::vec3 pos = Physics::GetBodyPosition(projectile->body);
+        glm::vec3 pos = PhysicsGenerator::GetBodyPosition(projectile->body);
         glUniform3f(program.positionLocation, pos.x, pos.y, pos.z);
         glUniform1f(program.frameTimeLocation, projectile->flightTime);
         glUniformMatrix4fv(program.projMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);

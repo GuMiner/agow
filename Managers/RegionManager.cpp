@@ -20,7 +20,7 @@ TerrainManager& RegionManager::GetTerrainManager()
     return terrainManager;
 }
 
-float RegionManager::GetPointHeight(btDynamicsWorld* dynamicsWorld, const glm::vec2 point)
+float RegionManager::GetPointHeight(Physics* physics, const glm::vec2 point)
 {
     glm::ivec2 region = glm::ivec2((int)point.x, (int)point.y) / TerrainTile::TileSize;
     glm::ivec2 subtileRegion = glm::ivec2((int)point.x, (int)point.y) / TerrainTile::SubtileSize;
@@ -38,11 +38,11 @@ float RegionManager::GetPointHeight(btDynamicsWorld* dynamicsWorld, const glm::v
 
     std::vector<glm::ivec2> tileMap;
     tileMap.push_back(subtileRegion);
-    loadedRegions[region]->EnsureHeightmapsLoaded(dynamicsWorld, &tileMap);
+    loadedRegions[region]->EnsureHeightmapsLoaded(physics, &tileMap);
     return loadedRegions[region]->GetPointHeight(tileMap[0], glm::ivec2((int)point.x, (int)point.y));
 }
 
-int RegionManager::GetPointTerrainType(btDynamicsWorld* dynamicsWorld, const glm::vec2 point)
+int RegionManager::GetPointTerrainType(Physics* physics, const glm::vec2 point)
 {
     glm::ivec2 region = glm::ivec2((int)point.x, (int)point.y) / TerrainTile::TileSize;
     glm::ivec2 subtileRegion = glm::ivec2((int)point.x, (int)point.y) / TerrainTile::SubtileSize;
@@ -90,7 +90,7 @@ void RegionManager::ComputeVisibleTiles(const glm::ivec2& centerTile, const glm:
     }
 }
 
-void RegionManager::UpdateVisibleRegion(const glm::vec3& playerPosition, const glm::vec2& playerOrientation, btDynamicsWorld* dynamicsWorld)
+void RegionManager::UpdateVisibleRegion(const glm::vec3& playerPosition, const glm::vec2& playerOrientation, Physics* physics)
 {
     // Update what's visible, skipping if we haven't changed center tiles.
     glm::ivec2 centerTile = GetCurrentCenterTile(playerPosition);
@@ -119,7 +119,7 @@ void RegionManager::UpdateVisibleRegion(const glm::vec3& playerPosition, const g
             loadedRegions[visibleRegion] = new Region(visibleRegion, &terrainManager);
         }
 
-        loadedRegions[visibleRegion]->EnsureHeightmapsLoaded(dynamicsWorld, &visibleTiles);
+        loadedRegions[visibleRegion]->EnsureHeightmapsLoaded(physics, &visibleTiles);
     }
 
     // Remove regions we no longer need to keep in memory as they're very resource intensive objects.
@@ -128,7 +128,7 @@ void RegionManager::UpdateVisibleRegion(const glm::vec3& playerPosition, const g
     {
         if (visibleRegions.find(region.first) == visibleRegions.end())
         {
-            region.second->CleanupRegion(&terrainManager, dynamicsWorld);
+            region.second->CleanupRegion(&terrainManager, physics);
             delete region.second;
             regionsToRemove.push_back(region.first);
         }
@@ -164,11 +164,11 @@ void RegionManager::RenderRegions(const glm::mat4& perspectiveMatrix, const glm:
     // FYI, turns out that bullet physics really needs to be on a separate thread.
 }
 
-void RegionManager::CleanupPhysics(btDynamicsWorld* dynamicsWorld)
+void RegionManager::CleanupPhysics(Physics* physics)
 {
     for (std::pair<const glm::ivec2, Region*>& region : loadedRegions)
     {
-        region.second->CleanupRegion(&terrainManager, dynamicsWorld);
+        region.second->CleanupRegion(&terrainManager, physics);
         delete region.second;
     }
 }

@@ -1,6 +1,7 @@
 #include <glm\gtc\random.hpp>
 #include "Config\PhysicsConfig.h"
 #include "Generators\RockGenerator.h"
+#include "Generators\PhysicsGenerator.h"
 #include "Managers\TerrainManager.h"
 #include "Utils\Logger.h"
 #include "RockEffect.h"
@@ -42,7 +43,7 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
 
                     // Add a non-movable rock substrate.
                     Model model = Model();
-                    Physics::CShape shape;
+                    PhysicsGenerator::CShape shape;
 
                     RockGenerator rockGenerator;
                     rockGenerator.GetRandomRockModel(&model.modelId, &shape);
@@ -54,18 +55,18 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                     // TODO randomly generated masses.
                     float height = tile->heightmap[pixelId];
                     glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j)) + glm::vec2(glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f));
-                    model.body = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
+                    model.body = PhysicsGenerator::GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height), 0.0f);
                     model.body->setActivationState(ISLAND_SLEEPING);
 
                     rockEffect->rocks.push_back(model);
-                    physics->DynamicsWorld->addRigidBody(model.body);
+                    physics->AddBody(model.body);
                 }
 
                 if (rockCounter % MOVABLE_ROCK_SUBCOUNT == 0)
                 {
                     // Add a movable rock layer above the substrate
                     Model model = Model();
-                    Physics::CShape shape;
+                    PhysicsGenerator::CShape shape;
 
                     RockGenerator rockGenerator;
                     rockGenerator.GetRandomRockModel(&model.modelId, &shape);
@@ -77,11 +78,11 @@ bool RockEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
                     // TODO randomly generated masses.
                     float height = tile->heightmap[pixelId];
                     glm::vec2 realPos = TerrainTile::GetRealPosition(subtileId, glm::ivec2(i, j)) + glm::vec2(glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f));
-                    model.body = physics->GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height + 2.0f), 30.0f);
+                    model.body = PhysicsGenerator::GetDynamicBody(shape, btVector3(realPos.x, realPos.y, height + 2.0f), 30.0f);
                     model.body->setActivationState(ISLAND_SLEEPING);
 
                     rockEffect->rocks.push_back(model);
-                    physics->DynamicsWorld->addRigidBody(model.body);
+                    physics->AddBody(model.body);
                 }
             }
         }
@@ -103,7 +104,7 @@ void RockEffect::UnloadEffect(void * effectData)
     {
         // TODO -- we should not regenerate rigid bodies for rocky areas, but they (like cities) should go in a persistent store.
         // I'm leaving that off until I start random city generation. That will likely also entail refactoring in this class...
-        physics->DynamicsWorld->removeRigidBody(model.body);
+        physics->RemoveBody(model.body);
         physics->DeleteBody(model.body, false);
     }
 

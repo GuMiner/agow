@@ -15,7 +15,7 @@ glm::ivec2 Region::GetPos() const
     return pos;
 }
 
-void Region::EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::vector<glm::ivec2>* tilesToLoadHeightmapsFor)
+void Region::EnsureHeightmapsLoaded(Physics* physics, const std::vector<glm::ivec2>* tilesToLoadHeightmapsFor)
 {
     for (const glm::ivec2& tilePos : *tilesToLoadHeightmapsFor)
     {
@@ -23,12 +23,12 @@ void Region::EnsureHeightmapsLoaded(btDynamicsWorld* dynamicsWorld, const std::v
         bool inRegion = (localPos.x >= 0 && localPos.y >= 0 && localPos.x < TerrainTile::Subdivisions && localPos.y < TerrainTile::Subdivisions);
         if (inRegion && loadedHeightmaps.find(localPos) == loadedHeightmaps.end())
         {
-            loadedHeightmaps[localPos] = CreateHeightmap(tilePos, regionTile->subtiles[localPos], dynamicsWorld);
+            loadedHeightmaps[localPos] = CreateHeightmap(tilePos, regionTile->subtiles[localPos], physics);
         }
     }
 }
 
-btRigidBody* Region::CreateHeightmap(glm::ivec2 tilePos, SubTile* subTile, btDynamicsWorld* dynamicsWorld)
+btRigidBody* Region::CreateHeightmap(glm::ivec2 tilePos, SubTile* subTile, Physics* physics)
 {
     btHeightfieldTerrainShape* heightfield = new btHeightfieldTerrainShape(TerrainTile::SubtileSize, TerrainTile::SubtileSize, subTile->heightmap, 900.0f, 2, true, false);
     heightfield->setMargin(2.0f);
@@ -44,8 +44,8 @@ btRigidBody* Region::CreateHeightmap(glm::ivec2 tilePos, SubTile* subTile, btDyn
     btRigidBody* heightmap =  new btRigidBody(ground);
     heightmap->setFriction(0.50f); // TODO configurable.
     heightmap->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::HEIGHTMAP));
-
-    dynamicsWorld->addRigidBody(heightmap);
+    
+    physics->AddBody(heightmap);
     return heightmap;
 }
 
@@ -92,16 +92,13 @@ void Region::RenderRegion(glm::ivec2 tilePos, const glm::vec3& playerPosition, c
     }
 }
 
-void Region::CleanupRegion(TerrainManager* terrainManager, btDynamicsWorld* dynamicsWorld)
+void Region::CleanupRegion(TerrainManager* terrainManager, Physics* physics)
 {
     terrainManager->UnloadTerrainTile(pos);
     for (std::pair<const glm::ivec2, btRigidBody*> heightmap : loadedHeightmaps)
     {
-        dynamicsWorld->removeRigidBody(heightmap.second);
-        delete heightmap.second->getUserPointer();
-        delete heightmap.second->getCollisionShape();
-        delete heightmap.second->getMotionState();
-        delete heightmap.second;
+        physics->RemoveBody(heightmap.second);
+        physics->DeleteBody(heightmap.second, true);
     }
 }
 

@@ -2,6 +2,7 @@
 #include <glm\gtc\random.hpp>
 #include "Utils\Logger.h"
 #include "Utils\StringUtils.h"
+#include "PhysicsGenerator.h"
 #include "BuildingGenerator.h"
 
 DecisionTree<BuildingDecisionData> BuildingGenerator::lowDensityBuildingBuilder(BuildingGenerator::DeserializeBuildingRule);
@@ -165,12 +166,12 @@ std::vector<Model> BuildingGenerator::GetRandomBuilding(DecisionTree<BuildingDec
             if (i == 0)
             {
                 // The building base is static.
-                model.body = physics->GetStaticBody(collisionShape, buildingSegmentOrigin);
+                model.body = PhysicsGenerator::GetStaticBody(collisionShape, buildingSegmentOrigin);
             }
             else
             {
                 // TODO configurable mass.
-                model.body = physics->GetDynamicBody(collisionShape, buildingSegmentOrigin, 400);
+                model.body = PhysicsGenerator::GetDynamicBody(collisionShape, buildingSegmentOrigin, 400);
             }
 
             // Consumers must setup the analysis body themselves

@@ -5,6 +5,7 @@
 #include <glm\vec4.hpp>
 #include "Data\RenderableSentence.h"
 #include "Data\UserPhysics.h"
+#include "Generators\PhysicsGenerator.h"
 #include "Managers\ModelManager.h"
 #include "Utils\TypedCallback.h"
 #include "Physics.h"
@@ -45,7 +46,7 @@ protected:
     Model model;
 
     bool CanKill() const;
-    static Physics::CShape GetPhysicalShape(Shape shape);
+    static PhysicsGenerator::CShape GetPhysicalShape(Shape shape);
 
 public:
     static bool LoadNpcModels(ModelManager* modelManager);

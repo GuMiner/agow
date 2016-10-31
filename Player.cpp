@@ -3,6 +3,7 @@
 #include <glm\gtc\quaternion.hpp>
 #include "Config\PhysicsConfig.h"
 #include "Data\TerrainTile.h"
+#include "Generators\PhysicsGenerator.h"
 #include "Math\PhysicsOps.h"
 #include "Input.h"
 #include "Map.h"
@@ -24,7 +25,7 @@ bool Player::LoadPlayerModel(ModelManager* modelManager)
 
 void Player::LoadPlayerPhysics(Physics* physics, glm::vec3 startingPosition, float mass)
 {
-    model.body = physics->GetDynamicBody(Physics::CShape::PLAYER, PhysicsOps::Convert(startingPosition), mass);
+    model.body = PhysicsGenerator::GetDynamicBody(PhysicsGenerator::CShape::PLAYER, PhysicsOps::Convert(startingPosition), mass);
     model.body->forceActivationState(DISABLE_DEACTIVATION);
     
     // Rotate to face the forwards direction.
@@ -32,7 +33,7 @@ void Player::LoadPlayerPhysics(Physics* physics, glm::vec3 startingPosition, flo
     model.body->setAngularFactor(0.0f);
     model.body->setFriction(2.0f); // TODO configurable.
     model.body->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::PLAYER, this));
-    physics->DynamicsWorld->addRigidBody(model.body);
+    physics->AddBody(model.body);
 
     camera.Initialize(model.body);
 }
@@ -41,7 +42,7 @@ void Player::UnloadPlayerPhysics(Physics* physics)
 {
     // TODO cleanup the weapons.
 
-    physics->DynamicsWorld->removeRigidBody(model.body);
+    physics->RemoveBody(model.body);
     physics->DeleteBody(model.body, false);
 }
 
@@ -55,18 +56,18 @@ void Player::Callback(UserPhysics::ObjectType collidingObject, void* callbackSpe
 
 const glm::vec2 Player::GetTerrainPosition() const
 {
-    glm::vec3 bodyPos = Physics::GetBodyPosition(model.body);
+    glm::vec3 bodyPos = PhysicsGenerator::GetBodyPosition(model.body);
     return glm::vec2(bodyPos.x, bodyPos.y);
 }
 
 const glm::vec3 Player::GetPosition() const
 {
-    return Physics::GetBodyPosition(model.body);
+    return PhysicsGenerator::GetBodyPosition(model.body);
 }
 
 const glm::quat Player::GetOrientation() const
 {
-    return Physics::GetBodyRotation(model.body) * glm::rotate(glm::quat(), glm::radians(-90.0f), glm::vec3(1, 0, 0));
+    return PhysicsGenerator::GetBodyRotation(model.body) * glm::rotate(glm::quat(), glm::radians(-90.0f), glm::vec3(1, 0, 0));
 }
 
 const glm::quat Player::GetViewOrientation() const
@@ -83,21 +84,6 @@ const glm::vec2 Player::Get2DOrientation() const
 const glm::mat4 Player::GetViewMatrix() const
 {
     return camera.GetViewMatrix();
-}
-
-void Player::Warp(RegionManager* regionManager, btDynamicsWorld* world, const glm::vec2 mapPos)
-{
-    // TODO make these offsets configurable.
-    float height = regionManager->GetPointHeight(world, mapPos);
-
-    btTransform& worldTransform = model.body->getWorldTransform();
-    
-    worldTransform.setIdentity();
-    worldTransform.setOrigin(btVector3(mapPos.x, mapPos.y, height + 4));
-    model.body->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-    model.body->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
-    model.body->activate(true); // Ensure we don't hang in midair.
-    isOnGround = false;
 }
 
 void Player::Render(ModelManager* modelManager, const glm::mat4& projectionMatrix)

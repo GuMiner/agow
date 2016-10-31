@@ -1,3 +1,4 @@
+#include "Generators\PhysicsGenerator.h"
 #include "Utils\Logger.h"
 #include "Car.h"
 
@@ -57,9 +58,9 @@ void Car::SetupPhysics(Physics* physics)
 
     car.frame = Model();
     car.frame.modelId = frameModelId;
-    car.frame.body = physics->GetDynamicBody(vehicleFrameCollisionShape, vehicleOrigin, vehicleMass);
+    car.frame.body = PhysicsGenerator::GetDynamicBody(vehicleFrameCollisionShape, vehicleOrigin, vehicleMass);
     car.frame.body->setActivationState(DISABLE_DEACTIVATION);
-    physics->DynamicsWorld->addRigidBody(car.frame.body);
+    physics->AddBody(car.frame.body);
 
     btVector3 parentAxis(0.0f, 0.0f, 1.0f);
     btVector3 leftChildAxis(0.0f, 1.0f, 0.0f);
@@ -68,10 +69,10 @@ void Car::SetupPhysics(Physics* physics)
     {
         car.wheels[i] = Model();
         car.wheels[i].modelId = wheelModelId;
-        car.wheels[i].body = physics->GetDynamicBody(vehicleWheelCollisionShape, wheelOffsets[i] + vehicleOrigin, 30);
+        car.wheels[i].body = PhysicsGenerator::GetDynamicBody(vehicleWheelCollisionShape, wheelOffsets[i] + vehicleOrigin, 30);
         car.wheels[i].body->setActivationState(DISABLE_DEACTIVATION);
         car.wheels[i].body->setFriction(1250);
-        physics->DynamicsWorld->addRigidBody(car.wheels[i].body);
+        physics->AddBody(car.wheels[i].body);
 
         car.wheelConstraints[i] =
             new btHinge2Constraint(*car.frame.body, *car.wheels[i].body, wheelOffsets[0], parentAxis, i < 2 ? leftChildAxis : rightChildAxis);
@@ -92,8 +93,9 @@ void Car::SetupPhysics(Physics* physics)
         car.wheelConstraints[i]->setMaxMotorForce(motorAxis, 10);
         car.wheelConstraints[i]->setTargetVelocity(motorAxis, 0);
 
-        physics->DynamicsWorld->addConstraint(car.wheelConstraints[i], true);
-        physics->DynamicsWorld->addConstraint(car.wheelConnectors[i], true); // Tight constraiont, not realistic, but works.
+        // TODO add this to the new physics setup.
+        // physics->DynamicsWorld->addConstraint(car.wheelConstraints[i], true);
+        // physics->DynamicsWorld->addConstraint(car.wheelConnectors[i], true); // Tight constraiont, not realistic, but works.
     }
 }
 

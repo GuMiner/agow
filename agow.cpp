@@ -46,15 +46,15 @@ Constants::Status agow::LoadPhysics()
     }
 
     RockGenerator rockGenerator;
-    physics.AddCollisionModels(rockGenerator.GetModelPoints(&modelManager));
+    PhysicsGenerator::AddCollisionModels(rockGenerator.GetModelPoints(&modelManager));
 
     SignGenerator signGenerator;
-    physics.AddCollisionModels(signGenerator.GetModelPoints(&modelManager));
+    PhysicsGenerator::AddCollisionModels(signGenerator.GetModelPoints(&modelManager));
 
     npcManager.LoadNpcPhysics(&physics, &regionManager);
     
     glm::vec2 spawnPoint = Map::GetPoint(Map::PLAYER);
-    float spawnHeight = 2.0f + regionManager.GetPointHeight(physics.DynamicsWorld, spawnPoint);
+    float spawnHeight = 2.0f + regionManager.GetPointHeight(&physics, spawnPoint);
     player.LoadPlayerPhysics(&physics, glm::vec3(spawnPoint.x, spawnPoint.y, spawnHeight), 70);
 
     testCar.offset.x = (spawnPoint.x + 5.0f);
@@ -68,7 +68,7 @@ Constants::Status agow::LoadPhysics()
 void agow::UnloadPhysics()
 {
     // Delete our test data.
-    regionManager.CleanupPhysics(physics.DynamicsWorld);
+    regionManager.CleanupPhysics(&physics);
     npcManager.UnloadNpcPhysics(&physics);
     player.UnloadPlayerPhysics(&physics);
     physics.UnloadPhysics();
@@ -321,16 +321,10 @@ void agow::HandleEvents(GLFWwindow* window, bool& focusPaused, bool& escapePause
 bool fillMode = true;
 void agow::Update(float currentGameTime, float frameTime)
 {
-    player.Update(frameTime, regionManager.GetPointTerrainType(physics.DynamicsWorld, player.GetTerrainPosition()));
+    player.Update(frameTime, regionManager.GetPointTerrainType(&physics, player.GetTerrainPosition()));
 
     npcManager.Update(currentGameTime, frameTime);
     
-    // TODO test code
-    if (Input::IsKeyPressed(GLFW_KEY_R))
-    {
-        player.Warp(&regionManager, physics.DynamicsWorld, player.GetTerrainPosition());
-    }
-
     if (Input::IsKeyTyped(GLFW_KEY_B))
     {
         if (debugDrawer.ShouldRender())
@@ -360,7 +354,7 @@ void agow::Update(float currentGameTime, float frameTime)
 
     scenery.Update(frameTime);
 
-    regionManager.UpdateVisibleRegion(player.GetPosition(), player.Get2DOrientation(), physics.DynamicsWorld);
+    regionManager.UpdateVisibleRegion(player.GetPosition(), player.Get2DOrientation(), &physics);
     regionManager.SimulateVisibleRegions(currentGameTime, frameTime);
 
     // Update useful statistics that are fancier than the standard GUI
@@ -407,8 +401,6 @@ void agow::Render(GLFWwindow* window, glm::mat4& viewMatrix)
 
     if (debugDrawer.ShouldRender())
     {
-        debugDrawer.Reset();
-        physics.DynamicsWorld->debugDrawWorld();
         debugDrawer.Render(projectionMatrix);
     }
 }

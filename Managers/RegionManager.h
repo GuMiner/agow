@@ -37,16 +37,16 @@ public:
     glm::ivec2 GetCurrentCenterTile(const glm::vec3& position) const;
 
     // Returns the height of the point, in real units. If the point is out-of-bounds, returns 0 (min height).
-    float GetPointHeight(btDynamicsWorld* dynamicsWorld, const glm::vec2 point);
+    float GetPointHeight(Physics* physics, const glm::vec2 point);
 
     // Returns the terrain type at the specified point. Returns LAKE if out of bounds.
-    int GetPointTerrainType(btDynamicsWorld* dynamicsWorld, const glm::vec2 point);
+    int GetPointTerrainType(Physics* physics, const glm::vec2 point);
 
-    void UpdateVisibleRegion(const glm::vec3& playerPosition, const glm::vec2& playerOrientation, btDynamicsWorld* dynamicsWorld);
+    void UpdateVisibleRegion(const glm::vec3& playerPosition, const glm::vec2& playerOrientation, Physics* physics);
     void SimulateVisibleRegions(float gameTime, float elapsedSeconds);
     void RenderRegions(const glm::mat4& perspectiveMatrix, const glm::vec3& playerPosition, const glm::vec2& playerDirection, const glm::mat4& viewMatrix);
 
-    void CleanupPhysics(btDynamicsWorld* dynamicsWorld);
+    void CleanupPhysics(Physics* physics);
     virtual ~RegionManager();
 };
 

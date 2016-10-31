@@ -67,8 +67,6 @@ public:
     const glm::quat GetViewOrientation() const;
     const glm::mat4 GetViewMatrix() const;
 
-    void Warp(RegionManager* regionManager, btDynamicsWorld* world, const glm::vec2 mapPos);      
-
     void UnloadPlayerPhysics(Physics* physics);
 
     // Used for collision callbacks.

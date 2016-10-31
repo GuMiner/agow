@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "Math\PhysicsOps.h"
+#include "Generators\PhysicsGenerator.h"
 #include "Generators\RockGenerator.h"
 #include "WeaponBase.h"
 #include "RockWeapon.h"
@@ -33,13 +34,13 @@ void RockWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
 {
     // TODO add SFX and interact with everything else. Also manage projectiles list.
     Model* model = new Model();
-    Physics::CShape shape;
+    PhysicsGenerator::CShape shape;
 
     RockGenerator rockGenerator;
     rockGenerator.GetRandomRockModel(&model->modelId, &shape);
 
     glm::vec3 vel = 40.0f * fireDirection;
-    model->body = physics->GetDynamicBody(shape, btVector3(fireOrigin.x, fireOrigin.y, fireOrigin.z), 20.0f);
+    model->body = PhysicsGenerator::GetDynamicBody(shape, btVector3(fireOrigin.x, fireOrigin.y, fireOrigin.z), 20.0f);
     model->body->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
     model->body->setUserPointer(new TypedCallback<UserPhysics::ObjectType>(UserPhysics::ObjectType::ROCK, this));
 
@@ -48,12 +49,12 @@ void RockWeapon::FireInternal(glm::vec3 fireOrigin, glm::vec3 fireDirection)
     {
         Model* modelToRemove = (Model*)projectiles.front();
 
-        physics->DynamicsWorld->removeRigidBody(modelToRemove->body);
+        physics->RemoveBody(modelToRemove->body);
         physics->DeleteBody(modelToRemove->body, false);
         projectiles.pop_front();
     }
 
-    physics->DynamicsWorld->addRigidBody(model->body);
+    physics->AddBody(model->body);
     projectiles.push_back(model);
 }
 

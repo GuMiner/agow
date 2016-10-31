@@ -97,6 +97,7 @@
   <ItemGroup>
     <ClInclude Include="AI\DecisionTree.h" />
     <ClInclude Include="AI\MilitaryStateMachine.h" />
+    <ClInclude Include="Generators\PhysicsGenerator.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="Generators\BuildingGenerator.h" />
     <ClInclude Include="Cache\TerrainCache.h" />
@@ -177,6 +178,7 @@
   <ItemGroup>
     <ClCompile Include="AI\DecisionTree.cpp" />
     <ClCompile Include="AI\MilitaryStateMachine.cpp" />
+    <ClCompile Include="Generators\PhysicsGenerator.cpp" />
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Generators\BuildingGenerator.cpp" />
     <ClCompile Include="Cache\TerrainCache.cpp" />

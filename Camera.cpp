@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\quaternion.hpp>
+#include "Generators\PhysicsGenerator.h"
 #include "Math\PhysicsOps.h"
 #include "Physics.h"
 #include "Camera.h"
@@ -22,9 +23,9 @@ void Camera::Initialize(btRigidBody* playerObject)
 
 void Camera::UpdateCamera()
 {
-    glm::vec3 pos = Physics::GetBodyPosition(playerObject);
+    glm::vec3 pos = PhysicsGenerator::GetBodyPosition(playerObject);
 
-    glm::quat playerOrientation = Physics::GetBodyRotation(playerObject);
+    glm::quat playerOrientation = PhysicsGenerator::GetBodyRotation(playerObject);
     glm::quat travelRotation = playerOrientation * glm::rotate(glm::quat(), glm::radians(-90.0f), glm::vec3(1, 0, 0));
 
     glm::vec3 forwardsVector = PhysicsOps::ForwardsVector(travelRotation);

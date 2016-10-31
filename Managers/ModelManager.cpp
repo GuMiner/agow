@@ -1,5 +1,6 @@
 #include <limits>
 #include <glm\gtc\matrix_transform.hpp>
+#include "Generators\PhysicsGenerator.h"
 #include "Utils\Logger.h"
 #include "ModelLoader.h"
 #include "ModelManager.h"
@@ -60,7 +61,7 @@ unsigned int ModelManager::GetCurrentModelCount() const
 
 void ModelManager::RenderModelImmediate(const glm::mat4& projectionMatrix, Model* model)
 {
-    glm::mat4 mvMatrix = glm::scale(Physics::GetBodyMatrix(model->body), model->scaleFactor);
+    glm::mat4 mvMatrix = glm::scale(PhysicsGenerator::GetBodyMatrix(model->body), model->scaleFactor);
 
     glUseProgram(directModelRenderProgram);
     glBindVertexArray(vao);
