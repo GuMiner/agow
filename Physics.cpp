@@ -110,7 +110,7 @@ void Physics::PerformQueuedActions()
             }
             
             delete ((btRigidBody*)queuedCommands[i].item)->getMotionState();
-            delete queuedCommands[i].item;
+            // delete queuedCommands[i].item;
             break;
         case PhysicsCommand::DeleteBodyAndCollisionShapes:
             delete ((btRigidBody*)queuedCommands[i].item)->getCollisionShape();
@@ -121,7 +121,7 @@ void Physics::PerformQueuedActions()
             }
             
             delete ((btRigidBody*)queuedCommands[i].item)->getMotionState();
-            delete queuedCommands[i].item;
+            // delete queuedCommands[i].item;
             break;
         default:
             break;

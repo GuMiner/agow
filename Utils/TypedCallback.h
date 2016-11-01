@@ -45,6 +45,8 @@ public:
             delete callbackSpecificData;
             callbackSpecificData = nullptr;
         }
+
+        callback = nullptr;
     }
 
     void CallCallback(T callingObject)
@@ -59,5 +61,7 @@ public:
             delete callbackSpecificData;
             callbackSpecificData = nullptr;
         }
+
+        callback = nullptr;
     }
 };
