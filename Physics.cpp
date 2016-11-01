@@ -7,6 +7,9 @@
 #include "Utils\TypedCallback.h"
 #include "Physics.h"
 
+std::vector<ContactCallback> Physics::contactCallbacks = std::vector<ContactCallback>();
+std::map<void*, std::set<void*>> Physics::contactCallbacksFound = std::map<void*, std::set<void*>>();
+
 Physics::Physics()
     : queuedCommands(), accumulatedTimestep(0.0f), simulating(false)
 {
@@ -28,6 +31,8 @@ bool Physics::LoadPhysics(PhysicsDebugDrawer* debugDrawer)
     btContactSolverInfo& solverInfo = dynamicsWorld->getSolverInfo();
     solverInfo.m_numIterations = 10;
 
+    gContactProcessedCallback = &Physics::AddContactCallback;
+
     // Our basic collision shapes are hardcoded, and any model-based shapes are passed-in directly.
     PhysicsGenerator::LoadCollisionShapes();
 
@@ -42,8 +47,8 @@ void Physics::Step(float timestep)
         if (simulationThread.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
         {
             simulating = false;
-            PerformQueuedActions();
             PerformPostStepActions();
+            PerformQueuedActions();
         }
     }
     
@@ -56,6 +61,30 @@ void Physics::Step(float timestep)
     }
 }
 
+bool Physics::AddContactCallback(btManifoldPoint& cp, void* body0, void* body1)
+{
+    if (cp.getDistance() >= 0.0f)
+    {
+        // This is a pre-emptive contact point -- the objects haven't collided yet.
+        return false;
+    }
+
+    if (contactCallbacksFound.find(body0) == contactCallbacksFound.end())
+    {
+        contactCallbacksFound[body0] = std::set<void*>();
+    }
+
+    if (contactCallbacksFound[body0].find(body1) != contactCallbacksFound[body0].end())
+    {
+        // This item already exists.
+        return false;
+    }
+
+    contactCallbacksFound[body0].insert(body1);
+    contactCallbacks.push_back(ContactCallback(body0, body1));
+    return true;
+}
+
 void Physics::PerformStep(float timestep)
 {
     // Honestly this could be in a lambda instead.
@@ -64,8 +93,6 @@ void Physics::PerformStep(float timestep)
 
 void Physics::PerformQueuedActions()
 {
-    removedBodies.clear();
-
     for (unsigned int i = 0; i < queuedCommands.size(); i++)
     {
         switch (queuedCommands[i].action)
@@ -75,7 +102,6 @@ void Physics::PerformQueuedActions()
             break;
         case PhysicsCommand::RemoveBody:
             dynamicsWorld->removeRigidBody((btRigidBody*)queuedCommands[i].item);
-            removedBodies.insert(queuedCommands[i].item);
             break;
         case PhysicsCommand::DeleteBody:
             if (((btRigidBody*)queuedCommands[i].item)->getUserPointer() != nullptr)
@@ -85,7 +111,6 @@ void Physics::PerformQueuedActions()
             
             delete ((btRigidBody*)queuedCommands[i].item)->getMotionState();
             delete queuedCommands[i].item;
-            removedBodies.insert(queuedCommands[i].item);
             break;
         case PhysicsCommand::DeleteBodyAndCollisionShapes:
             delete ((btRigidBody*)queuedCommands[i].item)->getCollisionShape();
@@ -97,7 +122,6 @@ void Physics::PerformQueuedActions()
             
             delete ((btRigidBody*)queuedCommands[i].item)->getMotionState();
             delete queuedCommands[i].item;
-            removedBodies.insert(queuedCommands[i].item);
             break;
         default:
             break;
@@ -115,53 +139,54 @@ void Physics::PerformPostStepActions()
         dynamicsWorld->debugDrawWorld();
     }
 
-    // Check for interesting collisions.
-    const int manifoldCount = collisionDispatcher->getNumManifolds();
-    for (int i = 0; i < manifoldCount; i++)
+    // Figure out what will be updated so we don't perform callbacks inadvertently on it.
+    std::set<void*> removedBodies;
+    for (unsigned int i = 0; i < queuedCommands.size(); i++)
     {
-        const btPersistentManifold* manifold = collisionDispatcher->getManifoldByIndexInternal(i);
-        const btCollisionObject* objOne = manifold->getBody0();
-        const btCollisionObject* objTwo = manifold->getBody1();
+        switch (queuedCommands[i].action)
+        {
+        case PhysicsCommand::DeleteBody:
+        case PhysicsCommand::DeleteBodyAndCollisionShapes:
+        case PhysicsCommand::RemoveBody:
+            removedBodies.insert(queuedCommands[i].item);
+            break;
+        default:
+            break;
+        }
+    }
 
-        if (removedBodies.find((void*)objOne) != removedBodies.end() || removedBodies.find((void*)objTwo) != removedBodies.end())
+    for(const ContactCallback& callback : contactCallbacks)
+    {
+        if (removedBodies.find(callback.body0) != removedBodies.end() || removedBodies.find(callback.body1) != removedBodies.end())
         {
             // We removed this item in the middle of the simulation, so we don't call callbacks on it.
             continue;
         }
 
+        const btCollisionObject* objOne = (btCollisionObject*)callback.body0;
+        const btCollisionObject* objTwo = (btCollisionObject*)callback.body1;
+
         void* userObj1 = objOne->getUserPointer();
         void* userObj2 = objTwo->getUserPointer();
-        if (false) // TODO fix userObj1 != nullptr && userObj2 != nullptr)
+        if (userObj1 != nullptr && userObj2 != nullptr)
         {
-            // These objects could collide, so verify this is a real collision.
-            bool doesCollide = false;
-            int contactCount = manifold->getNumContacts();
-            for (int j = 0; j < contactCount; j++)
+            // These are two objects we know about, so decipher their types and call the callbacks for collisions as appropriate.
+            TypedCallback<UserPhysics::ObjectType>* userObject1 = (TypedCallback<UserPhysics::ObjectType>*)userObj1;
+            TypedCallback<UserPhysics::ObjectType>* userObject2 = (TypedCallback<UserPhysics::ObjectType>*)userObj2;
+            if (UserPhysics::Collides(userObject1->GetType(), userObject2->GetType()))
             {
-                if (manifold->getContactPoint(j).getDistance() < 0.0f)
-                {
-                    doesCollide = true;
-                    break;
-                }
+                userObject1->CallCallback(userObject2->GetType());
             }
 
-            if (doesCollide)
+            if (UserPhysics::Collides(userObject2->GetType(), userObject1->GetType()))
             {
-                // These are two objects we know about, so decipher their types and call the callbacks for collisions as appropriate.
-                TypedCallback<UserPhysics::ObjectType>* userObject1 = (TypedCallback<UserPhysics::ObjectType>*)userObj1;
-                TypedCallback<UserPhysics::ObjectType>* userObject2 = (TypedCallback<UserPhysics::ObjectType>*)userObj2;
-                if (UserPhysics::Collides(userObject1->GetType(), userObject2->GetType()))
-                {
-                    userObject1->CallCallback(userObject2->GetType());
-                }
-
-                if (UserPhysics::Collides(userObject2->GetType(), userObject1->GetType()))
-                {
-                    userObject2->CallCallback(userObject1->GetType());
-                }
+                userObject2->CallCallback(userObject1->GetType());
             }
         }
     }
+
+    contactCallbacks.clear();
+    contactCallbacksFound.clear();
 }
 
 void Physics::UnloadPhysics()

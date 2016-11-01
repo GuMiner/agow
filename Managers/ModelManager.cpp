@@ -89,7 +89,7 @@ void ModelManager::RenderModel(const glm::mat4& projectionMatrix, Model* model)
     {
         // Known model. Only update if we detect it as dynamic.
         int activationState = model->analysisBody == nullptr ? model->body->getActivationState() : model->analysisBody->getActivationState();
-        if (activationState == ACTIVE_TAG || activationState == DISABLE_DEACTIVATION) // WANTS_DEACTIVATION means it basically is wiggling.
+        if (activationState == ACTIVE_TAG || activationState == DISABLE_DEACTIVATION || activationState == WANTS_DEACTIVATION)
         {
             UpdateModelInRenderStore(model);
         }

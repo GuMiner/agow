@@ -43,10 +43,11 @@ public:
         if (callbackSpecificData != nullptr && deleteCSDAfterCallback)
         {
             delete callbackSpecificData;
+            callbackSpecificData = nullptr;
         }
     }
 
-    void CallCallback(T callingObject) const
+    void CallCallback(T callingObject)
     {
         if (callback != nullptr)
         {
@@ -56,6 +57,7 @@ public:
         if (callbackSpecificData != nullptr && deleteCSDAfterCallback)
         {
             delete callbackSpecificData;
+            callbackSpecificData = nullptr;
         }
     }
 };

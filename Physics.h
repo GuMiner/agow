@@ -1,9 +1,21 @@
 #pragma once
 #include <future>
+#include <map>
 #include <set>
 #include <vector>
 #include <Bullet\btBulletDynamicsCommon.h>
 #include "PhysicsDebugDrawer.h"
+
+struct ContactCallback
+{
+    void* body0;
+    void* body1;
+
+    ContactCallback(void* body0, void* body1)
+        : body0(body0), body1(body1)
+    {
+    }
+};
 
 struct PhysicsCommand
 {
@@ -28,7 +40,8 @@ struct PhysicsCommand
 // Also holds generic framework code.
 class Physics
 {
-    std::set<void*> removedBodies;
+    static std::vector<ContactCallback> contactCallbacks;
+    static std::map<void*, std::set<void*>> contactCallbacksFound;
     std::vector<PhysicsCommand> queuedCommands;
 
     float accumulatedTimestep;
@@ -47,6 +60,8 @@ class Physics
     void PerformStep(float timestep); // Runs the physics simulation on a separate thread.
     void PerformQueuedActions(); // Performs any queued physics actions that could not be done in multiple threads.
     void PerformPostStepActions(); // Performs physics that occurs after a step occurs.
+
+    static bool AddContactCallback(btManifoldPoint& cp, void* body0, void* body1);
 
 public:
 
