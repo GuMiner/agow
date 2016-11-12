@@ -88,7 +88,7 @@ bool Physics::AddContactCallback(btManifoldPoint& cp, void* body0, void* body1)
 void Physics::PerformStep(float timestep)
 {
     // Honestly this could be in a lambda instead.
-    dynamicsWorld->stepSimulation(timestep);
+    dynamicsWorld->stepSimulation(timestep, 4);
 }
 
 void Physics::PerformQueuedActions()

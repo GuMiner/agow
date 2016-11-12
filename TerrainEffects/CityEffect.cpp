@@ -130,12 +130,12 @@ bool CityEffect::LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* ti
         int buildingXPos = std::get<0>(*iter);
         int buildingYPos = std::get<1>(*iter);
         int regionSize = std::get<2>(*iter);
-        for (int m = 0; m < regionSize / 11; m++)
+        for (int m = 0; m < regionSize / 15; m++)
         {
-            for (int n = 0; n < regionSize / 11; n++)
+            for (int n = 0; n < regionSize / 15; n++)
             {
-                int xPos = buildingXPos + (1 + m) * 11;
-                int yPos = buildingYPos + (1 + n) * 11;
+                int xPos = buildingXPos + (1 + m) * 15;
+                int yPos = buildingYPos + (1 + n) * 15;
 
                 // Get a building.
                 float buildingFootprintSize, buildingHeight;
