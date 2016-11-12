@@ -1,5 +1,7 @@
+#include <glm\mat4x4.hpp>
 #include <glm\gtc\random.hpp>
-#include "Utils\Logger.h"
+#include <SFML\System.hpp>
+#include "logging\Logger.h"
 #include "GrassEffect.h"
 
 GrassStats GrassEffect::stats = GrassStats();
@@ -8,7 +10,7 @@ GrassEffect::GrassEffect()
 {
 }
 
-bool GrassEffect::LoadBasics(ShaderManager* shaderManager)
+bool GrassEffect::LoadBasics(ShaderFactory* shaderManager)
 {
     // Load our shader program to custom-render grass.
     if (!shaderManager->CreateShaderProgramWithGeometryShader("grassRender", &programId))

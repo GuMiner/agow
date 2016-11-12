@@ -14,7 +14,7 @@
 #include "Managers\ModelManager.h"
 #include "Managers\NpcManager.h"
 #include "Managers\RegionManager.h"
-#include "Managers\ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 #include "Math\PhysicsOps.h"
 #include "Utils\Constants.h"
 #include "Vehicles\Car.h"
@@ -42,7 +42,7 @@ class agow
     ModelManager modelManager;
     NpcManager npcManager;
     RegionManager regionManager;
-    ShaderManager shaderManager;
+    ShaderFactory shaderManager;
 
     // Game data
     Physics physics;

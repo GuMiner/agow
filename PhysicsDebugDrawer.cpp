@@ -1,5 +1,5 @@
 #include "Math\PhysicsOps.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "PhysicsDebugDrawer.h"
 
 PhysicsDebugDrawer::PhysicsDebugDrawer()
@@ -7,7 +7,7 @@ PhysicsDebugDrawer::PhysicsDebugDrawer()
 {
 }
 
-bool PhysicsDebugDrawer::LoadBasics(ShaderManager* shaderManager)
+bool PhysicsDebugDrawer::LoadBasics(ShaderFactory* shaderManager)
 {
     // Load our shader program to custom-render grass.
     if (!shaderManager->CreateShaderProgram("lineRender", &programId))

@@ -60,7 +60,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;include\Bullet;$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;include\Bullet;$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories);gucommon</AdditionalIncludeDirectories>
       <AdditionalOptions>-D_CRT_SECURE_NO_WARNINGS -wd4251 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -77,7 +77,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include;include\Bullet;$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;include\Bullet;$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories);gucommon</AdditionalIncludeDirectories>
       <AdditionalOptions>/wd4251 -D_CRT_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -94,6 +94,17 @@
       <Command>python $(ProjectDir)\IncrementBuildVersion.py</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="GuCommon\logging\Logger.cpp" />
+    <ClCompile Include="GuCommon\shaders\ShaderFactory.cpp" />
+    <ClCompile Include="GuCommon\stb\stb_implementations.cpp" />
+    <ClCompile Include="GuCommon\strings\StringUtils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GuCommon\logging\Logger.h" />
+    <ClInclude Include="GuCommon\shaders\ShaderFactory.h" />
+    <ClInclude Include="GuCommon\strings\StringUtils.h" />
+  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AI\DecisionTree.h" />
     <ClInclude Include="AI\MilitaryStateMachine.h" />
@@ -128,7 +139,6 @@
     <ClInclude Include="Managers\ModelRenderStore.h" />
     <ClInclude Include="Managers\NpcManager.h" />
     <ClInclude Include="Managers\RegionManager.h" />
-    <ClInclude Include="Managers\ShaderManager.h" />
     <ClInclude Include="Managers\TerrainEffectManager.h" />
     <ClInclude Include="Managers\TerrainManager.h" />
     <ClInclude Include="Managers\VehicleManager.h" />
@@ -155,9 +165,7 @@
     <ClInclude Include="Utils\Constants.h" />
     <ClInclude Include="Utils\ConversionUtils.h" />
     <ClInclude Include="Utils\ImageUtils.h" />
-    <ClInclude Include="Utils\Logger.h" />
     <ClInclude Include="Utils\SharedExclusiveLock.h" />
-    <ClInclude Include="Utils\StringUtils.h" />
     <ClInclude Include="Utils\TypedCallback.h" />
     <ClInclude Include="Utils\Vertex.h" />
     <ClInclude Include="agow.h" />
@@ -201,7 +209,6 @@
     <ClCompile Include="Managers\ModelRenderStore.cpp" />
     <ClCompile Include="Managers\NpcManager.cpp" />
     <ClCompile Include="Managers\RegionManager.cpp" />
-    <ClCompile Include="Managers\ShaderManager.cpp" />
     <ClCompile Include="Managers\TerrainEffectManager.cpp" />
     <ClCompile Include="Managers\TerrainManager.cpp" />
     <ClCompile Include="Managers\VehicleManager.cpp" />
@@ -227,10 +234,7 @@
     <ClCompile Include="Utils\Constants.cpp" />
     <ClCompile Include="Utils\ConversionUtils.cpp" />
     <ClCompile Include="Utils\ImageUtils.cpp" />
-    <ClCompile Include="Utils\Logger.cpp" />
     <ClCompile Include="Utils\SharedExclusiveLock.cpp" />
-    <ClCompile Include="Utils\stb_implementations.cpp" />
-    <ClCompile Include="Utils\StringUtils.cpp" />
     <ClCompile Include="Utils\TypedCallback.cpp" />
     <ClCompile Include="Utils\Vertex.cpp" />
     <ClCompile Include="agow.cpp" />

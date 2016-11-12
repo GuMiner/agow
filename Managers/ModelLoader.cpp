@@ -1,6 +1,6 @@
 #include <sstream>
-#include "Utils\Logger.h"
-#include "Utils\StringUtils.h"
+#include "logging\Logger.h"
+#include "strings\StringUtils.h"
 #include "ModelLoader.h"
 
 ModelLoader::ModelLoader(ImageManager* imageManager)

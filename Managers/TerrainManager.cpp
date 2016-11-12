@@ -3,10 +3,10 @@
 #include <sstream>
 #include <stb\stb_image.h>
 #include "TerrainManager.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Utils\ImageUtils.h"
 
-TerrainManager::TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, Physics* Physics, std::string terrainRootFolder)
+TerrainManager::TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderFactory* shaderManager, ModelManager* modelManager, Physics* Physics, std::string terrainRootFolder)
     : min(min), max(max), shaderManager(shaderManager), rootFolder(terrainRootFolder), terrainEffects(shaderManager, modelManager, Physics), terrainRenderProgram(0)
 {
 }

@@ -8,7 +8,7 @@
 #include "Data\RenderableSentence.h"
 #include "Data\StyleText.h"
 #include "Managers\FontManager.h"
-#include "Managers\ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 #include "Utils\TypedCallback.h"
 
 // Displays dialog text that NPCs speak.
@@ -41,7 +41,7 @@ class DialogPane : public ICallback<EventType>
 public:
     DialogPane();
     ~DialogPane();
-    bool LoadBasics(FontManager* fontManager, ShaderManager* shaderManager);
+    bool LoadBasics(FontManager* fontManager, ShaderFactory* shaderManager);
 
     // Adds new text for display.
     void QueueText(const StyleText& newText);

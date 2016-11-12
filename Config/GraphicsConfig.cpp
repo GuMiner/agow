@@ -1,4 +1,4 @@
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "GraphicsConfig.h"
 
 bool GraphicsConfig::IsFullscreen;

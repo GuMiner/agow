@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include "Data\Model.h"
 #include "Data\TerrainTile.h"
-#include "Managers\ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 #include "Managers\ModelManager.h"
 #include <glm\vec3.hpp>
 #include "TerrainEffects\TerrainEffect.h"
@@ -26,7 +26,7 @@ struct TerrainEffectData
 // Defines effects for each sub tile of terrain.
 class TerrainEffectManager
 {
-    ShaderManager* shaderManager;
+    ShaderFactory* shaderManager;
     ModelManager* modelManager;
     Physics* physics;
 
@@ -36,7 +36,7 @@ class TerrainEffectManager
     void CleanupSubTileEffects(glm::ivec2 start, bool log);
 
 public:
-    TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, Physics* Physics);
+    TerrainEffectManager(ShaderFactory* shaderManager, ModelManager* modelManager, Physics* Physics);
 
     // Loads generic OpenGL functionality needed.
     bool LoadBasics();

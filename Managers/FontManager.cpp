@@ -1,8 +1,9 @@
 #include <cstring>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 #include "Utils\Constants.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Config\GraphicsConfig.h"
 #include "FontManager.h"
 
@@ -15,7 +16,7 @@ FontManager::FontManager()
     nextSentenceId = 0;
 }
 
-bool FontManager::LoadFont(ShaderManager *shaderManager, const char *fontName)
+bool FontManager::LoadFont(ShaderFactory *shaderManager, const char *fontName)
 {
     /// Load in our shader for the font.
     if (!shaderManager->CreateShaderProgram("fontRender", &fontShader))

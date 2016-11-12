@@ -3,7 +3,7 @@
 #include <glm\vec3.hpp>
 #include "Data\CallbackTypes.h"
 #include "Managers\ModelManager.h"
-#include "Managers\ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 #include "Utils\TypedCallback.h"
 
 struct Stars
@@ -47,7 +47,7 @@ class Scenery : public ICallback<EventType>
 public:
     Scenery();
 
-    bool Initialize(ShaderManager& shaderManager);
+    bool Initialize(ShaderFactory& shaderManager);
     void Update(float frameTime);
     void Render(glm::mat4& projectionMatrix, const glm::vec3& playerPosition);
 

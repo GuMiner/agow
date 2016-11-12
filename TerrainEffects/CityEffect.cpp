@@ -1,12 +1,13 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\random.hpp>
+#include <SFML\System.hpp>
 #include "Config\PhysicsConfig.h"
 #include "Generators\BuildingGenerator.h"
 #include "Generators\ColorGenerator.h"
 #include "Generators\PhysicsGenerator.h"
 #include "Managers\TerrainManager.h"
 #include "Math\PhysicsOps.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "CityEffect.h"
 
 CityStats CityEffect::stats = CityStats();
@@ -16,7 +17,7 @@ CityEffect::CityEffect(ModelManager* modelManager, Physics* physics, const std::
 {
 }
 
-bool CityEffect::LoadBasics(ShaderManager* shaderManager)
+bool CityEffect::LoadBasics(ShaderFactory* shaderManager)
 {
     // TODO
     return true;

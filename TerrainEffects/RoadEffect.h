@@ -56,7 +56,7 @@ class RoadEffect : public TerrainEffect
 public:
     RoadEffect();
 
-    virtual bool LoadBasics(ShaderManager* shaderManager) override;
+    virtual bool LoadBasics(ShaderFactory* shaderManager) override;
     virtual bool LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile) override;
     virtual void UnloadEffect(void* effectData) override;
     virtual void Simulate(const glm::ivec2 subtileId, void* effectData, float elapsedSeconds) override;

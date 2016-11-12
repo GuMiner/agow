@@ -2,7 +2,7 @@
 #include <Bullet\LinearMath\btIDebugDraw.h>
 #include <GL\glew.h>
 #include <glm\mat4x4.hpp>
-#include "Managers\ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 #include "Utils\Vertex.h"
 
 class PhysicsDebugDrawer : public btIDebugDraw
@@ -20,7 +20,7 @@ class PhysicsDebugDrawer : public btIDebugDraw
 
 public:
     PhysicsDebugDrawer();
-    bool LoadBasics(ShaderManager* shaderManager);
+    bool LoadBasics(ShaderFactory* shaderManager);
     ~PhysicsDebugDrawer();
 
     // Defines how to handle Bullet physics debug drawing.

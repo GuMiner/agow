@@ -1,5 +1,5 @@
 #include "ConversionUtils.h"
-#include "StringUtils.h"
+#include "strings\StringUtils.h"
 
 // Loads in a boolean configuration value.
 bool ConversionUtils::LoadBool(const std::string& line, bool& boolean)

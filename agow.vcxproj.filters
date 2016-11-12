@@ -1,6 +1,48 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="GuCommon\stb\stb_implementations.cpp">
+      <Filter>gucommon\stb</Filter>
+    </ClCompile>
+    <ClCompile Include="GuCommon\strings\StringUtils.cpp">
+      <Filter>gucommon\strings</Filter>
+    </ClCompile>
+    <ClCompile Include="GuCommon\shaders\ShaderFactory.cpp">
+      <Filter>gucommon\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="GuCommon\logging\Logger.cpp">
+      <Filter>gucommon\logging</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GuCommon\strings\StringUtils.h">
+      <Filter>gucommon\strings</Filter>
+    </ClInclude>
+    <ClInclude Include="GuCommon\shaders\ShaderFactory.h">
+      <Filter>gucommon\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="GuCommon\logging\Logger.h">
+      <Filter>gucommon\logging</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="gucommon">
+      <UniqueIdentifier>{6dac9a51-7fdb-45fa-a958-f3835ac819df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gucommon\stb">
+      <UniqueIdentifier>{523f6840-8462-4523-add4-b068a9b805af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gucommon\strings">
+      <UniqueIdentifier>{539cb3fe-c102-4b44-bfd7-8ba7240ebf05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gucommon\logging">
+      <UniqueIdentifier>{ba9dd763-44f0-4c21-922b-ff3f56742143}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gucommon\shaders">
+      <UniqueIdentifier>{baade055-85c6-4695-b00a-2edff2bb8850}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="agow.cpp" />
     <ClCompile Include="Math\PhysicsOps.cpp">
       <Filter>Math</Filter>
@@ -32,26 +74,14 @@
     <ClCompile Include="Utils\Vertex.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Utils\StringUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\SharedExclusiveLock.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils\Logger.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Utils\ConversionUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Managers\ShaderManager.cpp">
-      <Filter>Managers</Filter>
-    </ClCompile>
     <ClCompile Include="Scenery.cpp" />
     <ClCompile Include="Statistics.cpp" />
-    <ClCompile Include="Utils\stb_implementations.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\ImageUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -220,22 +250,13 @@
     <ClInclude Include="Utils\Vertex.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Utils\StringUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\SharedExclusiveLock.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils\Logger.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\ConversionUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="version.h" />
-    <ClInclude Include="Managers\ShaderManager.h">
-      <Filter>Managers</Filter>
-    </ClInclude>
     <ClInclude Include="Scenery.h" />
     <ClInclude Include="Statistics.h" />
     <ClInclude Include="Data\TextDataTypes.h">

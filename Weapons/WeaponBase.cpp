@@ -1,5 +1,5 @@
 #include <algorithm>
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "WeaponBase.h"
 
 WeaponBase::WeaponBase(Physics* physics, std::string name, float ammoLimit, bool continualFire, float fireRateInSeconds, float cooldownInSeconds)

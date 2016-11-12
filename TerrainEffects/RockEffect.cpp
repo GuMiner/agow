@@ -3,7 +3,7 @@
 #include "Generators\RockGenerator.h"
 #include "Generators\PhysicsGenerator.h"
 #include "Managers\TerrainManager.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "RockEffect.h"
 
 RockEffect::RockEffect(ModelManager* modelManager, Physics* physics)
@@ -11,7 +11,7 @@ RockEffect::RockEffect(ModelManager* modelManager, Physics* physics)
 {
 }
 
-bool RockEffect::LoadBasics(ShaderManager* shaderManager)
+bool RockEffect::LoadBasics(ShaderFactory* shaderManager)
 {
     return true;
 }

@@ -2,7 +2,7 @@
 #include <chrono>
 #include <limits>
 #include <glm/gtc/random.hpp>
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "TreeGenerator.h"
 
 TreeGenerator::TreeGenerator()

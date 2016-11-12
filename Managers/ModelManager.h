@@ -9,9 +9,9 @@
 #include <glm\vec4.hpp>
 #include <glm\mat4x4.hpp>
 #include "ImageManager.h"
-#include "ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 #include "Data\Model.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Physics.h"
 #include "ModelRenderStore.h"
 
@@ -96,7 +96,7 @@ public:
     void FinalizeRender(const glm::mat4& projectionMatrix);
 
     // Initializes the OpenGL resources
-    bool InitializeOpenGlResources(ShaderManager& shaderManager);
+    bool InitializeOpenGlResources(ShaderFactory& shaderManager);
 
     // Finalizes the list of loaded models we know of, sending the data to OpenGL.
     void FinalizeLoadedModels();

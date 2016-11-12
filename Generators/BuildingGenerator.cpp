@@ -1,7 +1,7 @@
 #include <Bullet\btBulletDynamicsCommon.h>
 #include <glm\gtc\random.hpp>
-#include "Utils\Logger.h"
-#include "Utils\StringUtils.h"
+#include "logging\Logger.h"
+#include "strings\StringUtils.h"
 #include "PhysicsGenerator.h"
 #include "BuildingGenerator.h"
 

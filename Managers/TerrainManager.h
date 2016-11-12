@@ -4,7 +4,7 @@
 #include <map>
 #include <GL/glew.h>
 #include "Data\TerrainTile.h"
-#include "Managers\ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 #include "Managers\TerrainEffectManager.h"
 #include <glm\vec3.hpp>
 #include "Physics.h"
@@ -15,7 +15,7 @@ class TerrainManager
     glm::ivec2 min;
     glm::ivec2 max;
 
-    ShaderManager* shaderManager;
+    ShaderFactory* shaderManager;
     std::string rootFolder;
 
     GLuint terrainRenderProgram;
@@ -41,7 +41,7 @@ class TerrainManager
     void CleanupTerrainTile(glm::ivec2 start, bool log);
 
 public:
-    TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderManager* shaderManager, ModelManager* modelManager, Physics* physics, std::string terrainRootFolder);
+    TerrainManager(glm::ivec2 min, glm::ivec2 max, ShaderFactory* shaderManager, ModelManager* modelManager, Physics* physics, std::string terrainRootFolder);
 
     TerrainEffectManager& GetEffectManager();
 

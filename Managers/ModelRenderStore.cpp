@@ -1,6 +1,6 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include "Generators\PhysicsGenerator.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Physics.h"
 #include "ModelRenderStore.h"
 

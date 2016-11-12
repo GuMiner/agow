@@ -1,7 +1,10 @@
+#include <glm\mat4x4.hpp>
 #include <glm\gtc\random.hpp>
+#include <SFML\System.hpp>
+#include <algorithm>
 #include "Generators\ColorGenerator.h"
 #include "Managers\TerrainManager.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "TreeEffect.h"
 
 TreeStats TreeEffect::stats = TreeStats();
@@ -11,7 +14,7 @@ TreeEffect::TreeEffect(const std::string& cacheFolder)
 {
 }
 
-bool TreeEffect::LoadBasics(ShaderManager* shaderManager)
+bool TreeEffect::LoadBasics(ShaderFactory* shaderManager)
 {
     // Load our shader programs to custom-render trunks and leaves.
     if (!shaderManager->CreateShaderProgram("treeTrunkRender", &trunkProgram.programId))

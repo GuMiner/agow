@@ -749,7 +749,7 @@ float PlasmaWeapon::GetRequiredAmmoToFire()
     return 10.0f;
 }
 
-bool PlasmaWeapon::LoadGraphics(ShaderManager* shaderManager)
+bool PlasmaWeapon::LoadGraphics(ShaderFactory* shaderManager)
 {
     // Sky program.
     if (!shaderManager->CreateShaderProgram("plasmaRender", &program.programId))

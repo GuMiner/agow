@@ -1,7 +1,7 @@
 #include <limits>
 #include <glm\gtc\matrix_transform.hpp>
 #include "Generators\PhysicsGenerator.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "ModelLoader.h"
 #include "ModelManager.h"
 
@@ -197,7 +197,7 @@ void ModelManager::FinalizeRender(const glm::mat4& projectionMatrix)
 }
 
 // Initializes the OpenGL resources
-bool ModelManager::InitializeOpenGlResources(ShaderManager& shaderManager)
+bool ModelManager::InitializeOpenGlResources(ShaderFactory& shaderManager)
 {
     if (!shaderManager.CreateShaderProgram("modelRender", &modelRenderProgram))
     {

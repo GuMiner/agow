@@ -1,7 +1,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Managers\FontManager.h"
 #include "Math\PhysicsOps.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "DialogPane.h"
 #include "NPC.h"
 

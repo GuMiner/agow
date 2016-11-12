@@ -1,4 +1,4 @@
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "MilitaryStateMachine.h"
 
 MilitaryStateMachine::MilitaryStateMachine(const std::string parentNpcName)

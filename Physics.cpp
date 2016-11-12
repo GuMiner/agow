@@ -3,7 +3,7 @@
 #include "Data\UserPhysics.h"
 #include "Generators\PhysicsGenerator.h"
 #include "Math\PhysicsOps.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Utils\TypedCallback.h"
 #include "Physics.h"
 

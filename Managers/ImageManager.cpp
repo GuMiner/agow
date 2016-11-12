@@ -2,7 +2,7 @@
 #include <string>
 #include <sstream>
 #include <GL\glew.h>
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "ImageManager.h"
 
 ImageManager::ImageManager()

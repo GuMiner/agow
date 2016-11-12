@@ -4,7 +4,7 @@
 #include <vector>
 #include <GL/glew.h>
 #include <Bullet\btBulletDynamicsCommon.h>
-#include "Managers\ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 #include "Managers\TerrainManager.h"
 #include <glm\vec3.hpp>
 #include <glm\vec2.hpp>
@@ -28,7 +28,7 @@ class RegionManager
     void ComputeVisibleTiles(const glm::ivec2& centerTile, const glm::vec2& playerOrientation, std::vector<glm::ivec2>* visibleTiles) const;
 
 public:
-    RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, Physics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance);
+    RegionManager(ShaderFactory* shaderManager, ModelManager* modelManager, Physics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance);
     bool InitializeGraphics();
     
     TerrainManager& GetTerrainManager();

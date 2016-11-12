@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Utils\Constants.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Input.h"
 
 bool Input::hasFocus = true;

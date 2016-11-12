@@ -1,7 +1,7 @@
 #include <string>
 #include <sstream>
-#include "Utils\Logger.h"
-#include "Utils\StringUtils.h"
+#include "logging\Logger.h"
+#include "strings\StringUtils.h"
 #include "Utils\ConversionUtils.h"
 #include "ConfigManager.h"
 

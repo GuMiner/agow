@@ -5,8 +5,8 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "Utils\Logger.h"
-#include "Utils\StringUtils.h"
+#include "logging\Logger.h"
+#include "strings\StringUtils.h"
 
 template<typename T>
 struct DecisionNode

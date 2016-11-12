@@ -5,7 +5,7 @@
 #include <glm\vec3.hpp>
 #include <glm\gtc\quaternion.hpp>
 #include "Data\UserPhysics.h"
-#include "Managers\ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 #include "Utils\TypedCallback.h"
 #include "WeaponBase.h"
 
@@ -47,7 +47,7 @@ protected:
 
 public:
     PlasmaWeapon::PlasmaWeapon(Physics* physics);
-    static bool LoadGraphics(ShaderManager* shaderManager);
+    static bool LoadGraphics(ShaderFactory* shaderManager);
     virtual void Update(float elapsedTime) override;
     void Render(const glm::mat4& projectionMatrix) override;
 

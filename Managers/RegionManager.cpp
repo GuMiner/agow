@@ -1,7 +1,7 @@
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "RegionManager.h"
 
-RegionManager::RegionManager(ShaderManager* shaderManager, ModelManager* modelManager, Physics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance)
+RegionManager::RegionManager(ShaderFactory* shaderManager, ModelManager* modelManager, Physics* physics, std::string terrainRootFolder, glm::ivec2 min, glm::ivec2 max, int tileViewDistance)
     : terrainManager(min, max, shaderManager, modelManager, physics, terrainRootFolder),
       loadedRegions(), visibleTiles(), tileViewDistance(tileViewDistance)
 {

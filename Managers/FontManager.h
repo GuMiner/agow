@@ -9,7 +9,7 @@
 #include <glm\mat4x4.hpp>
 #include "Data\TextDataTypes.h"
 #include "Utils\Vertex.h"
-#include "ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 
 // Manages the in-game font.
 class FontManager
@@ -51,7 +51,7 @@ class FontManager
 
 public:
     FontManager();
-    bool LoadFont(ShaderManager* shaderManager, const char* fontName);
+    bool LoadFont(ShaderFactory* shaderManager, const char* fontName);
 
     int CreateNewSentence();
     void UpdateSentence(int sentenceId, const std::string& sentence, int pixelHeight, glm::vec3 textColor);

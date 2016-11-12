@@ -1,13 +1,13 @@
 #pragma once
 #include "Data\TerrainTile.h"
-#include "Managers\ShaderManager.h"
+#include "shaders\ShaderFactory.h"
 
 // Defines how a terrain effect is operated.
 class TerrainEffect
 {
 public:
     // Loads runtime constants required for this effect.
-    virtual bool LoadBasics(ShaderManager* shaderManager) = 0;
+    virtual bool LoadBasics(ShaderFactory* shaderManager) = 0;
 
     // Loads and unloads an effect into / out of the effect data.
     virtual bool LoadEffect(glm::ivec2 subtileId, void** effectData, SubTile* tile) = 0;

@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/random.hpp>
 #include "Utils\ImageUtils.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Scenery.h"
 
 Scenery::Scenery()
@@ -12,7 +12,7 @@ Scenery::Scenery()
     stars.flavorColorStrength = 1.0f;
 }
 
-bool Scenery::Initialize(ShaderManager& shaderManager)
+bool Scenery::Initialize(ShaderFactory& shaderManager)
 {
     // Sky program.
     if (!shaderManager.CreateShaderProgram("starRender", &stars.programId))

@@ -1,6 +1,9 @@
+#include <glm\mat4x4.hpp>
 #include <glm\gtc\random.hpp>
+#include <SFML\System.hpp>
+#include <algorithm>
 #include "Generators\ColorGenerator.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "RoadEffect.h"
 
 RoadStats RoadEffect::stats = RoadStats();
@@ -9,7 +12,7 @@ RoadEffect::RoadEffect()
 {
 }
 
-bool RoadEffect::LoadBasics(ShaderManager* shaderManager)
+bool RoadEffect::LoadBasics(ShaderFactory* shaderManager)
 {
     if (!shaderManager->CreateShaderProgram("roadRender", &programId))
     {

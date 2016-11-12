@@ -1,0 +1,3 @@
+[submodule "GuCommon"]
+	path = GuCommon
+	url = https://github.com/GuMiner/GuCommon.git

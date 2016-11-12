@@ -1,5 +1,5 @@
 #include "Generators\PhysicsGenerator.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Car.h"
 
 btCollisionShape* Car::vehicleFrameCollisionShape;

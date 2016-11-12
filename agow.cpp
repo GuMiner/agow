@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <glm\gtc\quaternion.hpp>
 #include "Weapons\PlasmaWeapon.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Map.h"
 #include "agow.h"
 #include "version.h"
@@ -508,7 +508,7 @@ int main(int argc, char* argv[])
     agow::Constant = Constants();
     agow::PhysicsOp = PhysicsOps();
 
-    Logger::Setup();
+    Logger::Setup("agow-log.log");
 
     Logger::Log("agow ", AutoVersion::MAJOR_VERSION, ".", AutoVersion::MINOR_VERSION, ".");
 

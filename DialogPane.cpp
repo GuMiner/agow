@@ -2,7 +2,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Math\PhysicsOps.h"
 #include <sstream>
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "DialogPane.h"
 
 DialogPane::DialogPane()
@@ -10,7 +10,7 @@ DialogPane::DialogPane()
 {
 }
 
-bool DialogPane::LoadBasics(FontManager* fontManager, ShaderManager* shaderManager)
+bool DialogPane::LoadBasics(FontManager* fontManager, ShaderFactory* shaderManager)
 {
     this->fontManager = fontManager;
     

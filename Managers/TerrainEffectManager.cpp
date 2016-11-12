@@ -9,11 +9,11 @@
 #include "TerrainEffects\RockEffect.h"
 #include "TerrainEffects\SignEffect.h"
 #include "TerrainEffects\TreeEffect.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Utils\ImageUtils.h"
 
 
-TerrainEffectManager::TerrainEffectManager(ShaderManager* shaderManager, ModelManager* modelManager, Physics* Physics)
+TerrainEffectManager::TerrainEffectManager(ShaderFactory* shaderManager, ModelManager* modelManager, Physics* Physics)
     : shaderManager(shaderManager), modelManager(modelManager), physics(Physics)
 {
     effects.push_back((TerrainEffect*)new GrassEffect());

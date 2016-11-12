@@ -2,7 +2,7 @@
 #include "Generators\SignGenerator.h"
 #include "Generators\PhysicsGenerator.h"
 #include "Managers\TerrainManager.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "SignEffect.h"
 
 SignEffect::SignEffect(ModelManager* modelManager, Physics* physics)
@@ -10,7 +10,7 @@ SignEffect::SignEffect(ModelManager* modelManager, Physics* physics)
 {
 }
 
-bool SignEffect::LoadBasics(ShaderManager* shaderManager)
+bool SignEffect::LoadBasics(ShaderFactory* shaderManager)
 {
     // No special shaders.
     return true;

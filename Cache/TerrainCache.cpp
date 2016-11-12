@@ -1,7 +1,8 @@
+#include <glm\vec3.hpp>
 #include <direct.h>
 #include <io.h>
 #include <sstream>
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "TerrainCache.h"
 
 TerrainCache::TerrainCache(const std::string& cacheFolder, const std::string& cacheType)

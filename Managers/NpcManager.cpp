@@ -1,6 +1,6 @@
 #include "NPC\AllyNPC.h"
 #include "NPC\EnemyNPC.h"
-#include "Utils\Logger.h"
+#include "logging\Logger.h"
 #include "Utils\TypedCallback.h"
 #include "DialogPane.h"
 #include "Map.h"

@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <stb\stb_image.h>
-#include "Logger.h"
+#include "logging\Logger.h"
 #include "ImageUtils.h"
 
 // Copies a portion of the src image into the dest image (which is a sideLength square), optionally applying a rotation.
