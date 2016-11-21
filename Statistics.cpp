@@ -4,7 +4,7 @@
 #include "Statistics.h"
 
 Statistics::Statistics()
-    : textPixelHeight(20), textScale(glm::scale(glm::mat4(), glm::vec3(0.02f, 0.02f, 0.02f))), currentFrameCounter(0), totalElapsedTime(0.0f), lastSector(-1, -1)
+    : textPixelHeight(20), currentFrameCounter(0), totalElapsedTime(0.0f), lastSector(-1, -1)
 {
     runTime.posRotMatrix = glm::scale(glm::translate(glm::mat4(), glm::vec3(-0.821f, -0.221f, -1.0f)), glm::vec3(0.015f, 0.015f, 0.015f));
     runTime.color = glm::vec3(0.8f, 0.8f, 0.8f);

@@ -17,7 +17,6 @@ class Statistics
     glm::ivec2 lastSector;
 
     int textPixelHeight;
-    glm::mat4 textScale;
 
     // Overall Details
     RenderableSentence fps;
