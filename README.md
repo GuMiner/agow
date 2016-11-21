@@ -5,13 +5,13 @@
 An experiment in fragment shading, open world simulation, and style generation.
 
 ![FinStat1.png][finstat]
-[finstat]:./FinStat1.PNG
+[finstat]:./FinStat1.png
 
 ![FinStat1.png][finstat2]
-[finstat2]:./FinStat2.PNG
+[finstat2]:./FinStat2.png
 
 ![FinStat1.png][finstat3]
-[finstat3]:./FinStat3.PNG
+[finstat3]:./FinStat3.png
 
 ![Status2.png][status2]
 [status2]:./Status2.PNG
