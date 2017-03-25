@@ -1,7 +1,6 @@
 #version 400 core
 
 out vec4 color;
-
 in vec3 fs_color;
 
 void main(void)

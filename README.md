@@ -4,17 +4,13 @@
 
 An experiment in fragment shading, open world simulation, and style generation.
 
-![FinStat1.png][finstat]
-[finstat]:./FinStat1.png
+![Cityscape with grass and water](./FinStat1.png)
 
-![FinStat1.png][finstat2]
-[finstat2]:./FinStat2.png
+![View of buildings that overloaded Bullet physics at 60 fps](./FinStat2.png)
 
-![FinStat1.png][finstat3]
-[finstat3]:./FinStat3.png
+![Lower-level fiew of trees, grass, and rocks](./FinStat3.png)
 
-![Status2.png][status2]
-[status2]:./Status2.PNG
+![The Map Editor for the game](./Status2.PNG)
 
 ## Status
 ---------
